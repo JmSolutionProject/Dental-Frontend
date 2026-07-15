@@ -1,0 +1,114 @@
+.sidebar {
+  --logout-bg: #fee2e2;
+  --logout-color: #dc2626;
+  --logout-hover-bg: #fecaca;
+  background: #ffffff;
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text);
+  display: grid;
+  gap: 2rem;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  padding: 1.25rem;
+}
+
+.brand {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.brand strong {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 750;
+  letter-spacing: var(--tracking-tight);
+}
+
+.brand-mark {
+  align-items: center;
+  background: #e0f2fe;
+  border-radius: 0.75rem;
+  color: #0284c7;
+  display: grid;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  height: 2.75rem;
+  place-items: center;
+  width: 2.75rem;
+}
+
+.nav {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
+
+.nav a,
+.logout-button {
+  align-items: center;
+  border-radius: 0.625rem;
+  color: #334155;
+  display: flex;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  gap: 0.75rem;
+  padding: 0.7rem 0.875rem;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.logout-button {
+  background: transparent;
+  border: 0;
+  color: var(--logout-color);
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+}
+
+.nav-icon {
+  fill: currentColor;
+  flex: 0 0 auto;
+  height: 1.15rem;
+  opacity: 0.78;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  width: 1.15rem;
+}
+
+.nav a:hover,
+.nav a.active {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.logout-button:hover {
+  background: var(--logout-hover-bg, var(--logout-bg));
+}
+
+.nav a:hover .nav-icon,
+.nav a.active .nav-icon,
+.logout-button:hover .nav-icon {
+  opacity: 1;
+  transform: translateX(1px);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    gap: 1rem;
+    grid-template-rows: auto auto auto;
+    min-height: auto;
+  }
+
+  .nav {
+    grid-template-columns: repeat(7, minmax(max-content, 1fr));
+    overflow-x: auto;
+  }
+
+  .nav a,
+  .logout-button {
+    justify-content: center;
+  }
+}

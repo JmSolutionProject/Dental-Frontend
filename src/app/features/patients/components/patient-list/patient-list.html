@@ -1,1 +1,129 @@
-<p>patient-list works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Patients</p>
+      <h1>Patient records</h1>
+      <p class="muted">Manage patient profiles, medical history, and clinical notes.</p>
+    </div>
+    <button class="button" type="button" (click)="openCreateModal()">Add patient</button>
+  </header>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by name or document…"
+      (input)="onSearchInput($event)"
+    />
+  </div>
+
+  <!-- Table -->
+  <article class="card">
+    @if (loading()) {
+      <p class="muted loading-text">Loading patients…</p>
+    } @else if (result(); as res) {
+      @if (res.data.length === 0) {
+        <div class="empty-state">
+          @if (searchText()) {
+            <p class="muted">No patients matching "<strong>{{ searchText() }}</strong>".</p>
+            <p class="muted">Try a different search term or clear the filter.</p>
+          } @else {
+            <p class="muted">No patients found.</p>
+            <p class="muted">Click "Add patient" to create the first record.</p>
+          }
+        </div>
+      } @else {
+        <app-table
+          [columns]="columns"
+          [data]="displayData()"
+          [currentPage]="currentPage()"
+          [pageSize]="pageSize()"
+          [totalItems]="totalItems()"
+          [sortKey]="sortKey()"
+          [sortDir]="sortDir()"
+          (sortChange)="onSortChange($event)"
+          (pageChange)="onPageChange($event)"
+          (rowClick)="onRowClick($event)"
+        />
+      }
+    }
+  </article>
+
+  <!-- Create patient modal -->
+  <app-modal
+    title="Add patient"
+    [visible]="showCreateModal()"
+    (close)="closeCreateModal()"
+  >
+    <form [formGroup]="createForm" class="create-form" (ngSubmit)="submitCreate()">
+      <div class="create-form-intro">
+        <span class="create-form-icon">+</span>
+        <div>
+          <strong>New clinical record</strong>
+          <p>Only fields supported by the current backend create DTO are sent.</p>
+        </div>
+      </div>
+
+      <section class="create-section">
+        <h3>Identity</h3>
+        <div class="create-grid create-grid--two">
+          <app-form-field label="First name" [control]="createForm.get('firstName')!">
+            <input type="text" formControlName="firstName" autocomplete="given-name" />
+          </app-form-field>
+
+          <app-form-field label="Last name" [control]="createForm.get('lastName')!">
+            <input type="text" formControlName="lastName" autocomplete="family-name" />
+          </app-form-field>
+        </div>
+
+        <div class="create-grid create-grid--two">
+          <app-form-field label="WhatsApp phone" [control]="createForm.get('phone')!">
+            <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+51999999999" />
+          </app-form-field>
+
+          <app-form-field label="Birth date" [control]="createForm.get('birthDate')!">
+            <input type="date" formControlName="birthDate" />
+          </app-form-field>
+        </div>
+      </section>
+
+      <section class="create-section create-section--clinical">
+        <h3>Clinical alerts</h3>
+        <app-form-field label="Critical allergies" [control]="createForm.get('allergies')!">
+          <textarea
+            formControlName="allergies"
+            rows="3"
+            placeholder="Penicillin, latex, anesthesia reaction"
+          ></textarea>
+        </app-form-field>
+        <p class="create-hint">Separate multiple allergies with commas. This maps to <code>alergiasCriticas</code>.</p>
+      </section>
+
+      <section class="create-section create-section--optional">
+        <h3>Local reference</h3>
+        <app-form-field label="Document number" [control]="createForm.get('documentNumber')!">
+          <input type="text" formControlName="documentNumber" autocomplete="off" />
+        </app-form-field>
+        <p class="create-hint">The backend create DTO does not persist this field yet.</p>
+      </section>
+
+      <div class="create-actions">
+        <button
+          class="button button--ghost"
+          type="button"
+          (click)="closeCreateModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="button"
+          type="submit"
+          [disabled]="creating()"
+        >
+          {{ creating() ? 'Creating…' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+</section>

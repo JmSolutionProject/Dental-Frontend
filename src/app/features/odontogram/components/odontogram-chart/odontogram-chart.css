@@ -1,0 +1,213 @@
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button--ghost {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.button--ghost:hover {
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+}
+
+/* Quadrant toggle */
+.quadrant-toggle {
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.75rem;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: -2px;
+  padding: 0.5rem 1rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab--active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+/* Legend */
+.legend {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.legend-item {
+  align-items: center;
+  display: flex;
+  font-size: var(--text-xs);
+  gap: 0.35rem;
+}
+
+.legend-swatch {
+  border-radius: 3px;
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+}
+
+.legend-swatch[data-condition='healthy'] {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+.legend-swatch[data-condition='caries'] {
+  background: #fecaca;
+  border: 1px solid #ef4444;
+}
+.legend-swatch[data-condition='restoration'] {
+  background: #bfdbfe;
+  border: 1px solid #3b82f6;
+}
+.legend-swatch[data-condition='extraction'] {
+  background: #e2e8f0;
+  border: 1px solid #64748b;
+}
+.legend-swatch[data-condition='crown'] {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+}
+.legend-swatch[data-condition='missing'] {
+  background: #f1f5f9;
+  border: 1px solid #94a3b8;
+}
+
+/* Quadrant labels */
+.quadrant-labels {
+  display: flex;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  gap: 2rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.quadrant-label {
+  color: var(--color-text);
+}
+
+/* Chart container */
+.chart-container {
+  overflow-x: auto;
+  padding: 1.5rem;
+}
+
+.tooth-grid {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  max-width: 100%;
+}
+
+/* Condition editor */
+.condition-editor {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+}
+
+.condition-editor-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.condition-editor-header h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.condition-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.condition-btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.condition-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+}
+
+.condition-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+}
+
+.condition-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Condition button color accents */
+.condition-btn[data-condition='caries']:hover:not(:disabled),
+.condition-btn--active[data-condition='caries'] {
+  background: #ef4444;
+  border-color: #dc2626;
+}
+
+.condition-btn[data-condition='restoration']:hover:not(:disabled),
+.condition-btn--active[data-condition='restoration'] {
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.condition-btn[data-condition='extraction']:hover:not(:disabled),
+.condition-btn--active[data-condition='extraction'] {
+  background: #64748b;
+  border-color: #475569;
+}
+
+.condition-btn[data-condition='crown']:hover:not(:disabled),
+.condition-btn--active[data-condition='crown'] {
+  background: #f59e0b;
+  border-color: #d97706;
+}
+
+.condition-btn[data-condition='missing']:hover:not(:disabled),
+.condition-btn--active[data-condition='missing'] {
+  background: #94a3b8;
+  border-color: #64748b;
+}
+
+.saving-msg {
+  font-style: italic;
+  margin-top: 0.5rem;
+}

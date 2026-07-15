@@ -1,0 +1,50 @@
+<app-modal
+  [title]="attachment().fileName"
+  [visible]="visible()"
+  (close)="close.emit()"
+>
+  @if (attachment(); as att) {
+    <div class="preview-body">
+      <!-- Image lightbox -->
+      @if (isImage) {
+        <div class="preview-image-wrapper">
+          <img
+            class="preview-image"
+            [src]="att.url"
+            [alt]="att.fileName"
+          />
+        </div>
+      }
+
+      <!-- PDF download -->
+      @if (isPdf) {
+        <div class="preview-pdf">
+          <span class="preview-pdf-icon">&#128196;</span>
+          <p>PDF files cannot be previewed inline.</p>
+          <a
+            class="button"
+            [href]="att.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open PDF
+          </a>
+        </div>
+      }
+
+      <!-- Metadata footer -->
+      <div class="preview-meta">
+        <span class="muted">
+          {{ att.fileName }}
+        </span>
+        <span class="muted">
+          {{ (att.size / 1024).toFixed(0) }} KB &middot;
+          {{ att.mimeType }}
+        </span>
+        @if (att.description) {
+          <span class="muted">{{ att.description }}</span>
+        }
+      </div>
+    </div>
+  }
+</app-modal>

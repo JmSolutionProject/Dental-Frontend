@@ -1,0 +1,104 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Attachments</p>
+      <h1>Clinical Documents</h1>
+      <p class="muted">
+        X-rays, consent forms, intraoral photos, and other files linked to this patient.
+      </p>
+    </div>
+  </header>
+
+  <!-- Upload area -->
+  <app-upload-dropzone
+    [patientId]="patientId()"
+    (uploaded)="onUploaded()"
+  />
+
+  <!-- Attachment list -->
+  <article class="card">
+    <h2>Existing Attachments</h2>
+
+    @if (loading()) {
+      <p class="muted">Loading attachments…</p>
+    } @else if (attachments().length === 0) {
+      <p class="muted">No attachments yet. Upload a file above.</p>
+    } @else {
+      <div class="attachment-grid">
+        @for (att of attachments(); track att.id) {
+          <div class="attachment-tile">
+            <!-- Thumbnail area -->
+            <button
+              class="attachment-thumb"
+              type="button"
+              (click)="openPreview(att)"
+              [attr.aria-label]="'Preview ' + att.fileName"
+            >
+              @if (isImage(att.mimeType) && att.thumbnailUrl) {
+                <img
+                  class="thumb-img"
+                  [src]="att.thumbnailUrl"
+                  [alt]="att.fileName"
+                />
+              } @else if (isImage(att.mimeType)) {
+                <img
+                  class="thumb-img"
+                  [src]="att.url"
+                  [alt]="att.fileName"
+                />
+              } @else {
+                <span class="thumb-placeholder">
+                  {{ isPdf(att.mimeType) ? '&#128196;' : '&#128206;' }}
+                </span>
+              }
+            </button>
+
+            <!-- Info -->
+            <div class="attachment-info">
+              <span class="attachment-name" [title]="att.fileName">
+                {{ att.fileName }}
+              </span>
+              <span class="muted attachment-meta">
+                {{ categoryLabel(att.mimeType) }} &middot;
+                {{ (att.size / 1024).toFixed(0) }} KB
+              </span>
+              @if (att.description) {
+                <span class="attachment-desc muted">
+                  {{ att.description }}
+                </span>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="attachment-actions">
+              <button
+                class="button button--small"
+                type="button"
+                (click)="openPreview(att)"
+              >
+                View
+              </button>
+              <button
+                class="button button--small button--danger"
+                type="button"
+                [disabled]="deleting()"
+                (click)="delete(att)"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </article>
+
+  <!-- Preview modal -->
+  @if (previewAttachment(); as att) {
+    <app-attachment-preview-modal
+      [attachment]="att"
+      [visible]="showPreview()"
+      (close)="closePreview()"
+    />
+  }
+</section>

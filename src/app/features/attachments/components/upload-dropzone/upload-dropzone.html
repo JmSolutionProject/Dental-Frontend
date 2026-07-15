@@ -1,0 +1,73 @@
+<section class="dropzone-card">
+  <h2>Upload Attachment</h2>
+  <p class="muted">
+    Upload X-rays, consent forms, intraoral photos, or other clinical documents.
+    Supported: JPEG, PNG, GIF, WebP, BMP, SVG, PDF &mdash; max 10 MB.
+  </p>
+
+  <!-- Drop zone (when no file selected yet) -->
+  @if (!selectedFile()) {
+    <div
+      class="dropzone-area"
+      [class.dropzone-area--active]="dragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <span class="dropzone-icon">&#128206;</span>
+      <p>Drag and drop a file here, or click to browse.</p>
+      <input
+        type="file"
+        class="dropzone-input"
+        accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.pdf"
+        (change)="onFileSelected($event)"
+      />
+    </div>
+  }
+
+  <!-- Selected file preview -->
+  @if (selectedFile(); as file) {
+    <div class="file-preview">
+      <div class="file-info">
+        <span class="file-name">{{ file.name }}</span>
+        <span class="file-meta muted">
+          {{ (file.size / 1024).toFixed(0) }} KB &middot;
+          {{ file.type || 'unknown' }}
+        </span>
+      </div>
+
+      <div class="file-description">
+        <label class="field-label" for="attachment-desc">
+          Description (optional)
+        </label>
+        <input
+          id="attachment-desc"
+          type="text"
+          class="field-input"
+          placeholder="e.g. Panoramic X-ray, Consent form"
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+        />
+      </div>
+
+      <div class="file-actions">
+        <button
+          class="button"
+          type="button"
+          [disabled]="uploading()"
+          (click)="upload()"
+        >
+          {{ uploading() ? 'Uploading…' : 'Upload' }}
+        </button>
+        <button
+          class="button button--ghost"
+          type="button"
+          [disabled]="uploading()"
+          (click)="clearSelection()"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+</section>

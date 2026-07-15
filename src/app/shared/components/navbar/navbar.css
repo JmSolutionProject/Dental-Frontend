@@ -1,0 +1,38 @@
+.topbar {
+  align-items: center;
+  background: #ffffff;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.topbar h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+.logout {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.logout:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+}

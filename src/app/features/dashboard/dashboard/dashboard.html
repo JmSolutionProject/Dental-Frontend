@@ -1,1 +1,80 @@
-<p>dashboard works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Overview</p>
+      <h1>Today at the clinic</h1>
+      <p class="muted">Operational data comes from backend endpoints only.</p>
+    </div>
+    <a class="button" href="/appointments">New appointment</a>
+  </header>
+
+  @if (kpis$ | async; as kpis) {
+    <!-- Revenue section -->
+    <section class="kpi-section">
+      <h2 class="kpi-section-title">Revenue</h2>
+      <div class="grid grid--4col">
+        <article class="card metric metric--revenue">
+          <span>Today's Revenue</span>
+          <strong>{{ kpis.revenue.today | currency }}</strong>
+          <small>Collected today</small>
+        </article>
+        <article class="card metric metric--revenue">
+          <span>Month Revenue</span>
+          <strong>{{ kpis.revenue.month | currency }}</strong>
+          <small>This month</small>
+        </article>
+        <article class="card metric metric--outstanding">
+          <span>Outstanding</span>
+          <strong>{{ kpis.revenue.outstanding | currency }}</strong>
+          <small>Pending invoices</small>
+        </article>
+      </div>
+    </section>
+
+    <!-- Clinical section -->
+    <section class="kpi-section">
+      <h2 class="kpi-section-title">Clinical</h2>
+      <div class="grid grid--4col">
+        <article class="card metric metric--clinical">
+          <span>Appointments Today</span>
+          <strong>{{ kpis.clinical.appointmentsToday }}</strong>
+          <small>Scheduled</small>
+        </article>
+        <article class="card metric metric--clinical">
+          <span>New Patients</span>
+          <strong>{{ kpis.clinical.newPatientsThisMonth }}</strong>
+          <small>This month</small>
+        </article>
+        <article class="card metric metric--clinical">
+          <span>Active Treatments</span>
+          <strong>{{ kpis.clinical.activeTreatments }}</strong>
+          <small>In progress</small>
+        </article>
+      </div>
+    </section>
+  }
+
+  <!-- Legacy overview cards (kept for compatibility) -->
+  <div class="grid">
+    <article class="card metric">
+      <span>Patients</span>
+      <strong>{{ (patientsTotal$ | async) ?? 0 }}</strong>
+      <small>Total registered</small>
+    </article>
+    <article class="card metric">
+      <span>Appointments</span>
+      <strong>{{ (appointments$ | async)?.length ?? 0 }}</strong>
+      <small>Appointments</small>
+    </article>
+    <article class="card metric">
+      <span>Messages</span>
+      <strong>-</strong>
+      <small>Messages</small>
+    </article>
+  </div>
+
+  <article class="card">
+    <h2>Architecture status</h2>
+    <p class="muted">The frontend now separates domain models, use cases, infrastructure repositories, and presentation components.</p>
+  </article>
+</section>

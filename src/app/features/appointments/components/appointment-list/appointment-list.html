@@ -1,1 +1,25 @@
-<p>appointment-list works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Appointments</p>
+      <h1>Scheduled appointments</h1>
+      <p class="muted">Appointments loaded from the backend appointment endpoint.</p>
+    </div>
+    <button class="button" type="button">Schedule</button>
+  </header>
+
+  <div class="grid">
+    @for (appointment of appointments$ | async; track appointment.id) {
+      <article class="card appointment">
+        <strong>{{ appointment.patientName }}</strong>
+        <span>{{ appointment.scheduledAt }}</span>
+        <p>{{ appointment.reason }}</p>
+        <small>{{ appointment.dentistName }} · {{ appointment.status }}</small>
+      </article>
+    } @empty {
+      <article class="card appointment empty-card">
+        <strong>No appointments returned by the backend yet.</strong>
+      </article>
+    }
+  </div>
+</section>

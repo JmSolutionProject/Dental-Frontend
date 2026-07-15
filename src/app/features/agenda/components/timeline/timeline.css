@@ -1,0 +1,252 @@
+.timeline-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.timeline-title h1 {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.timeline-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.agenda-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Timeline Grid */
+.timeline-grid {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  overflow: auto;
+  max-height: calc(100vh - 16rem);
+}
+
+/* Hour labels column */
+.timeline-hours {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 4rem;
+  border-right: 1px solid var(--color-border);
+}
+
+.timeline-corner {
+  border-bottom: 1px solid var(--color-border);
+  height: 2.75rem;
+}
+
+.hour-marker {
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+  display: flex;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  height: 72px;
+  padding: 0.125rem 0.5rem;
+}
+
+/* Dentist columns */
+.dentist-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 160px;
+  border-right: 1px solid var(--color-border);
+}
+
+.dentist-column:last-child {
+  border-right: none;
+}
+
+.dentist-column-header {
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  gap: 0.5rem;
+  height: 2.75rem;
+  justify-content: center;
+  padding: 0 0.5rem;
+}
+
+.dentist-column-header strong {
+  font-size: var(--text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  background: var(--color-primary);
+  border-radius: 9999px;
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Timeline rows (grid lines) */
+.dentist-timeline {
+  position: relative;
+}
+
+.timeline-row {
+  border-bottom: 1px solid var(--color-border);
+  height: 72px;
+}
+
+/* Appointment blocks */
+.timeline-block {
+  background: var(--color-primary);
+  border: none;
+  border-left: 3px solid var(--color-primary-dark);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs);
+  left: 2px;
+  overflow: hidden;
+  padding: 0.125rem 0.375rem;
+  position: absolute;
+  right: 2px;
+  text-align: left;
+  transition: opacity 0.15s;
+}
+
+.timeline-block:hover {
+  opacity: 0.85;
+}
+
+.timeline-block.status--cancelled {
+  background: var(--color-bg-secondary);
+  border-left-color: var(--color-muted);
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.timeline-block.status--completed {
+  background: #22c55e;
+  border-left-color: #16a34a;
+}
+
+.block-time {
+  font-size: 0.625rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.block-patient {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+}
+
+.empty-state strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Detail modal */
+.detail-modal {
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: auto 1fr;
+}
+
+.detail-list dt {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding-right: 1rem;
+}
+
+.detail-list dd {
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.detail-status {
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  text-transform: capitalize;
+}
+
+.detail-status.status--scheduled {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.detail-status.status--cancelled {
+  background: var(--color-bg-secondary);
+  color: var(--color-muted);
+}
+
+.detail-status.status--completed {
+  background: #e6f7ed;
+  color: #16a34a;
+}
+
+/* Shared modal styles */
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.cancel-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 320px;
+  max-width: 480px;
+}
+
+.cancel-modal p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.button--danger {
+  background: var(--color-danger);
+  border: 1px solid var(--color-danger-dark);
+  color: #fff;
+}
+
+.button--danger:hover {
+  background: var(--color-danger-dark);
+}
+
+.loading-overlay {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  padding: 2rem;
+  text-align: center;
+}

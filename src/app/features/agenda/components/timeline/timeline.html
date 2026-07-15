@@ -1,0 +1,134 @@
+<section class="page">
+  <header class="timeline-header">
+    <div class="timeline-title">
+      <p class="eyebrow">Agenda</p>
+      <h1>{{ dateLabel() }}</h1>
+      <p class="muted">Daily clinical agenda &bull; {{ agendaDay().appointments.length }} appointments</p>
+    </div>
+    <div class="timeline-controls">
+      <button class="button button--sm" type="button" (click)="goToToday()">Today</button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <div class="agenda-nav">
+    <button class="button button--sm" type="button" (click)="navigate(-1)">&larr; Previous day</button>
+    <button class="button button--sm" type="button" (click)="navigate(1)">Next day &rarr;</button>
+  </div>
+
+  <!-- Dentist columns -->
+  @if (agendaDay().dentists.length === 0) {
+    <article class="card empty-state">
+      <strong>No appointments scheduled for this day.</strong>
+      <p class="muted">Create appointments in the calendar view.</p>
+    </article>
+  } @else {
+    <div class="timeline-grid">
+      <!-- Hour labels -->
+      <div class="timeline-hours">
+        <div class="timeline-corner"></div>
+        @for (hour of hours; track hour) {
+          <div class="hour-marker">{{ hour }}</div>
+        }
+      </div>
+
+      <!-- Per-dentist columns -->
+      @for (dentist of agendaDay().dentists; track dentist.dentistId) {
+        <div class="dentist-column">
+          <div class="dentist-column-header">
+            <strong>{{ dentist.dentistName }}</strong>
+            <span class="badge">{{ dentist.appointments.length }}</span>
+          </div>
+          <div class="dentist-timeline">
+            <!-- Hour grid lines -->
+            @for (hour of hours; track hour) {
+              <div class="timeline-row"></div>
+            }
+
+            <!-- Appointment blocks -->
+            @for (apt of dentist.appointments; track apt.id) {
+              <button
+                class="timeline-block"
+                [class]="statusClass(apt)"
+                [style]="blockStyle(apt)"
+                type="button"
+                (click)="openDetail(apt)">
+                <span class="block-time">{{ apt.scheduledAt.slice(11, 16) }}</span>
+                <span class="block-patient">{{ apt.patientName }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="loading-overlay">Loading&hellip;</div>
+  }
+</section>
+
+<!-- Detail Modal -->
+<app-modal
+  title="Appointment Details"
+  [visible]="detailModalVisible()"
+  (close)="closeDetail()">
+  <div class="detail-modal">
+    @if (selectedAppointment(); as apt) {
+      <dl class="detail-list">
+        <dt>Patient</dt>
+        <dd>{{ apt.patientName }}</dd>
+
+        <dt>Scheduled</dt>
+        <dd>{{ apt.scheduledAt | date: 'medium' }}</dd>
+
+        <dt>Dentist</dt>
+        <dd>{{ apt.dentistName ?? 'Unassigned' }}</dd>
+
+        <dt>Reason</dt>
+        <dd>{{ apt.reason }}</dd>
+
+        <dt>Status</dt>
+        <dd>
+          <span class="detail-status" [class]="statusClass(apt)">{{ apt.status }}</span>
+        </dd>
+
+        @if (apt.cancelReason) {
+          <dt>Cancel reason</dt>
+          <dd>{{ apt.cancelReason }}</dd>
+        }
+      </dl>
+
+      <div class="modal-actions">
+        @if (apt.status !== 'cancelled') {
+          <button class="button button--danger" type="button" (click)="closeDetail(); openCancel(apt)">
+            Cancel Appointment
+          </button>
+        }
+        <button class="button" type="button" (click)="closeDetail()">Close</button>
+      </div>
+    }
+  </div>
+</app-modal>
+
+<!-- Cancel Modal -->
+<app-modal
+  title="Cancel Appointment"
+  [visible]="cancelModalVisible()"
+  (close)="closeCancel()">
+  <form class="cancel-modal" (submit)="$event.preventDefault(); confirmCancel()">
+    <p>
+      Cancel appointment for
+      <strong>{{ cancelTarget()?.patientName }}</strong>?
+    </p>
+    <app-form-field label="Reason" [control]="cancelForm">
+      <input type="text" [formControl]="cancelForm" />
+    </app-form-field>
+
+    <div class="modal-actions">
+      <button class="button" type="button" (click)="closeCancel()">Keep</button>
+      <button class="button button--danger" type="submit">Cancel Appointment</button>
+    </div>
+  </form>
+</app-modal>

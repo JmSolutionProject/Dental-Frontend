@@ -1,0 +1,50 @@
+<svg
+  class="tooth-svg"
+  [class.tooth-svg--selected]="selected()"
+  [attr.data-condition]="tooth().condition"
+  viewBox="0 0 40 48"
+  width="40"
+  height="48"
+  (click)="onClick()"
+  role="button"
+  [attr.aria-label]="'Tooth ' + tooth().fdiNumber + ' — ' + tooth().condition"
+  tabindex="0"
+  (keydown.enter)="onClick()"
+  (keydown.space)="onClick(); $event.preventDefault()"
+>
+  <!-- Tooth shape -->
+  <path
+    [attr.d]="toothPath"
+    [attr.fill]="colors().fill"
+    [attr.stroke]="colors().stroke"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+  />
+  <!-- FDI number label -->
+  <text
+    x="20"
+    y="30"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-size="9"
+    font-family="sans-serif"
+    font-weight="600"
+    [attr.fill]="tooth().condition === 'healthy' ? '#334155' : '#1e293b'"
+  >
+    {{ displayLabel() }}
+  </text>
+  <!-- Selection indicator ring -->
+  @if (selected()) {
+    <rect
+      x="1"
+      y="1"
+      width="38"
+      height="46"
+      rx="8"
+      fill="none"
+      stroke="#6366f1"
+      stroke-width="2"
+      stroke-dasharray="4 2"
+    />
+  }
+</svg>

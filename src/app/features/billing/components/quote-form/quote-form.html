@@ -1,0 +1,122 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Billing</p>
+      <h1>New Quote</h1>
+    </div>
+    <div class="header-actions">
+      <button class="button button--ghost" type="button" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-layout">
+    <!-- Line Items -->
+    <article class="card">
+      <div class="card-header">
+        <h2>Line Items</h2>
+        <button class="button button--sm" type="button" (click)="addItem()">
+          + Add Item
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Tooth</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items.controls; track i; let i = $index) {
+              <tr [formGroup]="getItemGroup(i)">
+                <td>
+                  <input
+                    type="text"
+                    formControlName="description"
+                    placeholder="e.g. Composite filling"
+                  />
+                </td>
+                <td class="cell-narrow">
+                  <input
+                    type="number"
+                    formControlName="toothNumber"
+                    placeholder="—"
+                    min="11"
+                    max="48"
+                  />
+                </td>
+                <td class="cell-narrow">
+                  <input
+                    type="number"
+                    formControlName="quantity"
+                    min="1"
+                  />
+                </td>
+                <td class="cell-narrow">
+                  <div class="input-wrapper">
+                    <span class="currency-prefix">$</span>
+                    <input
+                      type="number"
+                      formControlName="unitPrice"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                </td>
+                <td class="cell-narrow cell-total">
+                  {{ itemTotal(i) | currency }}
+                </td>
+                <td class="cell-action">
+                  @if (items.length > 1) {
+                    <button
+                      class="button button--sm button--ghost button--danger"
+                      type="button"
+                      (click)="removeItem(i)"
+                    >
+                      Remove
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" class="text-right"><strong>Grand Total</strong></td>
+              <td colspan="2"><strong>{{ grandTotal() | currency }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </article>
+
+    <!-- Notes -->
+    <article class="card">
+      <h2>Notes</h2>
+      <div class="field">
+        <textarea
+          formControlName="notes"
+          rows="3"
+          placeholder="Internal notes (optional)"
+        ></textarea>
+      </div>
+    </article>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button class="button button--ghost" type="button" (click)="cancel()">
+        Cancel
+      </button>
+      <button class="button" type="submit" [disabled]="submitting()">
+        {{ submitting() ? 'Creating…' : 'Create Quote' }}
+      </button>
+    </div>
+  </form>
+</section>

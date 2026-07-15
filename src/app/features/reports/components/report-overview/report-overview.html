@@ -1,0 +1,30 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Reports</p>
+      <h1>Clinic summary</h1>
+      <p class="muted">Operational summary based on available backend endpoints.</p>
+    </div>
+  </header>
+
+  @if (report$ | async; as report) {
+    <div class="report-grid">
+      <article class="card report-card">
+        <span>Total patients</span>
+        <strong>{{ report.totalPatients }}</strong>
+      </article>
+      <article class="card report-card">
+        <span>Total appointments</span>
+        <strong>{{ report.totalAppointments }}</strong>
+      </article>
+      <article class="card report-card">
+        <span>Scheduled</span>
+        <strong>{{ report.scheduledAppointments }}</strong>
+      </article>
+      <article class="card report-card">
+        <span>Cancelled</span>
+        <strong>{{ report.cancelledAppointments }}</strong>
+      </article>
+    </div>
+  }
+</section>

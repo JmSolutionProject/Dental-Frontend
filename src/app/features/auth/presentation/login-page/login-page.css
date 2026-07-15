@@ -1,0 +1,48 @@
+.login-page {
+  align-items: center;
+  background: #ffffff;
+  display: grid;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+
+.login-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  max-width: 440px;
+  padding: 2rem;
+}
+
+.login-card h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.login-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.625rem;
+  color: #991b1b;
+  font-size: var(--text-sm);
+  padding: 0.65rem 0.875rem;
+}
+
+.login-submit {
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
