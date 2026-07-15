@@ -1,1 +1,102 @@
-<p>patient-list works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Patients</p>
+      <h1>Patient records</h1>
+      <p class="muted">Manage patient profiles, medical history, and clinical notes.</p>
+    </div>
+    <button class="button" type="button" (click)="openCreateModal()">Add patient</button>
+  </header>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by name or document…"
+      (input)="onSearchInput($event)"
+    />
+  </div>
+
+  <!-- Table -->
+  <article class="card">
+    @if (loading()) {
+      <p class="muted loading-text">Loading patients…</p>
+    } @else if (result(); as res) {
+      @if (res.data.length === 0) {
+        <div class="empty-state">
+          @if (searchText()) {
+            <p class="muted">No patients matching "<strong>{{ searchText() }}</strong>".</p>
+            <p class="muted">Try a different search term or clear the filter.</p>
+          } @else {
+            <p class="muted">No patients found.</p>
+            <p class="muted">Click "Add patient" to create the first record.</p>
+          }
+        </div>
+      } @else {
+        <app-table
+          [columns]="columns"
+          [data]="displayData()"
+          [currentPage]="currentPage()"
+          [pageSize]="pageSize()"
+          [totalItems]="totalItems()"
+          [sortKey]="sortKey()"
+          [sortDir]="sortDir()"
+          (sortChange)="onSortChange($event)"
+          (pageChange)="onPageChange($event)"
+          (rowClick)="onRowClick($event)"
+        />
+      }
+    }
+  </article>
+
+  <!-- Create patient modal -->
+  <app-modal
+    title="Add Patient"
+    [visible]="showCreateModal()"
+    (close)="closeCreateModal()"
+  >
+    <form [formGroup]="createForm" class="create-form" (ngSubmit)="submitCreate()">
+      <app-form-field label="First Name" [control]="createForm.get('firstName')!">
+        <input type="text" formControlName="firstName" />
+      </app-form-field>
+
+      <app-form-field label="Last Name" [control]="createForm.get('lastName')!">
+        <input type="text" formControlName="lastName" />
+      </app-form-field>
+
+      <app-form-field label="Document Number" [control]="createForm.get('documentNumber')!">
+        <input type="text" formControlName="documentNumber" />
+      </app-form-field>
+
+      <app-form-field label="Phone" [control]="createForm.get('phone')!">
+        <input type="text" formControlName="phone" />
+      </app-form-field>
+
+      <app-form-field label="Email" [control]="createForm.get('email')!">
+        <input type="email" formControlName="email" />
+      </app-form-field>
+
+      <app-form-field label="Birth Date" [control]="createForm.get('birthDate')!">
+        <input type="date" formControlName="birthDate" />
+      </app-form-field>
+
+      <div class="create-actions">
+        <button
+          class="button button--ghost"
+          type="button"
+          (click)="closeCreateModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="button"
+          type="submit"
+          [disabled]="creating()"
+        >
+          {{ creating() ? 'Creating…' : 'Create' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+</section>

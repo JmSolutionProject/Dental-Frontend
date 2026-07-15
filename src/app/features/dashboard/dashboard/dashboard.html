@@ -1,1 +1,33 @@
-<p>dashboard works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Overview</p>
+      <h1>Today at the clinic</h1>
+      <p class="muted">Operational data comes from backend endpoints only.</p>
+    </div>
+    <a class="button" href="/appointments">New appointment</a>
+  </header>
+
+  <div class="grid">
+    <article class="card metric">
+      <span>Patients</span>
+      <strong>{{ (patientsTotal$ | async) ?? 0 }}</strong>
+      <small>Patients</small>
+    </article>
+    <article class="card metric">
+      <span>Appointments</span>
+      <strong>{{ (appointments$ | async)?.length ?? 0 }}</strong>
+      <small>Appointments</small>
+    </article>
+    <article class="card metric">
+      <span>Messages</span>
+      <strong>-</strong>
+      <small>Messages</small>
+    </article>
+  </div>
+
+  <article class="card">
+    <h2>Architecture status</h2>
+    <p class="muted">The frontend now separates domain models, use cases, infrastructure repositories, and presentation components.</p>
+  </article>
+</section>

@@ -1,0 +1,109 @@
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button--ghost {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.button--ghost:hover {
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+}
+
+.button--danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.button--danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Tabs */
+.tabs {
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  gap: 0;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: -2px;
+  padding: 0.75rem 1.25rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab--active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+/* Action bar */
+.action-bar {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Detail form */
+.detail-form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 1rem;
+}
+
+.detail-form textarea {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  padding: 0.5rem 0.75rem;
+  resize: vertical;
+  width: 100%;
+}
+
+.detail-form textarea[readonly] {
+  background: var(--color-accent);
+  cursor: default;
+  opacity: 0.85;
+}
+
+.detail-form textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.field-hint {
+  font-size: var(--text-xs);
+  margin-top: -0.5rem;
+}
+
+/* Delete confirmation */
+.delete-confirm {
+  display: grid;
+  gap: 1rem;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

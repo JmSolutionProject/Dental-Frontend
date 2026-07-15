@@ -1,1 +1,219 @@
-<p>patient-detail works!</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Patients</p>
+      @if (patient(); as p) {
+        <h1>{{ p.firstName }} {{ p.lastName }}</h1>
+        <p class="muted">{{ p.documentNumber }}</p>
+      } @else if (!loading()) {
+        <h1>Patient not found</h1>
+      }
+    </div>
+    <div class="header-actions">
+      <a class="button button--ghost" routerLink="/patients">Back to list</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <article class="card">
+      <p class="muted">Loading patient record…</p>
+    </article>
+  } @else if (patient(); as p) {
+    <!-- Tab navigation -->
+    <nav class="tabs">
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'profile'"
+        (click)="setTab('profile')"
+      >
+        Profile
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'medical-history'"
+        (click)="setTab('medical-history')"
+      >
+        Medical History
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'notes'"
+        (click)="setTab('notes')"
+      >
+        Notes
+      </button>
+    </nav>
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      @if (!editing()) {
+        <button class="button" type="button" (click)="startEdit()">Edit</button>
+      } @else {
+        <button
+          class="button"
+          type="button"
+          [disabled]="saving()"
+          (click)="save()"
+        >
+          {{ saving() ? 'Saving…' : 'Save' }}
+        </button>
+        <button
+          class="button button--ghost"
+          type="button"
+          (click)="cancelEdit()"
+        >
+          Cancel
+        </button>
+      }
+      <button
+        class="button button--danger"
+        type="button"
+        (click)="openDeleteModal()"
+      >
+        Delete
+      </button>
+    </div>
+
+    <!-- Profile tab -->
+    @if (activeTab() === 'profile') {
+      <article class="card">
+        <h2>Personal Information</h2>
+        <form [formGroup]="form" class="detail-form">
+          <app-form-field label="First Name" [control]="form.get('firstName')!">
+            <input
+              type="text"
+              formControlName="firstName"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+
+          <app-form-field label="Last Name" [control]="form.get('lastName')!">
+            <input
+              type="text"
+              formControlName="lastName"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+
+          <app-form-field label="Document Number" [control]="form.get('documentNumber')!">
+            <input
+              type="text"
+              formControlName="documentNumber"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+
+          <app-form-field label="Phone" [control]="form.get('phone')!">
+            <input
+              type="text"
+              formControlName="phone"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+
+          <app-form-field label="Email" [control]="form.get('email')!">
+            <input
+              type="email"
+              formControlName="email"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+
+          <app-form-field label="Birth Date" [control]="form.get('birthDate')!">
+            <input
+              type="date"
+              formControlName="birthDate"
+              [readonly]="!editing()"
+            />
+          </app-form-field>
+        </form>
+      </article>
+    }
+
+    <!-- Medical History tab -->
+    @if (activeTab() === 'medical-history') {
+      <article class="card">
+        <h2>Medical History</h2>
+        <form [formGroup]="form" class="detail-form">
+          <app-form-field label="Allergies" [control]="form.get('allergies')!">
+            <textarea
+              formControlName="allergies"
+              rows="2"
+              [readonly]="!editing()"
+              placeholder="e.g. Penicillin, Latex, Sulfa"
+            ></textarea>
+          </app-form-field>
+          <p class="field-hint muted">Separate multiple allergies with commas.</p>
+
+          <app-form-field label="Medical Conditions" [control]="form.get('conditions')!">
+            <textarea
+              formControlName="conditions"
+              rows="2"
+              [readonly]="!editing()"
+              placeholder="e.g. Diabetes, Hypertension, Asthma"
+            ></textarea>
+          </app-form-field>
+          <p class="field-hint muted">Separate multiple conditions with commas.</p>
+
+          <app-form-field label="Current Medications" [control]="form.get('medications')!">
+            <textarea
+              formControlName="medications"
+              rows="2"
+              [readonly]="!editing()"
+              placeholder="e.g. Metformin, Lisinopril, Albuterol"
+            ></textarea>
+          </app-form-field>
+          <p class="field-hint muted">Separate multiple medications with commas.</p>
+        </form>
+      </article>
+    }
+
+    <!-- Notes tab -->
+    @if (activeTab() === 'notes') {
+      <article class="card">
+        <h2>Clinical Notes</h2>
+        <form [formGroup]="form" class="detail-form">
+          <app-form-field label="Notes" [control]="form.get('notes')!">
+            <textarea
+              formControlName="notes"
+              rows="6"
+              [readonly]="!editing()"
+              placeholder="Add clinical notes about this patient…"
+            ></textarea>
+          </app-form-field>
+        </form>
+      </article>
+    }
+
+    <!-- Delete confirmation modal -->
+    <app-modal
+      title="Delete Patient"
+      [visible]="showDeleteModal()"
+      (close)="closeDeleteModal()"
+    >
+      <div class="delete-confirm">
+        <p>
+          Are you sure you want to delete <strong>{{ p.firstName }} {{ p.lastName }}</strong>?
+        </p>
+        <p class="muted">This action will soft-delete the patient record. It can be restored later.</p>
+        <div class="delete-actions">
+          <button
+            class="button button--ghost"
+            type="button"
+            (click)="closeDeleteModal()"
+          >
+            Cancel
+          </button>
+          <button
+            class="button button--danger"
+            type="button"
+            [disabled]="deleting()"
+            (click)="confirmDelete()"
+          >
+            {{ deleting() ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </app-modal>
+  }
+</section>
