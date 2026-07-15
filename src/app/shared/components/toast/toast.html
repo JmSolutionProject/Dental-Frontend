@@ -1,0 +1,20 @@
+@if (toastService.toasts().length) {
+  <div class="toast-stack" role="status" aria-live="polite">
+    @for (toast of toastService.toasts(); track toast.id) {
+      <div
+        class="toast-item"
+        [ngClass]="'toast--' + toast.type"
+      >
+        <span class="toast-message">{{ toast.message }}</span>
+        <button
+          class="toast-close"
+          type="button"
+          (click)="toastService.dismiss(toast.id)"
+          aria-label="Close notification"
+        >
+          &times;
+        </button>
+      </div>
+    }
+  </div>
+}

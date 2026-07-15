@@ -1,0 +1,137 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Billing</p>
+      <h1>Invoices &amp; Quotes</h1>
+    </div>
+    <div class="header-actions">
+      <a class="button button--ghost" [routerLink]="['/patients', patientId()]">
+        Back to Patient
+      </a>
+      <a
+        class="button"
+        [routerLink]="['/patients', patientId(), 'billing', 'new']"
+      >
+        New Quote
+      </a>
+      <button class="button button--ghost" type="button" (click)="refresh()">
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <article class="card">
+      <p class="muted">Loading invoices…</p>
+    </article>
+  } @else if (invoices().length === 0) {
+    <article class="card">
+      <div class="empty-state">
+        <p>No invoices or quotes found for this patient.</p>
+        <a
+          class="button"
+          [routerLink]="['/patients', patientId(), 'billing', 'new']"
+        >
+          Create First Quote
+        </a>
+      </div>
+    </article>
+  } @else {
+    <article class="card">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Outstanding</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (inv of invoices(); track inv.id) {
+              <tr>
+                <td class="cell-id">
+                  <button class="link" type="button" (click)="viewInvoice(inv)">
+                    {{ inv.id.slice(0, 8) }}…
+                  </button>
+                </td>
+                <td>
+                  <span class="badge" [class]="statusClass(inv.status)">
+                    {{ statusLabel(inv.status) }}
+                  </span>
+                </td>
+                <td>{{ inv.total | currency }}</td>
+                <td>{{ inv.outstanding | currency }}</td>
+                <td>{{ inv.createdAt | date: 'shortDate' }}</td>
+                <td class="cell-actions">
+                  @if (canConvert(inv)) {
+                    <button
+                      class="button button--sm"
+                      type="button"
+                      (click)="openConvertConfirm(inv)"
+                    >
+                      Convert to Invoice
+                    </button>
+                  }
+                  @if (canPay(inv)) {
+                    <button
+                      class="button button--sm"
+                      type="button"
+                      (click)="openPaymentModal(inv)"
+                    >
+                      Record Payment
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  }
+</section>
+
+<!-- Convert confirmation modal -->
+<app-modal
+  title="Convert Quote to Invoice"
+  [visible]="convertModalVisible()"
+  (close)="cancelConvert()"
+>
+  <div class="confirm-dialog">
+    <p>
+      Convert this quote into an active invoice? This will make it available for
+      payment recording.
+    </p>
+    <div class="confirm-actions">
+      <button
+        class="button button--ghost"
+        type="button"
+        (click)="cancelConvert()"
+      >
+        Cancel
+      </button>
+      <button
+        class="button"
+        type="button"
+        [disabled]="converting()"
+        (click)="confirmConvert()"
+      >
+        {{ converting() ? 'Converting…' : 'Convert' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- Payment modal -->
+@if (selectedInvoice(); as invoice) {
+  <app-payment-modal
+    [invoice]="invoice"
+    [visible]="paymentModalVisible()"
+    (close)="closePaymentModal()"
+    (paymentRecorded)="onPaymentRecorded($event)"
+  />
+}

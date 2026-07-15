@@ -1,5 +1,36 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+
+import { AuthService } from '../services/auth';
+import { ToastService } from '../../shared/components/toast/toast.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  return next(req);
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const toast = inject(ToastService);
+
+  return next(req).pipe(
+    catchError((error: unknown) => {
+      if (error instanceof HttpErrorResponse) {
+        if (error.status === 401) {
+          auth.logout();
+          void router.navigate(['/login']);
+        } else if (error.status === 403) {
+          void router.navigate(['/forbidden']);
+        } else {
+          const message =
+            error.error?.message ||
+            error.message ||
+            'An unexpected error occurred.';
+          toast.error(message);
+        }
+      } else {
+        toast.error('A network error occurred.');
+      }
+
+      return throwError(() => error);
+    }),
+  );
 };

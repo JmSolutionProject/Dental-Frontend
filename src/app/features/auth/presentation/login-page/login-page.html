@@ -1,0 +1,40 @@
+<main class="login-page">
+  <section class="login-card">
+    <p class="eyebrow">Dental Clinic</p>
+    <h1>Sign in to your account</h1>
+    <p class="muted">Enter your credentials to access the clinic dashboard.</p>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+      <app-form-field label="Email" [control]="form.controls.email">
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          autofocus
+        />
+      </app-form-field>
+
+      <app-form-field label="Password" [control]="form.controls.password">
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+      </app-form-field>
+
+      @if (serverError) {
+        <div class="login-error">{{ serverError }}</div>
+      }
+
+      <button
+        class="button login-submit"
+        type="submit"
+        [disabled]="form.invalid || submitting"
+      >
+        {{ submitting ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+  </section>
+</main>

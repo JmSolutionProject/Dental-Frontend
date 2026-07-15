@@ -1,0 +1,28 @@
+.forbidden-page {
+  align-items: center;
+  background: #ffffff;
+  display: grid;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+
+.forbidden-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  max-width: 440px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.forbidden-card h1 {
+  font-size: 4rem;
+  font-weight: 750;
+  color: var(--color-muted);
+  margin-bottom: 0.5rem;
+}
+
+.forbidden-card .button {
+  margin-top: 1.5rem;
+  width: 100%;
+}

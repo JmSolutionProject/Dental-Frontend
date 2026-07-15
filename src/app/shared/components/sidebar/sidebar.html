@@ -1,1 +1,16 @@
-<p>sidebar works!</p>
+<aside class="sidebar">
+  <a class="brand" routerLink="/dashboard">
+    <span class="brand-mark">DC</span>
+    <span>
+      <strong>Dental Clinic</strong>
+    </span>
+  </a>
+
+  <nav class="nav" aria-label="Main navigation">
+    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="/patients" routerLinkActive="active">Patients</a>
+    <a routerLink="/appointments" routerLinkActive="active">Appointments</a>
+    <a routerLink="/agenda" routerLinkActive="active">Agenda</a>
+    <a routerLink="/messages" routerLinkActive="active">Messages</a>
+  </nav>
+</aside>

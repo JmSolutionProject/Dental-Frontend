@@ -1,0 +1,8 @@
+.message {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.message strong {
+  color: var(--color-text);
+}

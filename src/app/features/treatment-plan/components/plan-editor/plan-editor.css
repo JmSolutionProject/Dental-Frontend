@@ -1,0 +1,406 @@
+/* ---- Layout ---- */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ---- Status bar ---- */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface-alt, #f5f5f5);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cost-total {
+  font-size: 1.1rem;
+}
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badge--small {
+  font-size: 0.7rem;
+  padding: 0.1em 0.4em;
+}
+
+.badge[data-status='proposed'] {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.badge[data-status='in-progress'] {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.badge[data-status='completed'] {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge[data-status='cancelled'] {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.badge[data-status='planned'] {
+  background: #ede7f6;
+  color: #4527a0;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state h2 {
+  margin-bottom: 0.5rem;
+}
+
+/* ---- Plan list cards ---- */
+.plan-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  margin-bottom: 0.75rem;
+}
+
+.plan-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.plan-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.plan-summary h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.plan-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Phase cards ---- */
+.phase-card {
+  margin-bottom: 0.75rem;
+}
+
+.phase-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.phase-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.phase-summary h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.phase-order {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-right: 0.25rem;
+}
+
+.phase-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+.phase-desc {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.toggle-icon {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.phase-body {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+/* ---- Procedure table ---- */
+.proc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.proc-table th {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.proc-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--border-subtle, #f0f0f0);
+}
+
+/* ---- Add Phase form ---- */
+.add-phase-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.add-phase-form .input {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* ---- Catalogue section ---- */
+.catalogue-section {
+  margin-bottom: 1rem;
+}
+
+.catalogue-controls {
+  margin-bottom: 0.75rem;
+}
+
+.catalogue-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.catalogue-search {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.proc-fields {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.proc-fields label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.input--small {
+  width: 100px;
+}
+
+.input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: var(--surface, #fff);
+  color: var(--text, #222);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary, #1976d2);
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.add-proc-bar {
+  margin-bottom: 1rem;
+}
+
+/* ---- Catalogue grid ---- */
+.catalogue-grid {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.catalogue-group {
+  margin-bottom: 1rem;
+}
+
+.catalogue-group h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 0 0 0.4rem;
+  padding: 0;
+}
+
+.catalogue-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.35rem;
+}
+
+.catalogue-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.catalogue-item:hover {
+  border-color: var(--primary, #1976d2);
+  background: #f5f8fc;
+}
+
+.catalogue-item.selected {
+  border-color: var(--primary, #1976d2);
+  background: #e3f2fd;
+  box-shadow: 0 0 0 1px var(--primary, #1976d2);
+}
+
+.catalogue-item code {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cat-cost {
+  font-weight: 600;
+  color: var(--primary, #1976d2);
+  margin-top: 0.1rem;
+}
+
+/* ---- Diagnosis list ---- */
+.diagnosis-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.diagnosis-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-subtle, #f0f0f0);
+  font-size: 0.9rem;
+}
+
+/* ---- Buttons ---- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary, #1976d2);
+  border-radius: 6px;
+  background: var(--primary, #1976d2);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--primary, #1976d2);
+}
+
+.button--ghost:hover {
+  background: #f0f5ff;
+}
+
+.button--small {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.button--danger {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+/* ---- Utility ---- */
+.muted {
+  color: var(--text-muted, #888);
+}
+
+code {
+  background: var(--surface-alt, #f5f5f5);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.85em;
+}

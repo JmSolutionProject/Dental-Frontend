@@ -1,0 +1,89 @@
+<app-modal
+  title="Record Payment"
+  [visible]="visible()"
+  (close)="closeModal()"
+>
+  <div class="payment-form">
+    <!-- Invoice summary -->
+    <div class="summary">
+      <div class="summary-row">
+        <span class="label">Invoice</span>
+        <span class="value monospace">{{ invoice().id.slice(0, 8) }}…</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Total</span>
+        <span class="value">{{ invoice().total | currency }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Paid</span>
+        <span class="value">{{ paidSoFar() | currency }}</span>
+      </div>
+      <div class="summary-row summary-row--highlight">
+        <span class="label">Outstanding</span>
+        <span class="value">{{ outstanding() | currency }}</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+      <div class="field">
+        <label for="amount">Amount</label>
+        <div class="input-wrapper">
+          <span class="currency-prefix">$</span>
+          <input
+            id="amount"
+            type="number"
+            formControlName="amount"
+            step="0.01"
+            min="0.01"
+            [max]="outstanding()"
+          />
+        </div>
+        @if (form.get('amount')?.touched && form.get('amount')?.invalid) {
+          <span class="error">
+            @if (form.get('amount')?.hasError('required')) {
+              Amount is required.
+            } @else if (form.get('amount')?.hasError('min')) {
+              Amount must be greater than zero.
+            }
+          </span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="method">Payment Method</label>
+        <select id="method" formControlName="method">
+          @for (m of paymentMethods; track m) {
+            <option [value]="m">{{ methodLabel(m) }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="reference">Reference (optional)</label>
+        <input
+          id="reference"
+          type="text"
+          formControlName="reference"
+          placeholder="e.g. transaction ID, check number"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="button button--ghost"
+          type="button"
+          (click)="closeModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="button"
+          type="submit"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? 'Recording…' : 'Record Payment' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</app-modal>

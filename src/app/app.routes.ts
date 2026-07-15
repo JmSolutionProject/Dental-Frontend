@@ -54,6 +54,30 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'patients/:id/odontogram',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/odontogram/components/odontogram-chart/odontogram-chart'
+          ).then((m) => m.OdontogramChart),
+      },
+      {
+        path: 'patients/:id/treatment-plans',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/treatment-plan/components/plan-editor/plan-editor'
+          ).then((m) => m.PlanEditor),
+      },
+      {
+        path: 'patients/:id/treatment-plans/:planId',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/treatment-plan/components/plan-editor/plan-editor'
+          ).then((m) => m.PlanEditor),
+      },
+      {
         path: 'appointments',
         canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
         loadComponent: () =>
@@ -62,11 +86,19 @@ export const routes: Routes = [
           ).then((m) => m.AppointmentList),
       },
       {
+        path: 'appointments/calendar',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/appointments/components/calendar/calendar'
+          ).then((m) => m.Calendar),
+      },
+      {
         path: 'agenda',
         canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
         loadComponent: () =>
-          import('./features/agenda/components/agenda-view/agenda-view').then(
-            (m) => m.AgendaView,
+          import('./features/agenda/components/timeline/timeline').then(
+            (m) => m.Timeline,
           ),
       },
       {

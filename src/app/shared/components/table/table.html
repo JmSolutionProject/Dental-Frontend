@@ -1,1 +1,66 @@
-<p>table works!</p>
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        @for (col of columns(); track col.key) {
+          <th
+            [class.sortable]="col.sortable"
+            (click)="toggleSort(col)"
+          >
+            {{ col.label }}
+            @if (col.sortable && sortKey() === col.key) {
+              <span class="sort-indicator">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @if (data().length === 0) {
+        <tr>
+          <td [attr.colspan]="columns().length" class="empty-cell">
+            No data available.
+          </td>
+        </tr>
+      } @else {
+        @for (row of data(); track row) {
+          <tr class="data-row" (click)="onRowClick(row)">
+            @for (col of columns(); track col.key) {
+              <td>{{ getCellValue(row, col.key) }}</td>
+            }
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+
+  @if (totalItems() > pageSize()) {
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() <= 1"
+        (click)="goToPage(currentPage() - 1)"
+      >
+        Previous
+      </button>
+
+      @for (p of pageNumbers; track p) {
+        <button
+          class="page-btn"
+          [class.active]="p === currentPage()"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
+      }
+
+      <button
+        class="page-btn"
+        [disabled]="currentPage() >= totalPages"
+        (click)="goToPage(currentPage() + 1)"
+      >
+        Next
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,24 @@
+.tooth-svg {
+  cursor: pointer;
+  display: block;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.tooth-svg:hover {
+  transform: scale(1.12);
+  filter: brightness(0.95);
+}
+
+.tooth-svg:focus-visible {
+  outline: 2px solid var(--color-primary, #6366f1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tooth-svg--selected {
+  filter: drop-shadow(0 0 4px rgb(99 102 241 / 0.4));
+}
+
+.tooth-svg[data-condition='missing'] {
+  opacity: 0.4;
+}

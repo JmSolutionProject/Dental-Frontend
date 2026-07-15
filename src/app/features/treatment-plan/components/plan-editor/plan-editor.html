@@ -1,0 +1,312 @@
+<section class="page">
+  <!-- Header -->
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Treatment Plans</p>
+      @if (plan(); as p) {
+        <h1>{{ p.patientName ?? 'Patient' }} — Plan Details</h1>
+        <p class="muted">
+          Status: <span class="badge" [attr.data-status]="p.status">{{ planStatusLabel(p.status) }}</span>
+          &middot; Total: <strong>{{ totalCost() | currency }}</strong>
+        </p>
+      } @else if (!loading()) {
+        <h1>Treatment Plans</h1>
+      }
+    </div>
+    <div class="header-actions">
+      @if (editMode()) {
+        <button class="button button--ghost" type="button" (click)="backToList()">
+          &larr; Back to Plans
+        </button>
+      } @else {
+        <button
+          class="button"
+          type="button"
+          [disabled]="saving()"
+          (click)="createNewPlan()"
+        >
+          {{ saving() ? 'Creating…' : '+ New Plan' }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- ================================================================== -->
+  <!-- LIST MODE (no planId in route)                                     -->
+  <!-- ================================================================== -->
+  @if (!editMode()) {
+    @if (loading()) {
+      <article class="card"><p class="muted">Loading treatment plans…</p></article>
+    } @else if (plans().length === 0) {
+      <article class="card empty-state">
+        <h2>No treatment plans yet</h2>
+        <p class="muted">Create a treatment plan for this patient to get started.</p>
+      </article>
+    } @else {
+      @for (plan of plans(); track plan.id) {
+        <article class="card plan-card" (click)="viewPlan(plan)">
+          <div class="plan-summary">
+            <h3>Plan <code>#{{ plan.id.slice(0, 8) }}</code></h3>
+            <span class="badge" [attr.data-status]="plan.status">{{ planStatusLabel(plan.status) }}</span>
+          </div>
+          <div class="plan-meta">
+            <span>{{ plan.phases.length }} phase(s)</span>
+            <span class="muted">{{ plan.totalCost | currency }}</span>
+            <span class="muted">{{ plan.createdAt | date:'shortDate' }}</span>
+          </div>
+        </article>
+      }
+    }
+  }
+
+  <!-- ================================================================== -->
+  <!-- EDIT MODE (planId present in route)                                -->
+  <!-- ================================================================== -->
+  @if (editMode() && plan(); as p) {
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div class="status-actions">
+        <span class="muted">Transition:</span>
+        @for (next of availableTransitions(); track next) {
+          <button
+            class="button button--small button--ghost"
+            type="button"
+            [disabled]="saving()"
+            (click)="changePlanStatus(next)"
+          >
+            {{ planStatusLabel(next) }}
+          </button>
+        }
+      </div>
+      <div class="cost-total">
+        Total Cost: <strong>{{ totalCost() | currency }}</strong>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Phases                                                          -->
+    <!-- ============================================================== -->
+    <h2>Phases</h2>
+
+    @if (p.phases.length === 0) {
+      <article class="card empty-state">
+        <p class="muted">No phases yet. Add your first treatment phase below.</p>
+      </article>
+    }
+
+    @for (phase of p.phases; track phase.id) {
+      <article class="card phase-card">
+        <div class="phase-header" (click)="togglePhase(phase.id)">
+          <div class="phase-summary">
+            <h3>
+              <span class="phase-order">{{ phase.order }}.</span>
+              {{ phase.name }}
+            </h3>
+            <span class="badge" [attr.data-status]="phase.status">{{ procStatusLabel(phase.status) }}</span>
+          </div>
+          <div class="phase-meta">
+            <span>{{ phaseProcCount(phase) }} procedure(s)</span>
+            <span class="muted">{{ phaseTotalCost(phase) | currency }}</span>
+          </div>
+          @if (phase.description) {
+            <p class="muted phase-desc">{{ phase.description }}</p>
+          }
+          <span class="toggle-icon">{{ expandedPhaseId() === phase.id ? '▲' : '▼' }}</span>
+        </div>
+
+        @if (expandedPhaseId() === phase.id) {
+          <div class="phase-body">
+            <!-- Existing procedures -->
+            @if (phase.procedures.length === 0) {
+              <p class="muted">No procedures in this phase.</p>
+            } @else {
+              <table class="proc-table">
+                <thead>
+                  <tr>
+                    <th>Procedure</th>
+                    <th>Code</th>
+                    <th>Tooth</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (proc of phase.procedures; track proc.id) {
+                    <tr>
+                      <td>{{ proc.catalogItem.name }}</td>
+                      <td><code>{{ proc.catalogItem.code }}</code></td>
+                      <td>{{ proc.toothNumber ?? '—' }}</td>
+                      <td>{{ proc.cost | currency }}</td>
+                      <td>
+                        <span class="badge badge--small" [attr.data-status]="proc.status">
+                          {{ procStatusLabel(proc.status) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+      </article>
+    }
+
+    <!-- ============================================================== -->
+    <!-- Add Phase form                                                 -->
+    <!-- ============================================================== -->
+    @if (canAddPhase()) {
+      <article class="card">
+        <h3>Add Phase</h3>
+        <div class="add-phase-form">
+          <input
+            type="text"
+            class="input"
+            placeholder="Phase name (e.g. Restorative)"
+            [ngModel]="newPhaseName()"
+            (ngModelChange)="newPhaseName.set($event)"
+          />
+          <input
+            type="text"
+            class="input"
+            placeholder="Description (optional)"
+            [ngModel]="newPhaseDescription()"
+            (ngModelChange)="newPhaseDescription.set($event)"
+          />
+          <button
+            class="button"
+            type="button"
+            [disabled]="saving() || !newPhaseName().trim()"
+            (click)="addNewPhase()"
+          >
+            {{ saving() ? 'Adding…' : 'Add Phase' }}
+          </button>
+        </div>
+      </article>
+    }
+
+    <!-- ============================================================== -->
+    <!-- Catalogue picker + Add Procedure                               -->
+    <!-- ============================================================== -->
+    @if (canAddProcedure()) {
+      <article class="card catalogue-section">
+        <h3>Add Procedure</h3>
+
+        <!-- Phase selector (only shown when phases exist) -->
+        @if (p.phases.length > 0) {
+          <div class="catalogue-controls">
+            <label>
+              Target Phase:
+              <select class="input" [ngModel]="expandedPhaseId()" (ngModelChange)="expandedPhaseId.set($event)">
+                <option [ngValue]="null">-- Select a phase --</option>
+                @for (ph of p.phases; track ph.id) {
+                  <option [ngValue]="ph.id">{{ ph.order }}. {{ ph.name }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        }
+
+        <!-- Search -->
+        <input
+          type="text"
+          class="input catalogue-search"
+          placeholder="Search procedures…"
+          [ngModel]="catalogSearch()"
+          (ngModelChange)="catalogSearch.set($event)"
+        />
+
+        <!-- Tooth number -->
+        <div class="proc-fields">
+          <label>
+            Tooth #:
+            <input
+              type="number"
+              class="input input--small"
+              placeholder="e.g. 11"
+              [ngModel]="newProcTooth()"
+              (ngModelChange)="newProcTooth.set($event)"
+            />
+          </label>
+          <label>
+            Notes:
+            <input
+              type="text"
+              class="input"
+              placeholder="Optional notes"
+              [ngModel]="newProcNotes()"
+              (ngModelChange)="newProcNotes.set($event)"
+            />
+          </label>
+        </div>
+
+        <!-- Add button -->
+        <div class="add-proc-bar">
+          <button
+            class="button"
+            type="button"
+            [disabled]="!selectedCatalogId() || !expandedPhaseId() || saving()"
+            (click)="addProcedureToPhase(expandedPhaseId()!)"
+          >
+            {{ saving() ? 'Adding…' : 'Add to Phase' }}
+          </button>
+        </div>
+
+        <!-- Catalogue items grid -->
+        <div class="catalogue-grid">
+          @for (entry of catalogByCategory(); track entry[0]) {
+            <div class="catalogue-group">
+              <h4>{{ entry[0] }}</h4>
+              <div class="catalogue-items">
+                @for (item of entry[1]; track item.id) {
+                  <button
+                    class="catalogue-item"
+                    type="button"
+                    [class.selected]="selectedCatalogId() === item.id"
+                    (click)="selectedCatalogId.set(item.id)"
+                  >
+                    <strong>{{ item.name }}</strong>
+                    <code>{{ item.code }}</code>
+                    <span class="cat-cost">{{ item.defaultCost | currency }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </article>
+    }
+
+    <!-- ============================================================== -->
+    <!-- Linked Diagnoses                                               -->
+    <!-- ============================================================== -->
+    <article class="card">
+      <h3>Linked Diagnoses</h3>
+      @if (!hasDiagnostics()) {
+        <p class="muted">No diagnoses linked to this treatment plan.</p>
+      } @else {
+        <ul class="diagnosis-list">
+          @for (d of p.diagnostics; track d.id) {
+            <li>
+              <strong>Tooth {{ d.toothNumber }}</strong>: {{ d.condition }}
+              <span class="muted"> — {{ d.description }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <!-- ============================================================== -->
+    <!-- Plan metadata                                                  -->
+    <!-- ============================================================== -->
+    <article class="card muted">
+      <p>Plan ID: <code>{{ p.id }}</code></p>
+      <p>Created: {{ p.createdAt | date:'medium' }} &middot; Updated: {{ p.updatedAt | date:'medium' }}</p>
+    </article>
+  }
+
+  <!-- Loading -->
+  @if (loading() && editMode()) {
+    <article class="card"><p class="muted">Loading treatment plan…</p></article>
+  }
+</section>

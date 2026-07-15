@@ -11,6 +11,20 @@
     </div>
     <div class="header-actions">
       <a class="button button--ghost" routerLink="/patients">Back to list</a>
+      @if (patient(); as p) {
+        <a
+          class="button"
+          [routerLink]="['/patients', p.id, 'odontogram']"
+        >
+          Odontogram
+        </a>
+        <a
+          class="button"
+          [routerLink]="['/patients', p.id, 'treatment-plans']"
+        >
+          Treatment Plans
+        </a>
+      }
     </div>
   </header>
 

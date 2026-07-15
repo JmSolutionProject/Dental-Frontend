@@ -1,0 +1,110 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Patients</p>
+      <h1>Odontogram</h1>
+      @if (patientId()) {
+        <p class="muted">Patient ID: {{ patientId() }}</p>
+      }
+    </div>
+    <div class="header-actions">
+      <a class="button button--ghost" [routerLink]="['/patients', patientId()]">
+        Back to Patient
+      </a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <article class="card">
+      <p class="muted">Loading odontogram…</p>
+    </article>
+  } @else {
+    <!-- Quadrant toggle -->
+    <div class="quadrant-toggle">
+      <button
+        class="tab"
+        [class.tab--active]="quadrant() === 'adult'"
+        (click)="setQuadrant('adult')"
+      >
+        Adult (32 teeth)
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="quadrant() === 'child'"
+        (click)="setQuadrant('child')"
+      >
+        Child (20 teeth)
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      @for (condition of conditionOptions; track condition) {
+        <span class="legend-item">
+          <span class="legend-swatch" [attr.data-condition]="condition"></span>
+          {{ conditionLabel(condition) }}
+        </span>
+      }
+    </div>
+
+    <!-- Quadrant labels -->
+    <div class="quadrant-labels">
+      @for (ql of quadrantLabels(); track ql.label) {
+        <span class="quadrant-label">
+          {{ ql.label }}
+          <span class="muted">({{ ql.range }})</span>
+        </span>
+      }
+    </div>
+
+    <!-- FDI SVG Chart -->
+    <article class="card chart-container">
+      <div
+        class="tooth-grid"
+        [style.grid-template-columns]="'repeat(' + gridCols() + ', 1fr)'"
+      >
+        @for (item of positionedTeeth(); track item.tooth.fdiNumber) {
+          <app-tooth-chart
+            [tooth]="item.tooth"
+            [selected]="isSelected(item.tooth)"
+            [quadrant]="quadrant()"
+            (toothClick)="selectTooth($event)"
+          />
+        }
+      </div>
+    </article>
+
+    <!-- Condition editor popover -->
+    @if (selectedTooth(); as tooth) {
+      <article class="card condition-editor">
+        <div class="condition-editor-header">
+          <h2>Tooth {{ tooth.fdiNumber }}</h2>
+          <button
+            class="button button--ghost"
+            type="button"
+            (click)="closeEditor()"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="muted">Current: {{ conditionLabel(tooth.condition) }}</p>
+        <div class="condition-options">
+          @for (condition of conditionOptions; track condition) {
+            <button
+              class="condition-btn"
+              [class.condition-btn--active]="tooth.condition === condition"
+              [attr.data-condition]="condition"
+              [disabled]="saving()"
+              (click)="applyCondition(condition)"
+            >
+              {{ conditionLabel(condition) }}
+            </button>
+          }
+        </div>
+        @if (saving()) {
+          <p class="muted saving-msg">Saving…</p>
+        }
+      </article>
+    }
+  }
+</section>

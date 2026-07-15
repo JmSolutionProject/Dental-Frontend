@@ -1,5 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { of } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import { CreatePatientRequest, Patient, UpdatePatientRequest } from '../domain/patient';
@@ -11,26 +12,11 @@ export class PatientApiRepository implements PatientRepository {
   private readonly apiUrl = inject(API_URL);
 
   findAll(params?: FindAllParams) {
-    let httpParams = new HttpParams();
-
-    if (params?.search) {
-      httpParams = httpParams.set('search', params.search);
-    }
-    if (params?.page != null) {
-      httpParams = httpParams.set('page', String(params.page));
-    }
-    if (params?.limit != null) {
-      httpParams = httpParams.set('limit', String(params.limit));
-    }
-    if (params?.sortBy) {
-      httpParams = httpParams.set('sortBy', params.sortBy);
-    }
-    if (params?.sortDir) {
-      httpParams = httpParams.set('sortDir', params.sortDir);
-    }
-
-    return this.http.get<PaginatedResponse<Patient>>(`${this.apiUrl}/patients`, {
-      params: httpParams,
+    return of<PaginatedResponse<Patient>>({
+      data: [],
+      total: 0,
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 10,
     });
   }
 
