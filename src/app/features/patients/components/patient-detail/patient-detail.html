@@ -24,6 +24,18 @@
         >
           Treatment Plans
         </a>
+        <a
+          class="button"
+          [routerLink]="['/patients', p.id, 'billing']"
+        >
+          Billing
+        </a>
+        <a
+          class="button"
+          [routerLink]="['/patients', p.id, 'attachments']"
+        >
+          Attachments
+        </a>
       }
     </div>
   </header>

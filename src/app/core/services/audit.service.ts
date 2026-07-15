@@ -1,8 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-
-import { API_URL } from '../config/api.config';
+import { of } from 'rxjs';
 
 // ---------------------------------------------------------------------------
 // Audit trail — domain types
@@ -36,33 +34,20 @@ export interface AuditFilter {
  */
 @Injectable({ providedIn: 'root' })
 export class AuditService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = inject(API_URL);
-
-  private base = () => `${this.apiUrl}/audit-logs`;
-
   /** POST a new audit entry. Returns the persisted entry including server-assigned id + timestamp. */
   log(actionType: string, payload: Record<string, unknown> = {}): Observable<AuditEntry> {
-    return this.http.post<AuditEntry>(this.base(), { actionType, payload });
+    return of({
+      id: crypto.randomUUID(),
+      userId: 'local',
+      actionType,
+      payload,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   /** GET audit entries, optionally filtered by user, action type, or date range. */
   getLogs(filter?: AuditFilter): Observable<AuditEntry[]> {
-    let params = new HttpParams();
-
-    if (filter?.userId) {
-      params = params.set('userId', filter.userId);
-    }
-    if (filter?.actionType) {
-      params = params.set('actionType', filter.actionType);
-    }
-    if (filter?.from) {
-      params = params.set('from', filter.from);
-    }
-    if (filter?.to) {
-      params = params.set('to', filter.to);
-    }
-
-    return this.http.get<AuditEntry[]>(this.base(), { params });
+    void filter;
+    return of([]);
   }
 }

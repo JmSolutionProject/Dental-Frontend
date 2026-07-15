@@ -11,6 +11,8 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
 
@@ -23,6 +25,19 @@ import {
 } from '../../domain/invoice';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Modal } from '../../../../shared/components/modal/modal';
+
+function outstandingValidator(getOutstanding: () => number) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (value == null || value === '') return null;
+    const num = Number(value);
+    if (isNaN(num)) return null;
+    if (num <= 0) return null;
+    return num > getOutstanding()
+      ? { exceedsOutstanding: { max: getOutstanding(), actual: num } }
+      : null;
+  };
+}
 
 @Component({
   selector: 'app-payment-modal',
@@ -44,7 +59,14 @@ export class PaymentModal {
   readonly submitting = signal(false);
 
   readonly form: FormGroup = this.fb.group({
-    amount: [0, [Validators.required, Validators.min(0.01)]],
+    amount: [
+      0,
+      [
+        Validators.required,
+        Validators.min(0.01),
+        outstandingValidator(() => this.invoice().outstanding),
+      ],
+    ],
     method: ['cash' as PaymentMethod, [Validators.required]],
     reference: [''],
   });
@@ -75,12 +97,7 @@ export class PaymentModal {
       .execute(this.invoice().id, data)
       .pipe(
         take(1),
-        catchError((err) => {
-          this.toast.error(
-            err?.error?.message ?? 'Failed to record payment.',
-          );
-          return of(null);
-        }),
+        catchError(() => of(null)),
         finalize(() => this.submitting.set(false)),
       )
       .subscribe((updated) => {

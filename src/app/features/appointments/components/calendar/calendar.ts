@@ -356,15 +356,17 @@ export class Calendar {
           dentistName: formVal.dentistName || undefined,
         })
         .pipe(
-          catchError((err) => {
+          catchError(() => {
             this.toast.error('Failed to update appointment.');
-            throw err;
+            return of(null);
           }),
         )
-        .subscribe(() => {
-          this.toast.success('Appointment updated.');
-          this.closeModal();
-          this.loadAppointments();
+        .subscribe((appointment) => {
+          if (appointment) {
+            this.toast.success('Appointment updated.');
+            this.closeModal();
+            this.loadAppointments();
+          }
         });
       return;
     }
@@ -398,13 +400,15 @@ export class Calendar {
           if (err.message !== 'Slot unavailable') {
             this.toast.error('Failed to create appointment.');
           }
-          throw err;
+          return of(null);
         }),
       )
-      .subscribe(() => {
-        this.toast.success('Appointment created.');
-        this.closeModal();
-        this.loadAppointments();
+      .subscribe((appointment) => {
+        if (appointment) {
+          this.toast.success('Appointment created.');
+          this.closeModal();
+          this.loadAppointments();
+        }
       });
   }
 
@@ -431,16 +435,18 @@ export class Calendar {
 
     this.cancelAppointment
       .execute(target.id, reason)
-      .pipe(
-        catchError((err) => {
-          this.toast.error('Failed to cancel appointment.');
-          throw err;
-        }),
-      )
-      .subscribe(() => {
-        this.toast.success('Appointment cancelled.');
-        this.closeCancelModal();
-        this.loadAppointments();
+        .pipe(
+          catchError(() => {
+            this.toast.error('Failed to cancel appointment.');
+            return of(null);
+          }),
+        )
+      .subscribe((appointment) => {
+        if (appointment) {
+          this.toast.success('Appointment cancelled.');
+          this.closeCancelModal();
+          this.loadAppointments();
+        }
       });
   }
 

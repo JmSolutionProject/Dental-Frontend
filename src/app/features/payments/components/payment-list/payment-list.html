@@ -1,0 +1,29 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Payments</p>
+      <h1>Payment records</h1>
+      <p class="muted">Payments loaded from the backend payment endpoint.</p>
+    </div>
+  </header>
+
+  @if (payments$ | async; as result) {
+    <div class="payment-grid">
+      @for (payment of result.data; track payment.id) {
+        <article class="card payment-card">
+          <div>
+            <strong>{{ payment.amount | currency }}</strong>
+            <span>{{ payment.methodName }} · {{ payment.status }}</span>
+          </div>
+          <p>{{ payment.cashierName }}</p>
+          <small>{{ payment.paidAt | date: 'medium' }} · {{ payment.reference || 'No reference' }}</small>
+        </article>
+      } @empty {
+        <article class="card payment-card">
+          <strong>No payments returned by the backend yet.</strong>
+          <span>Register payments from the backend once persistence is complete.</span>
+        </article>
+      }
+    </div>
+  }
+</section>

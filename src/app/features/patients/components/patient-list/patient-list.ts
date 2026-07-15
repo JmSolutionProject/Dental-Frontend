@@ -52,9 +52,9 @@ export class PatientList {
   readonly createForm: FormGroup = this.fb.group({
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
-    documentNumber: ['', [Validators.required]],
+    documentNumber: [''],
     phone: ['', [Validators.required]],
-    email: [''],
+    allergies: [''],
     birthDate: [''],
   });
 
@@ -161,12 +161,14 @@ export class PatientList {
     this.creating.set(true);
     const raw = this.createForm.getRawValue();
     const request: CreatePatientRequest = {
-      firstName: raw.firstName,
-      lastName: raw.lastName,
-      documentNumber: raw.documentNumber,
-      phone: raw.phone,
-      email: raw.email || undefined,
+      firstName: raw.firstName.trim(),
+      lastName: raw.lastName.trim(),
+      documentNumber: raw.documentNumber?.trim() || '',
+      phone: raw.phone.trim(),
       birthDate: raw.birthDate || undefined,
+      medicalHistory: {
+        allergies: this.parseList(raw.allergies),
+      },
     };
 
     this.createPatient
@@ -184,7 +186,19 @@ export class PatientList {
           this.toast.success('Patient created successfully.');
           this.showCreateModal.set(false);
           this.loadPatients();
+          return;
         }
+
+        this.toast.info('The backend accepted the request, but patient creation is still pending.');
+        this.showCreateModal.set(false);
+        this.loadPatients();
       });
+  }
+
+  private parseList(value: string): string[] {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 }

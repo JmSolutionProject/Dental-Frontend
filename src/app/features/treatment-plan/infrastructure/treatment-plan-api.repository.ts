@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable, of, throwError } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import {
@@ -16,41 +16,62 @@ import {
 } from '../domain/treatment-plan';
 import { TreatmentPlanRepository } from '../domain/treatment-plan.repository';
 
+interface CatalogServiceResponse {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  name: string;
+  description: string;
+  status: 'active' | 'inactive';
+  price: number;
+}
+
+interface PaginatedCatalogServicesResponse {
+  data: CatalogServiceResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TreatmentPlanApiRepository implements TreatmentPlanRepository {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
 
-  private base = () => `${this.apiUrl}/treatment-plans`;
-
   // ---- Plan CRUD -----------------------------------------------------------
 
   create(data: CreatePlanRequest): Observable<TreatmentPlan> {
-    return this.http.post<TreatmentPlan>(this.base(), data);
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   findById(id: string): Observable<TreatmentPlan> {
-    return this.http.get<TreatmentPlan>(`${this.base()}/${id}`);
+    void id;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   findByPatientId(patientId: string): Observable<TreatmentPlan[]> {
-    return this.http.get<TreatmentPlan[]>(this.base(), {
-      params: { patientId },
-    });
+    void patientId;
+    return of([]);
   }
 
   update(id: string, data: Partial<TreatmentPlan>): Observable<TreatmentPlan> {
-    return this.http.put<TreatmentPlan>(`${this.base()}/${id}`, data);
+    void id;
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base()}/${id}`);
+    void id;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   // ---- Phases --------------------------------------------------------------
 
   addPhase(planId: string, data: AddPhaseRequest): Observable<TreatmentPlan> {
-    return this.http.post<TreatmentPlan>(`${this.base()}/${planId}/phases`, data);
+    void planId;
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   // ---- Procedures ----------------------------------------------------------
@@ -60,10 +81,10 @@ export class TreatmentPlanApiRepository implements TreatmentPlanRepository {
     phaseId: string,
     data: AddProcedureRequest,
   ): Observable<TreatmentPlan> {
-    return this.http.post<TreatmentPlan>(
-      `${this.base()}/${planId}/phases/${phaseId}/procedures`,
-      data,
-    );
+    void planId;
+    void phaseId;
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   updateProcedure(
@@ -72,10 +93,11 @@ export class TreatmentPlanApiRepository implements TreatmentPlanRepository {
     procedureId: string,
     data: Partial<Procedure>,
   ): Observable<TreatmentPlan> {
-    return this.http.put<TreatmentPlan>(
-      `${this.base()}/${planId}/phases/${phaseId}/procedures/${procedureId}`,
-      data,
-    );
+    void planId;
+    void phaseId;
+    void procedureId;
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   removeProcedure(
@@ -83,9 +105,10 @@ export class TreatmentPlanApiRepository implements TreatmentPlanRepository {
     phaseId: string,
     procedureId: string,
   ): Observable<TreatmentPlan> {
-    return this.http.delete<TreatmentPlan>(
-      `${this.base()}/${planId}/phases/${phaseId}/procedures/${procedureId}`,
-    );
+    void planId;
+    void phaseId;
+    void procedureId;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   // ---- Diagnostics ---------------------------------------------------------
@@ -94,25 +117,38 @@ export class TreatmentPlanApiRepository implements TreatmentPlanRepository {
     planId: string,
     data: LinkDiagnosisRequest,
   ): Observable<TreatmentPlan> {
-    return this.http.post<TreatmentPlan>(
-      `${this.base()}/${planId}/diagnostics`,
-      data,
-    );
+    void planId;
+    void data;
+    return throwError(() => new Error('Treatment plan endpoint is not available in the backend yet.'));
   }
 
   getDiagnoses(patientId: string): Observable<Diagnosis[]> {
-    return this.http.get<Diagnosis[]>(`${this.apiUrl}/diagnoses`, {
-      params: { patientId },
-    });
+    void patientId;
+    return of([]);
   }
 
   addDiagnosis(data: DiagnosisRequest): Observable<Diagnosis> {
-    return this.http.post<Diagnosis>(`${this.apiUrl}/diagnoses`, data);
+    void data;
+    return throwError(() => new Error('Diagnosis endpoint is not available in the backend yet.'));
   }
 
   // ---- Catalogue -----------------------------------------------------------
 
   getCatalog(): Observable<CatalogItem[]> {
-    return this.http.get<CatalogItem[]>(`${this.apiUrl}/procedure-catalog`);
+    return this.http
+      .get<PaginatedCatalogServicesResponse>(`${this.apiUrl}/catalog/services`, {
+        params: { page: 1, limit: 100 },
+      })
+      .pipe(
+        map((response) =>
+          response.data.map((service) => ({
+            id: service.id,
+            code: service.id,
+            name: service.name,
+            defaultCost: service.price,
+            category: 'other' as const,
+          })),
+        ),
+      );
   }
 }

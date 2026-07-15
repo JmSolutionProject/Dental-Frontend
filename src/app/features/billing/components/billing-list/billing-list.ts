@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { take, catchError, of, finalize, tap } from 'rxjs';
+import { take, catchError, of, finalize, EMPTY } from 'rxjs';
 
 import { GetPatientInvoicesUseCase } from '../../application/get-patient-invoices.usecase';
 import { ConvertToInvoiceUseCase } from '../../application/convert-to-invoice.usecase';
+import { VoidInvoiceUseCase } from '../../application/void-invoice.usecase';
+import { AuditService } from '../../../../core/services/audit.service';
 import {
   Invoice,
   invoiceStatusLabel,
@@ -26,6 +28,8 @@ export class BillingList implements OnInit {
   private readonly router = inject(Router);
   private readonly getInvoices = inject(GetPatientInvoicesUseCase);
   private readonly convertToInvoice = inject(ConvertToInvoiceUseCase);
+  private readonly voidInvoiceUseCase = inject(VoidInvoiceUseCase);
+  private readonly audit = inject(AuditService);
   private readonly toast = inject(ToastService);
 
   readonly invoices = signal<Invoice[]>([]);
@@ -36,10 +40,18 @@ export class BillingList implements OnInit {
   readonly paymentModalVisible = signal(false);
   readonly selectedInvoice = signal<Invoice | null>(null);
 
+  // Invoice detail panel
+  readonly detailInvoice = signal<Invoice | null>(null);
+
   // Convert confirmation
   readonly convertModalVisible = signal(false);
   readonly convertingInvoiceId = signal<string | null>(null);
   readonly converting = signal(false);
+
+  // Void confirmation
+  readonly voidModalVisible = signal(false);
+  readonly voidingInvoiceId = signal<string | null>(null);
+  readonly voiding = signal(false);
 
   ngOnInit(): void {
     this.route.paramMap.pipe(take(1)).subscribe((params) => {
@@ -60,10 +72,7 @@ export class BillingList implements OnInit {
       .execute(patientId)
       .pipe(
         take(1),
-        catchError(() => {
-          this.toast.error('Failed to load invoices.');
-          return of([]);
-        }),
+        catchError(() => of([])),
         finalize(() => this.loading.set(false)),
       )
       .subscribe((list) => this.invoices.set(list));
@@ -95,12 +104,31 @@ export class BillingList implements OnInit {
     );
   }
 
+  canVoid(invoice: Invoice): boolean {
+    return isValidInvoiceTransition(invoice.status, 'void');
+  }
+
+  // ---- Audit helper ----------------------------------------------------------
+
+  private auditLog(
+    action: string,
+    invoiceId: string,
+    extra: Record<string, unknown> = {},
+  ): void {
+    this.audit
+      .log(action, { invoiceId, ...extra })
+      .pipe(catchError(() => EMPTY))
+      .subscribe();
+  }
+
   // ---- Actions --------------------------------------------------------------
 
   viewInvoice(invoice: Invoice): void {
-    const pid = this.patientId();
-    if (!pid) return;
-    this.router.navigate(['/patients', pid, 'billing', invoice.id]);
+    this.detailInvoice.set(invoice);
+  }
+
+  closeDetail(): void {
+    this.detailInvoice.set(null);
   }
 
   openConvertConfirm(invoice: Invoice): void {
@@ -122,10 +150,7 @@ export class BillingList implements OnInit {
       .execute(id)
       .pipe(
         take(1),
-        catchError(() => {
-          this.toast.error('Failed to convert quote to invoice.');
-          return of(null);
-        }),
+        catchError(() => of(null)),
         finalize(() => {
           this.converting.set(false);
           this.convertModalVisible.set(false);
@@ -136,6 +161,7 @@ export class BillingList implements OnInit {
         if (updated) {
           this.toast.success('Quote converted to invoice.');
           this.replaceInList(updated);
+          this.auditLog('billing.convert', id);
         }
       });
   }
@@ -153,6 +179,44 @@ export class BillingList implements OnInit {
   onPaymentRecorded(invoice: Invoice): void {
     this.replaceInList(invoice);
     this.closePaymentModal();
+    this.auditLog('billing.payment', invoice.id);
+  }
+
+  // ---- Void ------------------------------------------------------------------
+
+  openVoidConfirm(invoice: Invoice): void {
+    this.voidingInvoiceId.set(invoice.id);
+    this.voidModalVisible.set(true);
+  }
+
+  cancelVoid(): void {
+    this.voidModalVisible.set(false);
+    this.voidingInvoiceId.set(null);
+  }
+
+  confirmVoid(): void {
+    const id = this.voidingInvoiceId();
+    if (!id) return;
+
+    this.voiding.set(true);
+    this.voidInvoiceUseCase
+      .execute(id)
+      .pipe(
+        take(1),
+        catchError(() => of(null)),
+        finalize(() => {
+          this.voiding.set(false);
+          this.voidModalVisible.set(false);
+          this.voidingInvoiceId.set(null);
+        }),
+      )
+      .subscribe((updated) => {
+        if (updated) {
+          this.toast.success('Invoice voided.');
+          this.replaceInList(updated);
+          this.auditLog('billing.void', id);
+        }
+      });
   }
 
   // ---- Internal helpers -----------------------------------------------------
@@ -161,6 +225,10 @@ export class BillingList implements OnInit {
     this.invoices.update((list) =>
       list.map((inv) => (inv.id === updated.id ? updated : inv)),
     );
+    const current = this.detailInvoice();
+    if (current?.id === updated.id) {
+      this.detailInvoice.set(updated);
+    }
   }
 
   refresh(): void {

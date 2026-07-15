@@ -102,12 +102,52 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'patients/:id/billing',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/billing/components/billing-list/billing-list'
+          ).then((m) => m.BillingList),
+      },
+      {
+        path: 'patients/:id/billing/new',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/billing/components/quote-form/quote-form'
+          ).then((m) => m.QuoteForm),
+      },
+      {
+        path: 'patients/:id/attachments',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/attachments/components/attachment-list/attachment-list'
+          ).then((m) => m.AttachmentList),
+      },
+      {
         path: 'messages',
         canActivate: [roleGuard(['admin', 'dentist'])],
         loadComponent: () =>
           import(
             './features/messages/components/message-list/message-list'
           ).then((m) => m.MessageList),
+      },
+      {
+        path: 'payments',
+        canActivate: [roleGuard(['admin', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/payments/components/payment-list/payment-list'
+          ).then((m) => m.PaymentList),
+      },
+      {
+        path: 'reports',
+        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        loadComponent: () =>
+          import(
+            './features/reports/components/report-overview/report-overview'
+          ).then((m) => m.ReportOverview),
       },
     ],
   },

@@ -21,9 +21,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           void router.navigate(['/forbidden']);
         } else {
           const message =
-            error.error?.message ||
-            error.message ||
-            'An unexpected error occurred.';
+            error.status >= 500
+              ? 'A server error occurred. Please try again later.'
+              : 'An unexpected error occurred. Please try again.';
           toast.error(message);
         }
       } else {

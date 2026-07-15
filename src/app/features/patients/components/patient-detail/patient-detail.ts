@@ -202,9 +202,11 @@ export class PatientDetail {
           this.showDeleteModal.set(false);
         }),
       )
-      .subscribe(() => {
-        this.toast.success('Patient deleted successfully.');
-        this.router.navigate(['/patients']);
+      .subscribe((deleted) => {
+        if (deleted) {
+          this.toast.success('Patient deleted successfully.');
+          this.router.navigate(['/patients']);
+        }
       });
   }
 }

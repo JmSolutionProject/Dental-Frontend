@@ -1,0 +1,59 @@
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 640px;
+  min-width: 300px;
+}
+
+/* ---- Image lightbox ------------------------------------------------------- */
+
+.preview-image-wrapper {
+  align-items: center;
+  background: #000;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: center;
+  max-height: 70vh;
+  overflow: hidden;
+}
+
+.preview-image {
+  max-height: 70vh;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* ---- PDF fallback --------------------------------------------------------- */
+
+.preview-pdf {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.preview-pdf-icon {
+  font-size: 3rem;
+}
+
+.preview-pdf p {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* ---- Metadata footer ------------------------------------------------------ */
+
+.preview-meta {
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.75rem;
+}
+
+.preview-meta .muted {
+  font-size: var(--text-xs);
+}

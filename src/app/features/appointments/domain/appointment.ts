@@ -31,7 +31,7 @@ export interface CalendarSlot {
 
 export interface AvailabilityResult {
   available: boolean;
-  conflict?: Appointment;
+  conflicts: Appointment[];
 }
 
 export interface Dentist {

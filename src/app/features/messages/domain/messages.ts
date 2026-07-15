@@ -10,4 +10,28 @@ export interface Message {
 }
 
 export type MessageChannel = 'email' | 'sms' | 'whatsapp';
-export type MessageStatus = 'draft' | 'sent' | 'failed';
+export type MessageStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
+
+export interface PaginatedMessagesResponse {
+  data: Message[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface FindMessagesParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface CreateMessageRequest {
+  templateId: string;
+  patientId: string;
+  appointmentId?: string;
+  statusId: string;
+  scheduledAt: string;
+  sentAt?: string;
+  error?: string;
+}
+
+export type UpdateMessageRequest = Partial<CreateMessageRequest>;

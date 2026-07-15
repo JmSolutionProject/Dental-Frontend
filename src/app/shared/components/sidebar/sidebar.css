@@ -103,7 +103,7 @@
   }
 
   .nav {
-    grid-template-columns: repeat(5, minmax(max-content, 1fr));
+    grid-template-columns: repeat(7, minmax(max-content, 1fr));
     overflow-x: auto;
   }
 

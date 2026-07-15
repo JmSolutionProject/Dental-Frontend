@@ -24,6 +24,8 @@ export type CreatePatientRequest = Omit<
   'id' | 'status' | 'medicalHistory' | 'notes'
 > & {
   status?: PatientStatus;
+  medicalHistory?: Partial<MedicalHistory>;
+  notes?: string;
 };
 
 export type UpdatePatientRequest = Partial<Omit<Patient, 'id'>>;

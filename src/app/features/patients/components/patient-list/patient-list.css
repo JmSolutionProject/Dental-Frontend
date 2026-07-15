@@ -48,7 +48,80 @@
 
 .create-form {
   display: grid;
-  gap: 1rem;
+  gap: 1.1rem;
+  min-width: min(100%, 34rem);
+}
+
+.create-form-intro {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(20, 184, 166, 0.22);
+  border-radius: 1rem;
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.create-form-icon {
+  align-items: center;
+  background: var(--color-primary);
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 1.1rem;
+  font-weight: 700;
+  height: 2.35rem;
+  justify-content: center;
+  width: 2.35rem;
+}
+
+.create-form-intro strong,
+.create-section h3 {
+  color: var(--color-text);
+}
+
+.create-form-intro p,
+.create-hint {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  margin: 0.2rem 0 0;
+}
+
+.create-section {
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.create-section h3 {
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.create-section--clinical {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.create-section--optional {
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.create-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.create-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.create-form textarea {
+  resize: vertical;
 }
 
 .create-actions {
@@ -56,4 +129,18 @@
   gap: 0.5rem;
   justify-content: flex-end;
   margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .create-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .create-actions {
+    flex-direction: column-reverse;
+  }
+
+  .create-actions .button {
+    width: 100%;
+  }
 }

@@ -1,3 +1,8 @@
+.message-grid {
+  display: grid;
+  gap: 1rem;
+}
+
 .message {
   display: grid;
   gap: 0.4rem;
@@ -5,4 +10,10 @@
 
 .message strong {
   color: var(--color-text);
+}
+
+.message span,
+.message small,
+.message p {
+  color: var(--color-muted);
 }

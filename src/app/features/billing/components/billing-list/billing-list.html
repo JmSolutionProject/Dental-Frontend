@@ -85,6 +85,15 @@
                       Record Payment
                     </button>
                   }
+                  @if (canVoid(inv)) {
+                    <button
+                      class="button button--sm button--ghost button--danger"
+                      type="button"
+                      (click)="openVoidConfirm(inv)"
+                    >
+                      Void
+                    </button>
+                  }
                 </td>
               </tr>
             }
@@ -92,6 +101,113 @@
         </table>
       </div>
     </article>
+
+    @if (detailInvoice(); as inv) {
+      <article class="card detail-panel">
+        <div class="detail-header">
+          <h2>Invoice {{ inv.id.slice(0, 8) }}…</h2>
+          <button class="button button--ghost button--sm" type="button" (click)="closeDetail()">
+            Close
+          </button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-field">
+            <span class="label">Status</span>
+            <span class="badge" [class]="statusClass(inv.status)">{{ statusLabel(inv.status) }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="label">Created</span>
+            <span>{{ inv.createdAt | date: 'mediumDate' }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="label">Total</span>
+            <span class="value">{{ inv.total | currency }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="label">Outstanding</span>
+            <span class="value">{{ inv.outstanding | currency }}</span>
+          </div>
+        </div>
+
+        @if (inv.items.length > 0) {
+          <h3>Line Items</h3>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Tooth</th>
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of inv.items; track item.id) {
+                  <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.toothNumber ?? '—' }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unitPrice | currency }}</td>
+                    <td>{{ item.total | currency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (inv.payments.length > 0) {
+          <h3>Payments</h3>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of inv.payments; track payment.id) {
+                  <tr>
+                    <td>{{ payment.createdAt | date: 'shortDate' }}</td>
+                    <td>{{ payment.amount | currency }}</td>
+                    <td>{{ payment.method }}</td>
+                    <td>{{ payment.reference ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (inv.notes) {
+          <h3>Notes</h3>
+          <p class="muted">{{ inv.notes }}</p>
+        }
+
+        <div class="detail-actions">
+          @if (canConvert(inv)) {
+            <button class="button button--sm" type="button" (click)="openConvertConfirm(inv)">
+              Convert to Invoice
+            </button>
+          }
+          @if (canPay(inv)) {
+            <button class="button button--sm" type="button" (click)="openPaymentModal(inv)">
+              Record Payment
+            </button>
+          }
+          @if (canVoid(inv)) {
+            <button class="button button--sm button--ghost button--danger" type="button" (click)="openVoidConfirm(inv)">
+              Void
+            </button>
+          }
+        </div>
+      </article>
+    }
   }
 </section>
 
@@ -135,3 +251,33 @@
     (paymentRecorded)="onPaymentRecorded($event)"
   />
 }
+
+<!-- Void confirmation modal -->
+<app-modal
+  title="Void Invoice"
+  [visible]="voidModalVisible()"
+  (close)="cancelVoid()"
+>
+  <div class="confirm-dialog">
+    <p>
+      Are you sure you want to void this invoice? This action cannot be undone.
+    </p>
+    <div class="confirm-actions">
+      <button
+        class="button button--ghost"
+        type="button"
+        (click)="cancelVoid()"
+      >
+        Cancel
+      </button>
+      <button
+        class="button"
+        type="button"
+        [disabled]="voiding()"
+        (click)="confirmVoid()"
+      >
+        {{ voiding() ? 'Voiding…' : 'Void Invoice' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

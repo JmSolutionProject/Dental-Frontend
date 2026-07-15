@@ -189,3 +189,72 @@
   padding: 0.25rem 0.625rem;
   font-size: 0.8125rem;
 }
+
+.button--danger {
+  color: var(--color-danger, #dc2626);
+}
+
+.button--danger:hover {
+  background: var(--color-danger-bg, #fee2e2);
+}
+
+/* ---- Detail panel ---- */
+.detail-panel {
+  margin-top: 1rem;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.detail-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.detail-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.detail-field .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted, #6b7280);
+}
+
+.detail-field .value {
+  font-weight: 600;
+}
+
+.detail-panel h3 {
+  margin: 1.25rem 0 0.625rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted, #6b7280);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.muted {
+  color: var(--color-muted, #6b7280);
+}

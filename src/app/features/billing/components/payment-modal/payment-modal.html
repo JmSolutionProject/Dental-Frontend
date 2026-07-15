@@ -44,6 +44,8 @@
               Amount is required.
             } @else if (form.get('amount')?.hasError('min')) {
               Amount must be greater than zero.
+            } @else if (form.get('amount')?.hasError('exceedsOutstanding')) {
+              Amount cannot exceed the outstanding balance.
             }
           </span>
         }

@@ -152,15 +152,17 @@ export class Timeline {
     this.cancelAppointment
       .execute(target.id, reason)
       .pipe(
-        catchError((err) => {
+        catchError(() => {
           this.toast.error('Failed to cancel appointment.');
-          throw err;
+          return of(null);
         }),
       )
-      .subscribe(() => {
-        this.toast.success('Appointment cancelled.');
-        this.closeCancel();
-        this.loadAppointments();
+      .subscribe((appointment) => {
+        if (appointment) {
+          this.toast.success('Appointment cancelled.');
+          this.closeCancel();
+          this.loadAppointments();
+        }
       });
   }
 }

@@ -52,34 +52,61 @@
 
   <!-- Create patient modal -->
   <app-modal
-    title="Add Patient"
+    title="Add patient"
     [visible]="showCreateModal()"
     (close)="closeCreateModal()"
   >
     <form [formGroup]="createForm" class="create-form" (ngSubmit)="submitCreate()">
-      <app-form-field label="First Name" [control]="createForm.get('firstName')!">
-        <input type="text" formControlName="firstName" />
-      </app-form-field>
+      <div class="create-form-intro">
+        <span class="create-form-icon">+</span>
+        <div>
+          <strong>New clinical record</strong>
+          <p>Only fields supported by the current backend create DTO are sent.</p>
+        </div>
+      </div>
 
-      <app-form-field label="Last Name" [control]="createForm.get('lastName')!">
-        <input type="text" formControlName="lastName" />
-      </app-form-field>
+      <section class="create-section">
+        <h3>Identity</h3>
+        <div class="create-grid create-grid--two">
+          <app-form-field label="First name" [control]="createForm.get('firstName')!">
+            <input type="text" formControlName="firstName" autocomplete="given-name" />
+          </app-form-field>
 
-      <app-form-field label="Document Number" [control]="createForm.get('documentNumber')!">
-        <input type="text" formControlName="documentNumber" />
-      </app-form-field>
+          <app-form-field label="Last name" [control]="createForm.get('lastName')!">
+            <input type="text" formControlName="lastName" autocomplete="family-name" />
+          </app-form-field>
+        </div>
 
-      <app-form-field label="Phone" [control]="createForm.get('phone')!">
-        <input type="text" formControlName="phone" />
-      </app-form-field>
+        <div class="create-grid create-grid--two">
+          <app-form-field label="WhatsApp phone" [control]="createForm.get('phone')!">
+            <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+51999999999" />
+          </app-form-field>
 
-      <app-form-field label="Email" [control]="createForm.get('email')!">
-        <input type="email" formControlName="email" />
-      </app-form-field>
+          <app-form-field label="Birth date" [control]="createForm.get('birthDate')!">
+            <input type="date" formControlName="birthDate" />
+          </app-form-field>
+        </div>
+      </section>
 
-      <app-form-field label="Birth Date" [control]="createForm.get('birthDate')!">
-        <input type="date" formControlName="birthDate" />
-      </app-form-field>
+      <section class="create-section create-section--clinical">
+        <h3>Clinical alerts</h3>
+        <app-form-field label="Critical allergies" [control]="createForm.get('allergies')!">
+          <textarea
+            formControlName="allergies"
+            rows="3"
+            placeholder="Penicillin, latex, anesthesia reaction"
+          ></textarea>
+        </app-form-field>
+        <p class="create-hint">Separate multiple allergies with commas. This maps to <code>alergiasCriticas</code>.</p>
+      </section>
+
+      <section class="create-section create-section--optional">
+        <h3>Local reference</h3>
+        <app-form-field label="Document number" [control]="createForm.get('documentNumber')!">
+          <input type="text" formControlName="documentNumber" autocomplete="off" />
+        </app-form-field>
+        <p class="create-hint">The backend create DTO does not persist this field yet.</p>
+      </section>
 
       <div class="create-actions">
         <button

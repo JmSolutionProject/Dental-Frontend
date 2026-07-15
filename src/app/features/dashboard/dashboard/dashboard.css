@@ -21,3 +21,40 @@
   letter-spacing: var(--tracking-tight);
   line-height: 1;
 }
+
+/* ---- KPI sections --------------------------------------------------------- */
+
+.kpi-section {
+  margin-bottom: 1.5rem;
+}
+
+.kpi-section-title {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+/* ---- Grid variants -------------------------------------------------------- */
+
+.grid--4col {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* ---- Revenue accent ------------------------------------------------------- */
+
+.metric--revenue strong {
+  color: var(--color-primary, #1a73e8);
+}
+
+.metric--outstanding strong {
+  color: var(--color-danger, #d93025);
+}
+
+/* ---- Clinical accent ------------------------------------------------------ */
+
+.metric--clinical strong {
+  color: var(--color-accent, #0d9488);
+}
