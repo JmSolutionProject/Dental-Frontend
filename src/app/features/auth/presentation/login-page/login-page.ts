@@ -6,13 +6,32 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroArrowRight,
+  heroEnvelope,
+  heroExclamationCircle,
+  heroEye,
+  heroEyeSlash,
+  heroLockClosed,
+} from '@ng-icons/heroicons/outline';
 
 import { AuthService } from '../../../../core/services/auth';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, FormField],
+  imports: [ReactiveFormsModule, FormField, NgIcon],
+  providers: [
+    provideIcons({
+      heroArrowRight,
+      heroEnvelope,
+      heroExclamationCircle,
+      heroEye,
+      heroEyeSlash,
+      heroLockClosed,
+    }),
+  ],
   templateUrl: './login-page.html',
   styleUrl: './login-page.css',
 })

@@ -97,8 +97,8 @@ export const routes: Routes = [
         path: 'agenda',
         canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
         loadComponent: () =>
-          import('./features/agenda/components/timeline/timeline').then(
-            (m) => m.Timeline,
+          import('./features/appointments/components/calendar/calendar').then(
+            (m) => m.Calendar,
           ),
       },
       {
