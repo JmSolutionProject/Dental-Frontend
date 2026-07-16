@@ -1,6 +1,18 @@
 import { Component, effect, inject, input, signal, computed } from '@angular/core';
-import { Patient } from '../../domain/patient';
-import { FdiTooth, Odontogram, ToothCondition, ALL_CONDITIONS, toothConditionLabel, FDI_ADULT_TEETH, FDI_CHILD_TEETH } from '../../../odontogram/domain/odontogram';
+import {
+  FdiTooth,
+  Odontogram,
+  ToothCondition,
+  ToothSurface,
+  ToothSurfaceSelection,
+  ALL_CONDITIONS,
+  toothConditionLabel,
+  toothSurfaceLabel,
+  FDI_ADULT_TEETH,
+  FDI_CHILD_TEETH,
+  fdiTeethForQuadrant,
+  fdiToGridPosition,
+} from '../../../odontogram/domain/odontogram';
 import { GetOdontogramUseCase } from '../../../odontogram/application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../../odontogram/application/update-tooth-condition.usecase';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
@@ -25,50 +37,37 @@ export class PatientOdontogramTab {
   readonly odontogram = signal<Odontogram | null>(null);
   readonly loadingOdontogram = signal(false);
   readonly selectedTooth = signal<FdiTooth | null>(null);
+  readonly selectedSurface = signal<ToothSurface | null>(null);
   readonly savingTooth = signal(false);
   readonly quadrant = signal<'adult' | 'child'>('adult');
   readonly conditionOptions = ALL_CONDITIONS;
   readonly showToothProgressModal = signal(false);
   readonly progressNotes = signal('');
+  readonly selectedCondition = signal<ToothCondition>('healthy');
 
   readonly positionedTeeth = computed(() => {
     const odo = this.odontogram();
-    if (!odo) return [];
-    let teeth = odo.teeth;
-    if (this.quadrant() === 'adult') {
-      teeth = teeth.filter((t) => FDI_ADULT_TEETH.includes(t.fdiNumber));
-    } else {
-      teeth = teeth.filter((t) => FDI_CHILD_TEETH.includes(t.fdiNumber));
+    const toothMap = new Map<number, FdiTooth>();
+    for (const tooth of odo?.teeth ?? []) {
+      toothMap.set(tooth.fdiNumber, tooth);
     }
 
-    teeth.sort((a, b) => a.fdiNumber - b.fdiNumber);
-    const topRow = teeth.filter((t) => Math.floor(t.fdiNumber / 10) === 1 || Math.floor(t.fdiNumber / 10) === 2 || Math.floor(t.fdiNumber / 10) === 5 || Math.floor(t.fdiNumber / 10) === 6);
-    const bottomRow = teeth.filter((t) => Math.floor(t.fdiNumber / 10) === 3 || Math.floor(t.fdiNumber / 10) === 4 || Math.floor(t.fdiNumber / 10) === 7 || Math.floor(t.fdiNumber / 10) === 8);
-    const topQ1 = topRow.filter((t) => Math.floor(t.fdiNumber / 10) === 1 || Math.floor(t.fdiNumber / 10) === 5).sort((a, b) => b.fdiNumber - a.fdiNumber);
-    const topQ2 = topRow.filter((t) => Math.floor(t.fdiNumber / 10) === 2 || Math.floor(t.fdiNumber / 10) === 6).sort((a, b) => a.fdiNumber - b.fdiNumber);
-    const bottomQ4 = bottomRow.filter((t) => Math.floor(t.fdiNumber / 10) === 4 || Math.floor(t.fdiNumber / 10) === 8).sort((a, b) => b.fdiNumber - a.fdiNumber);
-    const bottomQ3 = bottomRow.filter((t) => Math.floor(t.fdiNumber / 10) === 3 || Math.floor(t.fdiNumber / 10) === 7).sort((a, b) => a.fdiNumber - b.fdiNumber);
-    
-    const isAdult = this.quadrant() === 'adult';
-    const topArranged = [...topQ1, ...topQ2];
-    const bottomArranged = [...bottomQ4, ...bottomQ3];
-    
-    const mapped = [];
-    for (let i = 0; i < topArranged.length; i++) {
-      let colIndex = i;
-      if (!isAdult && i >= 5) colIndex = i + 6; 
-      mapped.push({ tooth: topArranged[i], col: colIndex });
-    }
-    for (let i = 0; i < bottomArranged.length; i++) {
-      let colIndex = i;
-      if (!isAdult && i >= 5) colIndex = i + 6;
-      mapped.push({ tooth: bottomArranged[i], col: colIndex });
-    }
-    return mapped;
+    return fdiTeethForQuadrant(this.quadrant())
+      .map((fdi) => {
+        const position = fdiToGridPosition(fdi);
+        if (!position) return null;
+
+        const tooth = toothMap.get(fdi) ?? ({ fdiNumber: fdi, condition: 'healthy' } as FdiTooth);
+        return { tooth, row: position.row, col: position.col };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   });
 
+  readonly upperTeeth = computed(() => this.positionedTeeth().filter((item) => item.row === 0));
+  readonly lowerTeeth = computed(() => this.positionedTeeth().filter((item) => item.row === 1));
+
   readonly gridCols = computed(() => {
-    return this.quadrant() === 'adult' ? 16 : 16;
+    return this.quadrant() === 'adult' ? 16 : 10;
   });
 
   constructor() {
@@ -86,27 +85,64 @@ export class PatientOdontogramTab {
       .execute(id)
       .pipe(
         take(1),
-        catchError(() => of(this.generateMockOdontogram(id))),
+        catchError(() => of(null)),
         finalize(() => this.loadingOdontogram.set(false)),
       )
       .subscribe((data) => {
-        if (data) {
-          this.odontogram.set(data);
-          this.quadrant.set(data.quadrant);
-        }
+        const odontogramData = data ?? this.createLocalOdontogram(id, this.quadrant());
+        this.odontogram.set(this.completeLocalOdontogram(id, odontogramData));
+        this.quadrant.set(odontogramData.quadrant);
       });
   }
 
-  private generateMockOdontogram(id: string): Odontogram {
-    const teeth: FdiTooth[] = [...FDI_ADULT_TEETH, ...FDI_CHILD_TEETH].map(num => ({ fdiNumber: num, condition: 'healthy' }));
-    const idx = teeth.findIndex(t => t.fdiNumber === 16);
-    if (idx !== -1) teeth[idx].condition = 'caries';
-    return { patientId: id, quadrant: 'adult', teeth };
+  private createLocalOdontogram(patientId: string, quadrant: 'adult' | 'child'): Odontogram {
+    return {
+      patientId,
+      quadrant,
+      teeth: fdiTeethForQuadrant(quadrant).map((fdiNumber) => ({
+        fdiNumber,
+        condition: 'healthy',
+        notes: '',
+      })),
+    };
+  }
+
+  private completeLocalOdontogram(patientId: string, odontogram: Odontogram): Odontogram {
+    const quadrant = odontogram.quadrant;
+    const requiredFdi = fdiTeethForQuadrant(quadrant);
+    const existingTeeth = new Map<number, FdiTooth>();
+
+    for (const tooth of odontogram.teeth) {
+      existingTeeth.set(tooth.fdiNumber, tooth);
+    }
+
+    return {
+      patientId,
+      quadrant,
+      teeth: requiredFdi.map(
+        (fdiNumber) => existingTeeth.get(fdiNumber) ?? ({ fdiNumber, condition: 'healthy', notes: '' } as FdiTooth),
+      ),
+    };
   }
 
   selectTooth(tooth: FdiTooth) {
     if (this.savingTooth()) return;
     this.selectedTooth.set(tooth);
+    this.selectedSurface.set(null);
+    this.selectedCondition.set(tooth.condition);
+    this.progressNotes.set('');
+    this.showToothProgressModal.set(true);
+  }
+
+  selectSurface(selection: ToothSurfaceSelection) {
+    if (this.savingTooth()) return;
+
+    const tooth = this.positionedTeeth().find((item) => item.tooth.fdiNumber === selection.fdiNumber)?.tooth;
+    if (!tooth) return;
+
+    this.selectedTooth.set(tooth);
+    this.selectedSurface.set(selection.surface);
+    this.selectedCondition.set(tooth.condition);
     this.progressNotes.set('');
     this.showToothProgressModal.set(true);
   }
@@ -114,6 +150,27 @@ export class PatientOdontogramTab {
   closeToothProgressModal() {
     this.showToothProgressModal.set(false);
     this.selectedTooth.set(null);
+    this.selectedSurface.set(null);
+  }
+
+  selectCondition(condition: ToothCondition) {
+    this.selectedCondition.set(condition);
+  }
+
+  saveToothProgress() {
+    this.applyCondition(this.selectedCondition());
+  }
+
+  hasPersistedSelectedDetail(): boolean {
+    const tooth = this.selectedTooth();
+    const surface = this.selectedSurface();
+    if (!tooth) return false;
+
+    if (surface) {
+      return Boolean(tooth.surfaceDetailIds?.[surface]);
+    }
+
+    return Boolean(tooth.detailId ?? tooth.id);
   }
 
   applyCondition(condition: ToothCondition) {
@@ -125,12 +182,17 @@ export class PatientOdontogramTab {
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       date: new Date().toLocaleDateString('es-PE'),
       condition,
+      surface: this.selectedSurface() ?? undefined,
       notes: this.progressNotes(),
     };
 
     const updatedTooth: FdiTooth = { 
       ...tooth, 
       condition, 
+      surface: this.selectedSurface() ?? undefined,
+      surfaceConditions: this.selectedSurface()
+        ? { ...tooth.surfaceConditions, [this.selectedSurface() as ToothSurface]: condition }
+        : tooth.surfaceConditions,
       notes: this.progressNotes(),
       history: [...(tooth.history || []), newHistoryRecord]
     };
@@ -149,14 +211,22 @@ export class PatientOdontogramTab {
       )
       .subscribe((updatedOdontogram) => {
         if (updatedOdontogram) {
-          const refreshed = updatedOdontogram.teeth.find(
+          const persistedTooth = updatedOdontogram.teeth.find(
             (t) => t.fdiNumber === tooth.fdiNumber,
           );
-          if (refreshed) {
-            refreshed.history = updatedTooth.history;
-          }
-          this.odontogram.set(updatedOdontogram);
-          this.selectedTooth.set(refreshed ?? null);
+          const refreshed: FdiTooth = {
+            ...updatedTooth,
+            id: persistedTooth?.id ?? updatedTooth.id,
+            detailId: persistedTooth?.detailId ?? updatedTooth.detailId,
+            surfaceDetailIds: {
+              ...updatedTooth.surfaceDetailIds,
+              ...persistedTooth?.surfaceDetailIds,
+            },
+            history: updatedTooth.history,
+          };
+
+          this.mergeTooth(refreshed);
+          this.selectedTooth.set(refreshed);
           this.toast.success(
             `Pieza dental ${tooth.fdiNumber} marcada como: ${this.conditionLabel(condition)}.`,
           );
@@ -165,17 +235,39 @@ export class PatientOdontogramTab {
       });
   }
 
+  private mergeTooth(tooth: FdiTooth) {
+    const current = this.odontogram();
+    const patientId = this.patientId();
+    if (!current || !patientId) return;
+
+    this.odontogram.set({
+      ...current,
+      teeth: current.teeth.map((item) =>
+        item.fdiNumber === tooth.fdiNumber ? { ...item, ...tooth } : item,
+      ),
+    });
+  }
+
   setQuadrant(q: 'adult' | 'child') {
     this.quadrant.set(q);
     this.selectedTooth.set(null);
+    this.selectedSurface.set(null);
   }
 
   conditionLabel(condition: ToothCondition): string {
     return toothConditionLabel(condition);
   }
 
+  surfaceLabel(surface: ToothSurface): string {
+    return toothSurfaceLabel(surface);
+  }
+
   gridColumnStyle(col: number): string {
     return String(col + 1);
+  }
+
+  gridRowStyle(row: number): string {
+    return row === 0 ? '1' : '3';
   }
 
   isSelected(tooth: FdiTooth): boolean {

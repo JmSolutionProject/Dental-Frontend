@@ -1,7 +1,9 @@
 .tooth-svg {
   cursor: pointer;
   display: block;
+  height: 132px;
   transition: transform 0.15s ease, filter 0.15s ease;
+  width: 56px;
 }
 
 .tooth-svg:hover {
