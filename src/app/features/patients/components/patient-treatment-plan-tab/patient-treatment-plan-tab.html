@@ -1,0 +1,167 @@
+<div class="tab-wrapper">
+  <div class="card-title-bar mt-2 mb-2">
+    <div>
+      <h2>Planes de Tratamiento Activos</h2>
+      <p class="subtitle">Gestiona los tratamientos integrales cotizados y financiados del paciente.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn--primary btn--lg" (click)="openPlanBuilder()">
+        + Crear Nuevo Plan de Tratamiento
+      </button>
+    </div>
+  </div>
+
+  @if (treatmentPlans().length === 0) {
+    <div class="dossier-card text-center py-5 muted">
+      <p>No hay planes de tratamiento creados para este paciente.</p>
+    </div>
+  }
+
+  <div class="treatment-plans-grid">
+    @for (plan of treatmentPlans(); track plan.id) {
+      <article class="dossier-card plan-card">
+        <div class="plan-card-header">
+          <h3>{{ plan.name }}</h3>
+          <span class="plan-date">{{ plan.date }}</span>
+        </div>
+        
+        <div class="plan-card-body">
+          <div class="plan-section">
+            <span class="plan-label">Servicios Incluidos:</span>
+            <ul class="plan-services-list">
+              @for (item of plan.items; track item.id) {
+                <li>{{ item.serviceName }} <span class="muted">(S/ {{ item.price }})</span></li>
+              }
+            </ul>
+          </div>
+          
+          <div class="plan-section">
+            <span class="plan-label">Financiamiento:</span>
+            <div class="plan-finance-summary">
+              <div class="fin-stat">
+                <span class="fin-stat-title">Costo Total</span>
+                <strong class="text-accent">S/ {{ plan.totalCost }}</strong>
+              </div>
+              <div class="fin-stat">
+                <span class="fin-stat-title">Modalidad</span>
+                <strong>{{ plan.paymentType }}</strong>
+              </div>
+              @if (plan.paymentType === 'A Cuotas' && plan.installments) {
+                <div class="fin-stat">
+                  <span class="fin-stat-title">Cuotas Programadas</span>
+                  <strong class="text-warning">{{ plan.installments.length - 1 }} cuotas</strong>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        
+        <div class="plan-card-footer">
+          <button class="btn btn--secondary btn--sm">Ver Detalle / Imprimir</button>
+        </div>
+      </article>
+    }
+  </div>
+</div>
+
+<!-- MODAL CREADOR DE PLAN UNIFICADO -->
+<app-modal title="Creador de Plan de Tratamiento" [visible]="showPlanBuilderModal()" (close)="closePlanBuilder()" size="lg">
+  <div class="plan-builder-body">
+    <form [formGroup]="planBuilderForm" class="plan-builder-grid">
+      
+      <!-- COLUMNA IZQUIERDA: SERVICIOS -->
+      <div class="builder-col builder-col-left">
+        <h3 class="builder-section-title">1. Detalles y Servicios</h3>
+        
+        <app-form-field label="Nombre del Plan" [control]="planBuilderForm.get('planName')!">
+          <input type="text" formControlName="planName" class="form-input form-input-lg" placeholder="Ej. Rehabilitación Estética" />
+        </app-form-field>
+
+        <div class="builder-add-service mt-4">
+          <label class="detail-label">Agregar Servicio / Procedimiento</label>
+          <div class="input-with-action mt-2">
+            <select class="form-input" (change)="addServiceToBuilder($event)" [value]="builderServiceId()">
+              <option value="" disabled>Seleccione un servicio para agregarlo...</option>
+              @for (srv of availableServices; track srv.id) {
+                <option [value]="srv.id">{{ srv.name }} - S/{{ srv.basePrice }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="builder-items-list mt-4">
+          <h4 class="detail-label mb-2">Servicios Agregados</h4>
+          @if (builderItems().length === 0) {
+            <div class="empty-items-box">No se han agregado servicios al plan.</div>
+          }
+          <ul class="items-ul">
+            @for (item of builderItems(); track item.id) {
+              <li class="item-li">
+                <span class="item-name">{{ item.serviceName }}</span>
+                <div class="item-actions">
+                  <strong class="item-price">S/ {{ item.price }}</strong>
+                  <button class="btn btn--danger-outline btn--xs" type="button" (click)="removeServiceFromBuilder(item.id)">X</button>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: FINANCIAMIENTO -->
+      <div class="builder-col builder-col-right">
+        <h3 class="builder-section-title">2. Costos y Financiamiento</h3>
+        
+        <div class="builder-total-box">
+          <span class="total-label">Costo Total del Plan</span>
+          <span class="total-val">S/ {{ builderTotalCost() }}</span>
+        </div>
+
+        <app-form-field label="Modalidad de Pago" [control]="planBuilderForm.get('paymentType')!" class="mt-4">
+          <select formControlName="paymentType" class="form-input">
+            <option value="Al Contado">Al Contado (Pago Único)</option>
+            <option value="A Cuotas">Financiado a Cuotas</option>
+          </select>
+        </app-form-field>
+
+        @if (planBuilderForm.get('paymentType')?.value === 'A Cuotas') {
+          <div class="financing-config-box mt-3">
+            <div class="financing-grid">
+              <app-form-field label="Adelanto Inicial (S/)" [control]="planBuilderForm.get('initialPayment')!">
+                <input type="number" formControlName="initialPayment" class="form-input" min="0" />
+              </app-form-field>
+              
+              <app-form-field label="N° de Cuotas" [control]="planBuilderForm.get('installmentsCount')!">
+                <input type="number" formControlName="installmentsCount" class="form-input" min="1" max="24" />
+              </app-form-field>
+
+              <app-form-field label="Frecuencia" [control]="planBuilderForm.get('frequency')!" class="grid-full-row">
+                <select formControlName="frequency" class="form-input">
+                  <option value="Quincenal">Quincenal (cada 15 días)</option>
+                  <option value="Mensual">Mensual (cada 30 días)</option>
+                </select>
+              </app-form-field>
+            </div>
+
+            <div class="live-schedule-preview mt-4">
+              <span class="detail-label">Previsualización del Cronograma</span>
+              <div class="schedule-mini-list mt-2">
+                @for (inst of generatedInstallments(); track inst.id) {
+                  <div class="schedule-mini-item">
+                    <span>{{ inst.id === 'initial' ? 'Adelanto' : 'Cuota' }}</span>
+                    <strong>S/ {{ inst.amount }}</strong>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
+    
+    <div class="modal-footer mt-5" style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
+      <button class="btn btn--secondary" type="button" (click)="closePlanBuilder()">Cancelar</button>
+      <button class="btn btn--primary btn--lg" type="button" (click)="saveTreatmentPlan()">Guardar Plan de Tratamiento</button>
+    </div>
+  </div>
+</app-modal>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- Outer Blue Ring -->
+  <circle cx="250" cy="250" r="230" fill="none" stroke="#1c75b9" stroke-width="12" />
+
+  <!-- Content Group -->
+  <g>
+    <!-- Tooth Icon (Pink) -->
+    <path fill="none" stroke="#dc6788" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" d="
+      M 75, 215 
+      C 68, 190, 82, 168, 104, 168 
+      C 114, 168, 122, 174, 127, 180 
+      C 132, 174, 140, 168, 150, 168 
+      C 172, 168, 186, 190, 179, 215 
+      C 176, 225, 171, 243, 167, 253 
+      C 163, 263, 157, 270, 153, 283 
+      C 149, 295, 143, 297, 137, 283 
+      C 133, 273, 129, 263, 127, 253 
+      C 125, 263, 121, 273, 117, 283 
+      C 111, 297, 105, 295, 101, 283 
+      C 97, 270, 91, 263, 87, 253 
+      C 83, 243, 78, 225, 75, 215 Z
+    " />
+
+    <!-- Wordmark OMAYA -->
+    <text x="192" y="242" fill="#1c75b9" font-family="'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif" font-weight="800" font-size="64" letter-spacing="1">OMAYA</text>
+
+    <!-- Slogan: Nuestra Meta: Tu Sonrisa -->
+    <text x="250" y="315" text-anchor="middle" fill="#1c75b9" font-family="'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif" font-weight="700" font-size="24" letter-spacing="-0.2">Nuestra Meta: Tu Sonrisa</text>
+  </g>
+</svg>

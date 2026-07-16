@@ -1,242 +1,217 @@
-<section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Patients</p>
+<section class="patient-dossier-page">
+  <header class="patient-hero">
+    <div class="hero-content">
+      <div class="hero-top">
+        <a class="back-link" routerLink="/patients">← Volver al Directorio de Pacientes</a>
+        @if (patient(); as p) {
+          <span class="status-pill" [class.status-pill--active]="p.status === 'active'">
+            {{ p.status === 'active' ? 'Estado: Paciente Activo' : 'Estado: Inactivo' }}
+          </span>
+        }
+      </div>
+
       @if (patient(); as p) {
-        <h1>{{ p.firstName }} {{ p.lastName }}</h1>
-        <p class="muted">{{ p.documentNumber }}</p>
+        <h1 class="patient-name">{{ p.firstName }} {{ p.lastName }}</h1>
+        <div class="patient-quick-pills">
+          <span class="pill-badge">DNI: <strong>{{ p.documentNumber || 'Sin DNI' }}</strong></span>
+          <span class="pill-badge">WhatsApp: <strong>{{ p.phone || 'Sin número' }}</strong></span>
+          @if (p.birthDate) {
+            <span class="pill-badge">Fecha de Nacimiento: <strong>{{ p.birthDate }}</strong></span>
+          }
+        </div>
       } @else if (!loading()) {
-        <h1>Patient not found</h1>
-      }
-    </div>
-    <div class="header-actions">
-      <a class="button button--ghost" routerLink="/patients">Back to list</a>
-      @if (patient(); as p) {
-        <a
-          class="button"
-          [routerLink]="['/patients', p.id, 'odontogram']"
-        >
-          Odontogram
-        </a>
-        <a
-          class="button"
-          [routerLink]="['/patients', p.id, 'treatment-plans']"
-        >
-          Treatment Plans
-        </a>
-        <a
-          class="button"
-          [routerLink]="['/patients', p.id, 'billing']"
-        >
-          Billing
-        </a>
-        <a
-          class="button"
-          [routerLink]="['/patients', p.id, 'attachments']"
-        >
-          Attachments
-        </a>
+        <h1 class="patient-name">Paciente no encontrado</h1>
       }
     </div>
   </header>
 
+  <nav class="unified-tab-bar">
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'summary'" (click)="setTab('summary')">Resumen</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'personal-data'" (click)="setTab('personal-data')">Datos Personales</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'medical-history'" (click)="setTab('medical-history')">Antecedentes Médicos</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'odontogram'" (click)="setTab('odontogram')">Odontograma</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'appointments-history'" (click)="setTab('appointments-history')">Historial de Citas</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'budget-plan'" (click)="setTab('budget-plan')">Presupuesto / Plan</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'payments'" (click)="setTab('payments')">Pagos</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'attachments'" (click)="setTab('attachments')">Archivos, Imágenes y Documentos</button>
+    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'observations'" (click)="setTab('observations')">Observaciones</button>
+  </nav>
+
   @if (loading()) {
-    <article class="card">
-      <p class="muted">Loading patient record…</p>
+    <article class="dossier-card loading-card">
+      <div class="spinner"></div>
+      <p class="muted">Cargando expediente clínico...</p>
     </article>
   } @else if (patient(); as p) {
-    <!-- Tab navigation -->
-    <nav class="tabs">
-      <button
-        class="tab"
-        [class.tab--active]="activeTab() === 'profile'"
-        (click)="setTab('profile')"
-      >
-        Profile
-      </button>
-      <button
-        class="tab"
-        [class.tab--active]="activeTab() === 'medical-history'"
-        (click)="setTab('medical-history')"
-      >
-        Medical History
-      </button>
-      <button
-        class="tab"
-        [class.tab--active]="activeTab() === 'notes'"
-        (click)="setTab('notes')"
-      >
-        Notes
-      </button>
-    </nav>
+    @if (activeTab() === 'summary') {
+      <app-patient-summary-tab 
+        [patient]="p" 
+        [systemMedicalAlerts]="systemMedicalAlerts()"
+        [budgetPending]="budgetPending()"
+        [budgetTotal]="budgetTotal()"
+        [nextAppointmentDate]="nextAppointmentDate()"
+        [assignedDoctor]="assignedDoctor()"
+        [lastVisitDate]="lastVisitDate()"
+      />
+    }
 
-    <!-- Action bar -->
-    <div class="action-bar">
-      @if (!editing()) {
-        <button class="button" type="button" (click)="startEdit()">Edit</button>
-      } @else {
-        <button
-          class="button"
-          type="button"
-          [disabled]="saving()"
-          (click)="save()"
-        >
-          {{ saving() ? 'Saving…' : 'Save' }}
-        </button>
-        <button
-          class="button button--ghost"
-          type="button"
-          (click)="cancelEdit()"
-        >
-          Cancel
-        </button>
-      }
-      <button
-        class="button button--danger"
-        type="button"
-        (click)="openDeleteModal()"
-      >
-        Delete
-      </button>
-    </div>
+    @if (activeTab() === 'personal-data') {
+      <article class="dossier-card">
+        <div class="card-title-bar">
+          <div>
+            <h2>Datos Personales y Administrativos</h2>
+            <p class="subtitle">Información filiatoria completa y contacto de emergencia.</p>
+          </div>
+        </div>
 
-    <!-- Profile tab -->
-    @if (activeTab() === 'profile') {
-      <article class="card">
-        <h2>Personal Information</h2>
-        <form [formGroup]="form" class="detail-form">
-          <app-form-field label="First Name" [control]="form.get('firstName')!">
-            <input
-              type="text"
-              formControlName="firstName"
-              [readonly]="!editing()"
-            />
+        <form [formGroup]="form" class="form-grid">
+          <app-form-field label="Nombres" [control]="form.get('firstName')!">
+            <input type="text" formControlName="firstName" [readonly]="!editing()" />
           </app-form-field>
-
-          <app-form-field label="Last Name" [control]="form.get('lastName')!">
-            <input
-              type="text"
-              formControlName="lastName"
-              [readonly]="!editing()"
-            />
+          <app-form-field label="Apellidos" [control]="form.get('lastName')!">
+            <input type="text" formControlName="lastName" [readonly]="!editing()" />
           </app-form-field>
-
-          <app-form-field label="Document Number" [control]="form.get('documentNumber')!">
-            <input
-              type="text"
-              formControlName="documentNumber"
-              [readonly]="!editing()"
-            />
+          <app-form-field label="DNI" [control]="form.get('documentNumber')!">
+            <div class="input-with-action">
+              <input type="text" formControlName="documentNumber" [readonly]="!editing()" />
+              @if (editing()) {
+                <button type="button" class="btn btn--accent" [disabled]="consultingDni()" (click)="lookupDni()">
+                  {{ consultingDni() ? 'Consultando…' : 'Consultar RENIEC' }}
+                </button>
+              }
+            </div>
           </app-form-field>
-
-          <app-form-field label="Phone" [control]="form.get('phone')!">
-            <input
-              type="text"
-              formControlName="phone"
-              [readonly]="!editing()"
-            />
+          <app-form-field label="Fecha de Nacimiento" [control]="form.get('birthDate')!">
+            <input type="date" formControlName="birthDate" [readonly]="!editing()" />
           </app-form-field>
-
-          <app-form-field label="Email" [control]="form.get('email')!">
-            <input
-              type="email"
-              formControlName="email"
-              [readonly]="!editing()"
-            />
+          <app-form-field label="Sexo" [control]="form.get('gender')!">
+            <select formControlName="gender" [disabled]="!editing()">
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
           </app-form-field>
-
-          <app-form-field label="Birth Date" [control]="form.get('birthDate')!">
-            <input
-              type="date"
-              formControlName="birthDate"
-              [readonly]="!editing()"
-            />
+          <app-form-field label="Teléfono de Contacto" [control]="form.get('phone')!">
+            <input type="text" formControlName="phone" [readonly]="!editing()" />
+          </app-form-field>
+          <app-form-field label="Correo Electrónico" [control]="form.get('email')!">
+            <input type="email" formControlName="email" [readonly]="!editing()" />
+          </app-form-field>
+          <app-form-field label="Dirección de Domicilio" [control]="form.get('address')!">
+            <input type="text" formControlName="address" [readonly]="!editing()" />
+          </app-form-field>
+          <app-form-field label="Contacto de Emergencia" [control]="form.get('emergencyContact')!">
+            <input type="text" formControlName="emergencyContact" [readonly]="!editing()" />
+          </app-form-field>
+          <app-form-field label="Seguro Médico / EPS" [control]="form.get('insurance')!">
+            <input type="text" formControlName="insurance" [readonly]="!editing()" />
           </app-form-field>
         </form>
+
+        <div class="tab-actions-footer mt-4">
+          <div class="footer-left-actions">
+            @if (!editing()) {
+              <button type="button" class="btn btn--primary btn--lg" (click)="startEdit()">Editar Datos Personales</button>
+            } @else {
+              <button type="button" class="btn btn--success btn--lg" [disabled]="saving()" (click)="save()">{{ saving() ? 'Guardando Datos…' : 'Guardar Cambios' }}</button>
+              <button type="button" class="btn btn--secondary btn--lg ml-2" (click)="cancelEdit()">Cancelar</button>
+            }
+          </div>
+          <button type="button" class="btn btn--danger-outline" (click)="openDeleteModal()">Dar de Baja a este Paciente</button>
+        </div>
       </article>
     }
 
-    <!-- Medical History tab -->
     @if (activeTab() === 'medical-history') {
-      <article class="card">
-        <h2>Medical History</h2>
-        <form [formGroup]="form" class="detail-form">
-          <app-form-field label="Allergies" [control]="form.get('allergies')!">
-            <textarea
-              formControlName="allergies"
-              rows="2"
-              [readonly]="!editing()"
-              placeholder="e.g. Penicillin, Latex, Sulfa"
-            ></textarea>
-          </app-form-field>
-          <p class="field-hint muted">Separate multiple allergies with commas.</p>
+      <app-patient-medical-history-tab
+        [parentForm]="form"
+        [saving]="saving()"
+        (dataChanged)="onMedicalHistoryChanged($event)"
+        (saveRequested)="save()"
+      />
+    }
 
-          <app-form-field label="Medical Conditions" [control]="form.get('conditions')!">
-            <textarea
-              formControlName="conditions"
-              rows="2"
-              [readonly]="!editing()"
-              placeholder="e.g. Diabetes, Hypertension, Asthma"
-            ></textarea>
-          </app-form-field>
-          <p class="field-hint muted">Separate multiple conditions with commas.</p>
+    @if (activeTab() === 'odontogram') {
+      <app-patient-odontogram-tab [patientId]="p.id" />
+    }
 
-          <app-form-field label="Current Medications" [control]="form.get('medications')!">
-            <textarea
-              formControlName="medications"
-              rows="2"
-              [readonly]="!editing()"
-              placeholder="e.g. Metformin, Lisinopril, Albuterol"
-            ></textarea>
+    @if (activeTab() === 'appointments-history') {
+      <article class="dossier-card">
+        <div class="card-title-bar">
+          <div>
+            <h2>Historial de Citas del Paciente</h2>
+            <p class="subtitle">Registro cronológico de citas atendidas, programadas o canceladas.</p>
+          </div>
+        </div>
+        <table class="clinical-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Odontólogo</th>
+              <th>Motivo de Consulta</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of appointmentsHistory(); track app.id) {
+              <tr>
+                <td><strong>{{ app.date }}</strong></td>
+                <td>{{ app.doctor }}</td>
+                <td>{{ app.reason }}</td>
+                <td>
+                  <span class="table-pill" [class.table-pill--success]="app.status === 'Finalizada'" [class.table-pill--primary]="app.status === 'Programada'">
+                    {{ app.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </article>
+    }
+
+    @if (activeTab() === 'budget-plan') {
+      <app-patient-treatment-plan-tab [treatmentPlans]="treatmentPlans()" />
+    }
+
+    @if (activeTab() === 'payments') {
+      <app-patient-payments-tab 
+        [budgetPaid]="budgetPaid()" 
+        [budgetPending]="budgetPending()" 
+      />
+    }
+
+    @if (activeTab() === 'attachments') {
+      <app-patient-attachments-tab [patientId]="p.id" />
+    }
+
+    @if (activeTab() === 'observations') {
+      <article class="dossier-card">
+        <div class="card-title-bar">
+          <div>
+            <h2>Observaciones y Notas Internas del Paciente</h2>
+            <p class="subtitle">Indicaciones de conducta, recomendaciones de atención o notas internas del dentista.</p>
+          </div>
+        </div>
+        <form [formGroup]="form">
+          <app-form-field label="" [control]="form.get('observations')!">
+            <textarea formControlName="observations" rows="8" placeholder="Escriba observaciones sobre la conducta del paciente, preferencias de anestesia o indicaciones especiales..."></textarea>
           </app-form-field>
-          <p class="field-hint muted">Separate multiple medications with commas.</p>
+          <div class="tab-actions-footer mt-4">
+            <button type="button" class="btn btn--success btn--lg" [disabled]="saving()" (click)="save()">
+              {{ saving() ? 'Guardando Observaciones…' : 'Guardar Observaciones' }}
+            </button>
+          </div>
         </form>
       </article>
     }
 
-    <!-- Notes tab -->
-    @if (activeTab() === 'notes') {
-      <article class="card">
-        <h2>Clinical Notes</h2>
-        <form [formGroup]="form" class="detail-form">
-          <app-form-field label="Notes" [control]="form.get('notes')!">
-            <textarea
-              formControlName="notes"
-              rows="6"
-              [readonly]="!editing()"
-              placeholder="Add clinical notes about this patient…"
-            ></textarea>
-          </app-form-field>
-        </form>
-      </article>
-    }
-
-    <!-- Delete confirmation modal -->
-    <app-modal
-      title="Delete Patient"
-      [visible]="showDeleteModal()"
-      (close)="closeDeleteModal()"
-    >
-      <div class="delete-confirm">
-        <p>
-          Are you sure you want to delete <strong>{{ p.firstName }} {{ p.lastName }}</strong>?
-        </p>
-        <p class="muted">This action will soft-delete the patient record. It can be restored later.</p>
-        <div class="delete-actions">
-          <button
-            class="button button--ghost"
-            type="button"
-            (click)="closeDeleteModal()"
-          >
-            Cancel
-          </button>
-          <button
-            class="button button--danger"
-            type="button"
-            [disabled]="deleting()"
-            (click)="confirmDelete()"
-          >
-            {{ deleting() ? 'Deleting…' : 'Delete' }}
+    <app-modal title="Dar de baja al paciente" [visible]="showDeleteModal()" (close)="closeDeleteModal()">
+      <div class="modal-confirm-body">
+        <p>¿Está seguro de que desea dar de baja al paciente <strong>{{ p.firstName }} {{ p.lastName }}</strong>?</p>
+        <div class="modal-actions">
+          <button class="btn btn--secondary" type="button" (click)="closeDeleteModal()">Cancelar</button>
+          <button class="btn btn--danger" type="button" [disabled]="deleting()" (click)="confirmDelete()">
+            {{ deleting() ? 'Procesando…' : 'Sí, Dar de Baja' }}
           </button>
         </div>
       </div>

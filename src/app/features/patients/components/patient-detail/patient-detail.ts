@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { take, catchError, of, finalize } from 'rxjs';
 import {
@@ -8,21 +8,49 @@ import {
   Validators,
 } from '@angular/forms';
 
+import { ReniecService } from '../../../../core/services/reniec.service';
+import { MedicalAlertService } from '../../../../core/services/medical-alert.service';
+
 import { GetPatientUseCase } from '../../application/get-patient.usecase';
 import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
 import { DeletePatientUseCase } from '../../application/delete-patient.usecase';
-import { Patient, UpdatePatientRequest } from '../../domain/patient';
-import { Modal } from '../../../../shared/components/modal/modal';
-import { FormField } from '../../../../shared/components/form-field/form-field';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, BudgetItemRecord, PaymentRecord, InstallmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
 
-type DetailTab = 'profile' | 'medical-history' | 'notes';
+
+
+
+import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
+import { Modal as ModalComponent } from '../../../../shared/components/modal/modal';
+import { FormField as FormFieldComponent } from '../../../../shared/components/form-field/form-field';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { PatientSummaryTab } from '../patient-summary-tab/patient-summary-tab';
+import { PatientOdontogramTab } from '../patient-odontogram-tab/patient-odontogram-tab';
+import { PatientTreatmentPlanTab } from '../patient-treatment-plan-tab/patient-treatment-plan-tab';
+import { PatientMedicalHistoryTab, MedicalHistoryData } from '../patient-medical-history-tab/patient-medical-history-tab';
+import { PatientAttachmentsTab } from '../patient-attachments-tab/patient-attachments-tab';
+import { PatientPaymentsTab } from '../patient-payments-tab/patient-payments-tab';
+
+export type DetailTab =
+  | 'summary'             // 1. Resumen
+  | 'personal-data'       // 2. Datos personales
+  | 'medical-history'     // 3. Antecedentes médicos
+  | 'odontogram'          // 4. Odontograma
+  | 'appointments-history'// 5. Historial de citas
+  | 'budget-plan'         // 6. Presupuesto / Plan
+  | 'payments'            // 7. Pagos
+  | 'attachments'         // 8. Archivos, Imágenes y Documentos
+  | 'observations';       // 9. Observaciones
+
+
+
+
 
 @Component({
   selector: 'app-patient-detail',
-  imports: [ReactiveFormsModule, RouterLink, Modal, FormField],
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, FormFieldComponent, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab],
   templateUrl: './patient-detail.html',
-  styleUrl: './patient-detail.css',
+  styleUrl: './patient-detail.css', encapsulation: ViewEncapsulation.None,
 })
 export class PatientDetail {
   private readonly route = inject(ActivatedRoute);
@@ -32,6 +60,8 @@ export class PatientDetail {
   private readonly deletePatient = inject(DeletePatientUseCase);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly reniec = inject(ReniecService);
+  private readonly medicalAlert = inject(MedicalAlertService);
 
   readonly patient = signal<Patient | null>(null);
   readonly loading = signal(true);
@@ -39,8 +69,65 @@ export class PatientDetail {
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly showDeleteModal = signal(false);
-  readonly activeTab = signal<DetailTab>('profile');
+  readonly consultingDni = signal(false);
 
+  // Active Tab
+  readonly activeTab = signal<DetailTab>('summary');
+
+  // Medical History Data (Maintained by PatientMedicalHistoryTab)
+  readonly medicalHistoryData = signal<MedicalHistoryData>({
+    allergies: ['Penicilina', 'Látex'],
+    diseases: ['Diabetes', 'Hipertensión arterial'],
+    specialConditions: [],
+    dentalHistory: ['Bruxismo'],
+    takesMedication: true,
+  });
+
+  // STATICS FOR PATIENT DOSSIER
+  readonly assignedDoctor = signal('Dr. Carlos Pérez S.');
+  readonly lastVisitDate = signal('15/07/2026');
+  readonly nextAppointmentDate = signal('22/07/2026 - 10:30 AM');
+
+  // Appointments History
+  readonly appointmentsHistory = signal<AppointmentRecord[]>([
+    { id: '1', date: '15/07/2026', doctor: 'Dr. Carlos Pérez S.', reason: 'Evaluación y Limpieza Ultrasónica', status: 'Finalizada' },
+    { id: '2', date: '22/07/2026', doctor: 'Dra. María Ruiz M.', reason: 'Endodoncia Unirradicular Pieza 36', status: 'Programada' },
+    { id: '3', date: '05/06/2026', doctor: 'Dr. Carlos Pérez S.', reason: 'Consulta Inicial y Odontograma', status: 'Finalizada' },
+  ]);
+
+  // Unified Treatment Plans
+  readonly treatmentPlans = signal<TreatmentPlan[]>([
+    {
+      id: 'tp-1',
+      name: 'Tratamiento Integral Inicial',
+      date: '10/06/2026',
+      items: [
+        { id: 'i1', serviceName: 'Limpieza e Higiene Profunda Ultrasónica', price: 120 },
+        { id: 'i2', serviceName: 'Curación con Resina Simple', price: 80 }
+      ],
+      totalCost: 200,
+      paymentType: 'Al Contado'
+    }
+  ]);
+
+  readonly budgetTotal = computed(() => 
+    this.treatmentPlans().reduce((acc, p) => acc + p.totalCost, 0)
+  );
+
+  readonly budgetPaid = computed(() => {
+    return this.treatmentPlans().reduce((acc, p) => {
+      if (p.paymentType === 'A Cuotas' && p.installments) {
+        return acc + p.installments.filter(i => i.status === 'Pagado').reduce((sum, i) => sum + i.amount, 0);
+      }
+      return acc; 
+    }, 0);
+  });
+
+  readonly budgetPending = computed(() => {
+    return this.budgetTotal() - this.budgetPaid();
+  });
+
+  // Form Binding
   readonly form: FormGroup = this.fb.group({
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
@@ -48,9 +135,14 @@ export class PatientDetail {
     phone: ['', [Validators.required]],
     email: [''],
     birthDate: [''],
-    allergies: [''],
-    conditions: [''],
-    medications: [''],
+    gender: ['Masculino'],
+    address: [''],
+    emergencyContact: [''],
+    insurance: [''],
+    customAllergy: [''],
+    customDisease: [''],
+    medicationDetails: ['Metformina 850mg diario, Losartán 50mg'],
+    observations: [''],
     notes: [''],
   });
 
@@ -58,12 +150,24 @@ export class PatientDetail {
     this.loadPatient();
   }
 
+  onMedicalHistoryChanged(data: MedicalHistoryData) {
+    this.medicalHistoryData.set(data);
+  }
+
+  // AUTOMATED MEDICAL ALERT EVALUATOR
+  readonly systemMedicalAlerts = computed<SystemMedicalAlert[]>(() => {
+    return this.medicalAlert.evaluate(
+      this.medicalHistoryData(),
+      this.form.get('customAllergy')?.value || '',
+    );
+  });
+
   private loadPatient() {
     this.loading.set(true);
     this.route.paramMap.pipe(take(1)).subscribe((params) => {
       const id = params.get('id');
       if (!id) {
-        this.toast.error('Patient ID not found in route.');
+        this.toast.error('ID del paciente no encontrado.');
         this.router.navigate(['/patients']);
         return;
       }
@@ -73,7 +177,7 @@ export class PatientDetail {
         .pipe(
           take(1),
           catchError(() => {
-            this.toast.error('Failed to load patient record.');
+            this.toast.error('No se pudo cargar el expediente del paciente.');
             return of(null);
           }),
           finalize(() => this.loading.set(false)),
@@ -95,9 +199,14 @@ export class PatientDetail {
       phone: p.phone,
       email: p.email ?? '',
       birthDate: p.birthDate ?? '',
-      allergies: p.medicalHistory.allergies.join(', '),
-      conditions: p.medicalHistory.conditions.join(', '),
-      medications: p.medicalHistory.medications.join(', '),
+      gender: 'Masculino',
+      address: p.address ?? '',
+      emergencyContact: 'María Rengifo (Madre) - +51 988 123 456',
+      insurance: 'Rimac EPS / Sin Seguro',
+      customAllergy: '',
+      customDisease: '',
+      medicationDetails: 'Metformina 850mg diario, Losartán 50mg',
+      observations: 'Paciente refiere leve ansiedad en consulta. Solicita anestesia tópica previa a infiltración.',
       notes: p.notes,
     });
   }
@@ -108,6 +217,46 @@ export class PatientDetail {
 
   startEdit() {
     this.editing.set(true);
+  }
+
+  lookupDni() {
+    const dni = this.form.get('documentNumber')?.value?.trim();
+    if (!dni || dni.length !== 8) {
+      this.toast.info('Ingrese un número de DNI válido de 8 dígitos.');
+      return;
+    }
+
+    this.consultingDni.set(true);
+
+    this.reniec
+      .lookupDni(dni)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se encontró información para el DNI ingresado.');
+          return of(null);
+        }),
+        finalize(() => this.consultingDni.set(false)),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+
+        if (res.success && res.data) {
+          const nombres = res.data.nombres || '';
+          const apellidos =
+            res.data.apellidos ||
+            `${res.data.apellidoPaterno || ''} ${res.data.apellidoMaterno || ''}`.trim();
+
+          this.form.patchValue({
+            firstName: nombres.trim(),
+            lastName: apellidos.trim(),
+          });
+
+          this.toast.success(`¡RENIEC: ${nombres} ${apellidos}!`);
+        } else {
+          this.toast.error(res.message || 'No se encontró información para el DNI ingresado.');
+        }
+      });
   }
 
   cancelEdit() {
@@ -136,7 +285,7 @@ export class PatientDetail {
       .pipe(
         take(1),
         catchError(() => {
-          this.toast.error('Failed to update patient.');
+          this.toast.error('Error al actualizar datos del paciente.');
           return of(null);
         }),
         finalize(() => this.saving.set(false)),
@@ -145,7 +294,7 @@ export class PatientDetail {
         if (updated) {
           this.patient.set(updated);
           this.editing.set(false);
-          this.toast.success('Patient updated successfully.');
+          this.toast.success('Expediente del paciente actualizado correctamente.');
         }
       });
   }
@@ -158,11 +307,12 @@ export class PatientDetail {
       documentNumber: raw.documentNumber,
       phone: raw.phone,
       email: raw.email || undefined,
+      address: raw.address || undefined,
       birthDate: raw.birthDate || undefined,
       medicalHistory: {
-        allergies: this.parseList(raw.allergies),
-        conditions: this.parseList(raw.conditions),
-        medications: this.parseList(raw.medications),
+        allergies: this.medicalHistoryData().allergies,
+        conditions: this.medicalHistoryData().diseases,
+        medications: this.medicalHistoryData().takesMedication ? this.parseList(raw.medicationDetails) : [],
       },
       notes: raw.notes,
     };
@@ -194,7 +344,7 @@ export class PatientDetail {
       .pipe(
         take(1),
         catchError(() => {
-          this.toast.error('Failed to delete patient.');
+          this.toast.error('Error al dar de baja al paciente.');
           return of(null);
         }),
         finalize(() => {
@@ -204,9 +354,10 @@ export class PatientDetail {
       )
       .subscribe((deleted) => {
         if (deleted) {
-          this.toast.success('Patient deleted successfully.');
+          this.toast.success('Paciente dado de baja exitosamente.');
           this.router.navigate(['/patients']);
         }
       });
   }
+
 }

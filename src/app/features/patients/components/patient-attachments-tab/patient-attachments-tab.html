@@ -1,0 +1,79 @@
+<article class="dossier-card">
+  <div class="card-title-bar">
+    <div>
+      <h2>Archivos, Fotografías Clínicas, Radiografías y Documentos</h2>
+      <p class="subtitle">Cargue o arrastre archivos adjuntos (Radiografías panorámicas, consentimientos firmados, tomografías, PDFs o recetas).</p>
+    </div>
+  </div>
+
+  <div
+    class="drop-zone"
+    [class.drop-zone--dragging]="isDraggingFile()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onFileDropped($event)"
+  >
+    <div class="drop-zone-content">
+      <p class="drop-zone-text">
+        <strong>Arrastre y suelte cualquier archivo o radiografía aquí</strong>
+      </p>
+      <p class="drop-zone-sub">o haga clic en el botón para explorar archivos en su dispositivo</p>
+      <label class="btn btn--primary upload-btn-label">
+        <span>Seleccionar Archivo / Imagen</span>
+        <input type="file" (change)="onFileSelected($event)" hidden />
+      </label>
+    </div>
+  </div>
+
+  @if (loadingAttachments()) {
+    <p class="muted mt-4">Cargando archivos adjuntos…</p>
+  } @else if (attachments().length === 0) {
+    <div class="empty-attachments mt-4">
+      <p class="empty-title">Sin archivos ni radiografías registradas</p>
+      <p class="subtitle">Arrastre un archivo a la zona superior para guardar su primera radiografía o documento.</p>
+    </div>
+  } @else {
+    <div class="attachments-unified-grid mt-4">
+      @for (att of attachments(); track att.id) {
+        <div class="attachment-unified-card" (click)="openAttachmentPreview(att)">
+          <div class="att-media-preview">
+            @if (isImageFile(att.mimeType)) {
+              <img [src]="att.url" [alt]="att.fileName" class="att-img-thumb" />
+            } @else {
+              <div class="att-document-icon">DOC</div>
+            }
+            <div class="att-hover-view">Ver / Ampliar</div>
+          </div>
+
+          <div class="att-card-info">
+            <strong class="att-card-name" [title]="att.fileName">{{ att.fileName }}</strong>
+            <div class="att-card-meta">
+              <span>{{ att.createdAt }}</span>
+              <span>{{ (att.size / 1024).toFixed(1) }} KB</span>
+            </div>
+            <a [href]="att.url" target="_blank" (click)="$event.stopPropagation()" class="btn btn--secondary btn--sm mt-2">
+              Descargar Archivo
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</article>
+
+<!-- MODAL DE PREVISUALIZACIÓN DE IMÁGENES Y ARCHIVOS -->
+@if (previewAttachment(); as att) {
+  <app-modal [title]="att.fileName" [visible]="true" (close)="closeAttachmentPreview()">
+    <div class="image-preview-modal-body">
+      @if (isImageFile(att.mimeType)) {
+        <img [src]="att.url" [alt]="att.fileName" class="preview-full-img" />
+      } @else {
+        <div class="pdf-document-preview">
+          <p>Documento adjunto: <strong>{{ att.fileName }}</strong></p>
+          <a [href]="att.url" target="_blank" class="btn btn--primary mt-3">Descargar / Abrir Documento</a>
+        </div>
+      }
+      <p class="muted text-center mt-2">Fecha de registro: {{ att.createdAt }}</p>
+    </div>
+  </app-modal>
+}

@@ -1,0 +1,93 @@
+<article class="dossier-card">
+  <div class="odontogram-title-bar">
+    <div>
+      <h2>Odontograma Clínico 2D (Notación FDI)</h2>
+      <p class="subtitle">Selección de dientes y registro de caries, extracciones, coronas, implantes, endodoncias, restauraciones, prótesis y sellantes.</p>
+    </div>
+
+    <div class="quadrant-toggle">
+      <button class="toggle-btn" [class.toggle-btn--active]="quadrant() === 'adult'" (click)="setQuadrant('adult')">
+        Dentición Adulta (32 Piezas)
+      </button>
+      <button class="toggle-btn" [class.toggle-btn--active]="quadrant() === 'child'" (click)="setQuadrant('child')">
+        Dentición Infantil (20 Piezas)
+      </button>
+    </div>
+  </div>
+
+  @if (loadingOdontogram()) {
+    <div class="loading-odontogram">
+      <div class="spinner"></div>
+      <p class="muted">Cargando odontograma...</p>
+    </div>
+  } @else {
+    <div class="odontogram-canvas">
+      <div class="teeth-grid" [style.--grid-cols]="gridCols()">
+        @for (item of positionedTeeth(); track item.tooth.fdiNumber) {
+          <div class="tooth-card" [class.tooth-card--selected]="isSelected(item.tooth)" [style.grid-column]="gridColumnStyle(item.col)" (click)="selectTooth(item.tooth)">
+            <span class="tooth-fdi">{{ item.tooth.fdiNumber }}</span>
+            <app-tooth-chart [tooth]="item.tooth"></app-tooth-chart>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Tooth Progress Modal -->
+    @if (showToothProgressModal() && selectedTooth(); as selTooth) {
+      <app-modal [title]="'Historial Clínico - Pieza ' + selTooth.fdiNumber" [visible]="true" (close)="closeToothProgressModal()">
+        <div class="tooth-progress-modal-body">
+          
+          <div class="tooth-current-state mb-4">
+            <strong>Estado Actual:</strong>
+            <span class="badge" [class.badge-healthy]="selTooth.condition === 'healthy'">
+              {{ conditionLabel(selTooth.condition) }}
+            </span>
+          </div>
+
+          <div class="tooth-history-list mb-4">
+            <h4>Historial de Tratamientos y Diagnósticos</h4>
+            @if (!selTooth.history || selTooth.history.length === 0) {
+              <p class="muted">No hay registros históricos para esta pieza en el frontend (Backend Mock).</p>
+            } @else {
+              <ul class="history-timeline">
+                @for (record of selTooth.history; track record.id) {
+                  <li class="history-item">
+                    <span class="history-date">{{ record.date }}</span>
+                    <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
+                    @if (record.notes) {
+                      <p class="history-notes">{{ record.notes }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <div class="tooth-add-treatment-form">
+            <h4>Registrar Nuevo Diagnóstico / Tratamiento</h4>
+            
+            <div class="treatment-grid">
+              @for (cond of conditionOptions; track cond) {
+                <button class="btn btn--outline" [class.btn--primary]="selTooth.condition === cond" [disabled]="savingTooth()" (click)="applyCondition(cond)">
+                  {{ conditionLabel(cond) }}
+                </button>
+              }
+            </div>
+
+            <div class="mt-3">
+              <label>Observaciones Adicionales (Opcional):</label>
+              <textarea 
+                class="form-input" 
+                rows="2" 
+                placeholder="Ej. Curación con resina compuesta en cara oclusal..."
+                (input)="progressNotes.set($any($event.target).value)"
+                [value]="progressNotes()">
+              </textarea>
+            </div>
+          </div>
+
+        </div>
+      </app-modal>
+    }
+  }
+</article>

@@ -6,7 +6,7 @@
     [attr.aria-label]="title()"
     aria-modal="true"
   >
-    <div class="modal-panel">
+    <div class="modal-panel" [class.modal-panel-lg]="size() === 'lg'" [class.modal-panel-xl]="size() === 'xl'">
       <header class="modal-header">
         <h2 class="modal-title">{{ title() }}</h2>
         <button

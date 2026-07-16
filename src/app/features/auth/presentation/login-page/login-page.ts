@@ -27,8 +27,13 @@ export class LoginPage {
 
   serverError: string | null = null;
   submitting = false;
+  showPassword = false;
 
-  submit() {
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  submit(): void {
     if (this.form.invalid || this.submitting) {
       return;
     }
@@ -47,8 +52,9 @@ export class LoginPage {
         this.submitting = false;
         const errorObj = err as { error?: { message?: string } } | undefined;
         this.serverError =
-          errorObj?.error?.message || 'Invalid credentials. Please try again.';
+          errorObj?.error?.message || 'Credenciales inválidas. Por favor verifica tus datos e intenta nuevamente.';
       },
     });
   }
 }
+

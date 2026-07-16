@@ -1,15 +1,28 @@
 export type ToothCondition =
   | 'healthy'
   | 'caries'
-  | 'restoration'
-  | 'extraction'
-  | 'crown'
-  | 'missing';
+  | 'restoration' // curación
+  | 'extraction' // extracción
+  | 'crown' // corona
+  | 'missing' // ausente
+  | 'endodontics' // endodoncia
+  | 'implant' // implante
+  | 'sealant' // sellante
+  | 'fracture'; // fractura
+
+export interface ToothHistoryRecord {
+  id: string;
+  date: string;
+  condition: ToothCondition;
+  notes?: string;
+  // TODO: Add surface or specific treatment details when wiring to backend
+}
 
 export interface FdiTooth {
   fdiNumber: number;
-  condition: ToothCondition;
+  condition: ToothCondition; // current/latest condition
   notes?: string;
+  history?: ToothHistoryRecord[]; // frontend only for now
 }
 
 export interface Odontogram {
@@ -91,12 +104,16 @@ export function fdiTeethForQuadrant(quadrant: 'adult' | 'child'): number[] {
 /** Returns a human-readable label for a tooth condition. */
 export function toothConditionLabel(condition: ToothCondition): string {
   const labels: Record<ToothCondition, string> = {
-    healthy: 'Healthy',
+    healthy: 'Sano',
     caries: 'Caries',
-    restoration: 'Restoration',
-    extraction: 'Extraction',
-    crown: 'Crown',
-    missing: 'Missing',
+    restoration: 'Curación / Restauración',
+    extraction: 'Extracción Indicada',
+    crown: 'Corona',
+    missing: 'Ausente',
+    endodontics: 'Endodoncia',
+    implant: 'Implante',
+    sealant: 'Sellante',
+    fracture: 'Fractura',
   };
   return labels[condition];
 }
@@ -110,3 +127,16 @@ export function createDefaultAdultTeeth(): FdiTooth[] {
 export function createDefaultChildTeeth(): FdiTooth[] {
   return FDI_CHILD_TEETH.map((fdi) => ({ fdiNumber: fdi, condition: 'healthy' as ToothCondition }));
 }
+
+export const ALL_CONDITIONS: ToothCondition[] = [
+  'healthy',
+  'caries',
+  'restoration',
+  'extraction',
+  'crown',
+  'missing',
+  'endodontics',
+  'implant',
+  'sealant',
+  'fracture',
+];

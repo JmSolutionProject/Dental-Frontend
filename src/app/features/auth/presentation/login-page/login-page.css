@@ -1,48 +1,277 @@
-.login-page {
-  align-items: center;
-  background: #ffffff;
-  display: grid;
+/* ===== OMAYA Dental Brand Color Tokens ===== */
+:host {
+  --omaya-blue: #1c75b9;
+  --omaya-blue-dark: #13598e;
+  --omaya-blue-light: #f0f7fc;
+  --omaya-pink: #dc6788;
+  --omaya-text-dark: #0f172a;
+  --omaya-text-muted: #64748b;
+  --omaya-border: #e2e8f0;
+  --omaya-shadow: 0 20px 40px -15px rgba(28, 117, 185, 0.15), 0 0 0 1px rgba(28, 117, 185, 0.06);
+}
+
+.login-wrapper {
+  position: relative;
   min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f1f5f9 100%);
+  overflow: hidden;
   padding: 1.5rem;
+}
+
+/* Subtle Ambient Glow */
+.glow-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(28, 117, 185, 0.08) 0%, rgba(220, 103, 136, 0.05) 50%, rgba(255, 255, 255, 0) 75%);
+  pointer-events: none;
+}
+
+/* Centered Card Layout */
+.login-card-container {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  z-index: 2;
 }
 
 .login-card {
   background: #ffffff;
-  border: 1px solid var(--color-border);
-  border-radius: 1.5rem;
-  max-width: 440px;
-  padding: 2rem;
-}
-
-.login-card h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-}
-
-.login-form {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.login-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.625rem;
-  color: #991b1b;
-  font-size: var(--text-sm);
-  padding: 0.65rem 0.875rem;
-}
-
-.login-submit {
-  margin-top: 0.25rem;
+  border-radius: 2rem;
+  box-shadow: var(--omaya-shadow);
+  padding: 3rem 2.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Centered Logo */
+.logo-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  width: 100%;
 }
+
+.clinic-logo {
+  width: 150px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(28, 117, 185, 0.12));
+  transition: transform 0.3s ease;
+}
+
+.clinic-logo:hover {
+  transform: scale(1.02);
+}
+
+/* Greeting Header */
+.greeting-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.eyebrow-tag {
+  display: inline-block;
+  background: var(--omaya-blue-light);
+  color: var(--omaya-blue);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.85rem;
+  border-radius: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.greeting-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--omaya-text-dark);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  line-height: 1.25;
+}
+
+.greeting-subtitle {
+  color: var(--omaya-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Form Layout */
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field-container {
+  width: 100%;
+}
+
+/* Input Container & Icon Styling */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.875rem;
+  color: var(--omaya-text-muted);
+  pointer-events: none;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+
+.input-with-icon input {
+  display: block !important;
+  width: 100% !important;
+  height: 48px !important;
+  padding-left: 2.75rem !important;
+  padding-right: 2.75rem !important;
+  background: #f8fafc !important;
+  border-radius: 0.85rem !important;
+  border: 1px solid var(--omaya-border) !important;
+  color: var(--omaya-text-dark) !important;
+  font-size: var(--text-sm) !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.input-with-icon input:focus {
+  background: #ffffff !important;
+  border-color: var(--omaya-blue) !important;
+  box-shadow: 0 0 0 4px rgba(28, 117, 185, 0.14) !important;
+}
+
+.input-with-icon:focus-within .input-icon {
+  color: var(--omaya-blue);
+}
+
+
+/* Password Toggle Eye */
+.toggle-password-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: transparent;
+  border: 0;
+  padding: 0.35rem;
+  color: var(--omaya-text-muted);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.toggle-password-btn:hover {
+  color: var(--omaya-blue);
+  background: var(--omaya-blue-light);
+}
+
+/* Server Error Message */
+.login-error {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.85rem;
+  color: #991b1b;
+  font-size: var(--text-sm);
+  padding: 0.75rem 1rem;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Submit Action Button */
+.login-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(135deg, #1c75b9 0%, #13598e 100%);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  border: none;
+  border-radius: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -4px rgba(28, 117, 185, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 0.5rem;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1f7fc7 0%, #1665a0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -4px rgba(28, 117, 185, 0.45);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Footer Copyright */
+.card-footer {
+  text-align: center;
+  margin-top: 2rem;
+  width: 100%;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1.25rem;
+}
+
+.card-footer p {
+  color: var(--omaya-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  margin: 0;
+}
+
+

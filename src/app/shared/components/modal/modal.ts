@@ -12,7 +12,7 @@ import {
 })
 export class Modal {
   title = input.required<string>();
-  visible = input(false);
+  visible = input(false); size = input<'md' | 'lg' | 'xl'>('md');
 
   close = output<void>();
 

@@ -1,0 +1,88 @@
+<div class="tab-wrapper">
+  <!-- ALERTAS MÉDICAS DINÁMICAS GENERADAS AUTOMÁTICAMENTE POR EL SISTEMA SEGÚN LA ANAMNESIS -->
+  <section class="medical-risk-badges-header">
+    @if (systemMedicalAlerts().length === 0) {
+      <div class="risk-badge-item risk-badge-item--gray">
+        <span class="badge-tag">APTO</span>
+        <div>
+          <strong>Sin alertas de riesgo médico registradas</strong>
+          <span class="badge-sub">Paciente apto para tratamiento odonto-estomatológico de rutina</span>
+        </div>
+      </div>
+    } @else {
+      @for (alert of systemMedicalAlerts(); track alert.title) {
+        <div class="risk-badge-item" [class.risk-badge-item--red]="alert.level === 'CRÍTICO'" [class.risk-badge-item--orange]="alert.level === 'ALERTA'">
+          <span class="badge-tag" [class.badge-tag--critical]="alert.level === 'CRÍTICO'">{{ alert.level }}</span>
+          <div>
+            <strong>{{ alert.title }}</strong>
+            <span class="badge-sub">{{ alert.detail }}</span>
+          </div>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- INDICADORES CLÍNICOS RÁPIDOS Y RESUMEN GENERAL -->
+  <div class="summary-kpis-grid">
+    <div class="kpi-card">
+      <span class="kpi-label">Tratamientos Pendientes</span>
+      <strong class="kpi-value text-accent">2 Procedimientos</strong>
+      <span class="kpi-sub">Endodoncia y Corona Pieza 36</span>
+    </div>
+
+    <div class="kpi-card">
+      <span class="kpi-label">Saldo Pendiente</span>
+      <strong class="kpi-value text-danger">S/ {{ budgetPending() }}</strong>
+      <span class="kpi-sub">De un total de S/ {{ budgetTotal() }}</span>
+    </div>
+
+    <div class="kpi-card">
+      <span class="kpi-label">Última Radiografía</span>
+      <strong class="kpi-value text-dark">15/07/2026</strong>
+      <span class="kpi-sub">Panorámica e Intraoral</span>
+    </div>
+
+    <div class="kpi-card">
+      <span class="kpi-label">Próxima Cita</span>
+      <strong class="kpi-value text-success">{{ nextAppointmentDate() }}</strong>
+      <span class="kpi-sub">Con {{ assignedDoctor() }}</span>
+    </div>
+  </div>
+
+  <!-- RESUMEN PRINCIPAL DEL EXPEDIENTE -->
+  <article class="dossier-card">
+    <div class="card-title-bar">
+      <div>
+        <h2>Resumen del Expediente Clínico</h2>
+        <p class="subtitle">Visión general condensada del paciente para la consulta activa.</p>
+      </div>
+    </div>
+
+    <div class="summary-details-grid">
+      <div class="detail-group">
+        <span class="detail-label">Nombre Completo</span>
+        <strong class="detail-val">{{ patient().firstName }} {{ patient().lastName }}</strong>
+      </div>
+      <div class="detail-group">
+        <span class="detail-label">Número de DNI</span>
+        <strong class="detail-val">{{ patient().documentNumber || 'Sin DNI' }}</strong>
+      </div>
+      <div class="detail-group">
+        <span class="detail-label">Fecha de Nacimiento</span>
+        <strong class="detail-val">{{ patient().birthDate || 'No registrada' }}</strong>
+      </div>
+      <div class="detail-group">
+        <span class="detail-label">Teléfono de Contacto</span>
+        <strong class="detail-val">{{ patient().phone || 'Sin registrar' }}</strong>
+      </div>
+      <div class="detail-group">
+        <span class="detail-label">Última Visita</span>
+        <strong class="detail-val">{{ lastVisitDate() }}</strong>
+      </div>
+      <div class="detail-group">
+        <span class="detail-label">Odontólogo Asignado</span>
+        <strong class="detail-val">{{ assignedDoctor() }}</strong>
+      </div>
+    </div>
+  </article>
+</div>

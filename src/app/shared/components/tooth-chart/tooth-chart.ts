@@ -9,6 +9,10 @@ const CONDITION_COLORS: Record<ToothCondition, { fill: string; stroke: string }>
   extraction: { fill: '#e2e8f0', stroke: '#64748b' },
   crown: { fill: '#fef3c7', stroke: '#f59e0b' },
   missing: { fill: '#f1f5f9', stroke: '#94a3b8' },
+  endodontics: { fill: '#e0e7ff', stroke: '#6366f1' },
+  implant: { fill: '#dcfce7', stroke: '#22c55e' },
+  sealant: { fill: '#f3e8ff', stroke: '#a855f7' },
+  fracture: { fill: '#ffedd5', stroke: '#f97316' },
 };
 
 @Component({
@@ -25,9 +29,6 @@ export class ToothChart {
   readonly toothClick = output<FdiTooth>();
 
   readonly colors = computed(() => CONDITION_COLORS[this.tooth().condition]);
-
-  readonly toothPath =
-    'M 4 20 C 4 12, 8 4, 12 0 L 28 0 C 32 4, 36 12, 36 20 C 36 28, 32 36, 28 40 L 12 40 C 8 36, 4 28, 4 20 Z';
 
   readonly displayLabel = computed(() => String(this.tooth().fdiNumber));
 

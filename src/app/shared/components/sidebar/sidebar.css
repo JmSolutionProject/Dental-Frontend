@@ -15,29 +15,22 @@
 .brand {
   align-items: center;
   display: flex;
-  gap: 0.75rem;
+  justify-content: center;
+  padding: 0.75rem 0.25rem;
   text-decoration: none;
 }
 
-.brand strong {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 750;
-  letter-spacing: var(--tracking-tight);
+.brand-logo-img {
+  height: 5.5rem;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(28, 117, 185, 0.12));
+  transition: transform 0.2s ease;
 }
 
-.brand-mark {
-  align-items: center;
-  background: #e0f2fe;
-  border-radius: 0.75rem;
-  color: #0284c7;
-  display: grid;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 800;
-  height: 2.75rem;
-  place-items: center;
-  width: 2.75rem;
+.brand-logo-img:hover {
+  transform: scale(1.03);
 }
 
 .nav {

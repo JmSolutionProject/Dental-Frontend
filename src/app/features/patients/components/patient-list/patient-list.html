@@ -1,11 +1,11 @@
 <section class="page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Patients</p>
-      <h1>Patient records</h1>
-      <p class="muted">Manage patient profiles, medical history, and clinical notes.</p>
+      <p class="eyebrow">Directorio de Pacientes</p>
+      <h1>Expedientes Clínicos</h1>
+      <p class="muted">Gestión de datos personales, historial médico y fichas de pacientes.</p>
     </div>
-    <button class="button" type="button" (click)="openCreateModal()">Add patient</button>
+    <button class="button" type="button" (click)="openCreateModal()">+ Registrar Paciente</button>
   </header>
 
   <!-- Search bar -->
@@ -13,7 +13,7 @@
     <input
       type="text"
       class="search-input"
-      placeholder="Search by name or document…"
+      placeholder="Buscar por nombre, apellidos o DNI…"
       (input)="onSearchInput($event)"
     />
   </div>
@@ -21,16 +21,16 @@
   <!-- Table -->
   <article class="card">
     @if (loading()) {
-      <p class="muted loading-text">Loading patients…</p>
+      <p class="muted loading-text">Cargando expediente de pacientes…</p>
     } @else if (result(); as res) {
       @if (res.data.length === 0) {
         <div class="empty-state">
           @if (searchText()) {
-            <p class="muted">No patients matching "<strong>{{ searchText() }}</strong>".</p>
-            <p class="muted">Try a different search term or clear the filter.</p>
+            <p class="muted">No se encontraron pacientes que coincidan con "<strong>{{ searchText() }}</strong>".</p>
+            <p class="muted">Intenta con otro término de búsqueda o limpia el filtro.</p>
           } @else {
-            <p class="muted">No patients found.</p>
-            <p class="muted">Click "Add patient" to create the first record.</p>
+            <p class="muted">No hay pacientes registrados aún.</p>
+            <p class="muted">Haz clic en "+ Registrar Paciente" para crear el primer registro.</p>
           }
         </div>
       } @else {
@@ -52,60 +52,78 @@
 
   <!-- Create patient modal -->
   <app-modal
-    title="Add patient"
+    title="Registrar Nuevo Paciente"
     [visible]="showCreateModal()"
     (close)="closeCreateModal()"
   >
     <form [formGroup]="createForm" class="create-form" (ngSubmit)="submitCreate()">
       <div class="create-form-intro">
-        <span class="create-form-icon">+</span>
+        <span class="create-form-icon">🪪</span>
         <div>
-          <strong>New clinical record</strong>
-          <p>Only fields supported by the current backend create DTO are sent.</p>
+          <strong>Identificación de Paciente</strong>
+          <p>Ingresa el DNI para autocompletar nombres y apellidos desde la RENIEC.</p>
         </div>
       </div>
 
+      <!-- DNI Lookup section -->
       <section class="create-section">
-        <h3>Identity</h3>
+        <h3>Consulta RENIEC (DNI)</h3>
+        <div class="dni-lookup-group">
+          <div class="dni-field">
+            <app-form-field label="Número de DNI (8 dígitos)" [control]="createForm.get('documentNumber')!">
+              <input
+                type="text"
+                formControlName="documentNumber"
+                placeholder="Ej. 71234567"
+                maxlength="12"
+                (keyup.enter)="lookupDni()"
+              />
+            </app-form-field>
+          </div>
+          <button
+            class="button button--secondary lookup-btn"
+            type="button"
+            (click)="lookupDni()"
+            [disabled]="consultingDni()"
+          >
+            {{ consultingDni() ? 'Consultando…' : '🔍 Consultar RENIEC' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="create-section">
+        <h3>Datos Personales</h3>
         <div class="create-grid create-grid--two">
-          <app-form-field label="First name" [control]="createForm.get('firstName')!">
-            <input type="text" formControlName="firstName" autocomplete="given-name" />
+          <app-form-field label="Nombres" [control]="createForm.get('firstName')!">
+            <input type="text" formControlName="firstName" autocomplete="given-name" placeholder="Nombres completos" />
           </app-form-field>
 
-          <app-form-field label="Last name" [control]="createForm.get('lastName')!">
-            <input type="text" formControlName="lastName" autocomplete="family-name" />
+          <app-form-field label="Apellidos" [control]="createForm.get('lastName')!">
+            <input type="text" formControlName="lastName" autocomplete="family-name" placeholder="Apellidos paterno y materno" />
           </app-form-field>
         </div>
 
         <div class="create-grid create-grid--two">
-          <app-form-field label="WhatsApp phone" [control]="createForm.get('phone')!">
-            <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+51999999999" />
+          <app-form-field label="Teléfono WhatsApp" [control]="createForm.get('phone')!">
+            <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+51 999 999 999" />
           </app-form-field>
 
-          <app-form-field label="Birth date" [control]="createForm.get('birthDate')!">
+          <app-form-field label="Fecha de Nacimiento" [control]="createForm.get('birthDate')!">
             <input type="date" formControlName="birthDate" />
           </app-form-field>
         </div>
       </section>
 
       <section class="create-section create-section--clinical">
-        <h3>Clinical alerts</h3>
-        <app-form-field label="Critical allergies" [control]="createForm.get('allergies')!">
+        <h3>Alertas Médicas y Alergias</h3>
+        <app-form-field label="Alergias Críticas o Condiciones" [control]="createForm.get('allergies')!">
           <textarea
             formControlName="allergies"
             rows="3"
-            placeholder="Penicillin, latex, anesthesia reaction"
+            placeholder="Ej: Penicilina, anestesia, látex, hipertensión"
           ></textarea>
         </app-form-field>
-        <p class="create-hint">Separate multiple allergies with commas. This maps to <code>alergiasCriticas</code>.</p>
-      </section>
-
-      <section class="create-section create-section--optional">
-        <h3>Local reference</h3>
-        <app-form-field label="Document number" [control]="createForm.get('documentNumber')!">
-          <input type="text" formControlName="documentNumber" autocomplete="off" />
-        </app-form-field>
-        <p class="create-hint">The backend create DTO does not persist this field yet.</p>
+        <p class="create-hint">Separa múltiples alergias o condiciones con comas.</p>
       </section>
 
       <div class="create-actions">
@@ -114,14 +132,14 @@
           type="button"
           (click)="closeCreateModal()"
         >
-          Cancel
+          Cancelar
         </button>
         <button
           class="button"
           type="submit"
           [disabled]="creating()"
         >
-          {{ creating() ? 'Creating…' : 'Create' }}
+          {{ creating() ? 'Guardando…' : 'Guardar Paciente' }}
         </button>
       </div>
     </form>

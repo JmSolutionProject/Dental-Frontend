@@ -28,7 +28,8 @@ export function roleGuard(allowed: Role[]): CanActivateFn {
       return router.createUrlTree(['/forbidden']);
     }
 
-    if (roles.some((role) => allowed.includes(role))) {
+    const allowedLower = allowed.map((a) => a.toLowerCase());
+    if (roles.some((role) => allowedLower.includes(role.toLowerCase()))) {
       return true;
     }
 

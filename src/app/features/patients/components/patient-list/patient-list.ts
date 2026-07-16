@@ -17,6 +17,7 @@ import { Table, TableColumn } from '../../../../shared/components/table/table';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { ReniecService } from '../../../../core/services/reniec.service';
 
 @Component({
   selector: 'app-patient-list',
@@ -30,6 +31,7 @@ export class PatientList {
   private readonly createPatient = inject(CreatePatientUseCase);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly reniec = inject(ReniecService);
 
   readonly searchText = signal('');
   readonly currentPage = signal(1);
@@ -38,21 +40,22 @@ export class PatientList {
   readonly loading = signal(true);
   readonly showCreateModal = signal(false);
   readonly creating = signal(false);
+  readonly consultingDni = signal(false);
 
   readonly columns: TableColumn[] = [
-    { key: 'firstName', label: 'Name', sortable: true },
-    { key: 'documentNumber', label: 'Document' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'status', label: 'Status' },
+    { key: 'firstName', label: 'Nombre Completo', sortable: true },
+    { key: 'documentNumber', label: 'DNI / Documento' },
+    { key: 'phone', label: 'Teléfono WhatsApp' },
+    { key: 'status', label: 'Estado' },
   ];
 
   readonly sortKey = signal<string | null>(null);
   readonly sortDir = signal<'asc' | 'desc'>('asc');
 
   readonly createForm: FormGroup = this.fb.group({
+    documentNumber: ['', [Validators.pattern('^[0-9]{8,12}$')]],
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
-    documentNumber: [''],
     phone: ['', [Validators.required]],
     allergies: [''],
     birthDate: [''],
@@ -92,7 +95,7 @@ export class PatientList {
       .pipe(
         take(1),
         catchError(() => {
-          this.toast.error('Failed to load patients.');
+          this.toast.error('Error al cargar la lista de pacientes.');
           const empty: PaginatedResponse<Patient> = {
             data: [],
             total: 0,
@@ -152,6 +155,49 @@ export class PatientList {
     this.showCreateModal.set(false);
   }
 
+  /**
+   * Consulta los datos de la RENIEC usando el DNI ingresado
+   */
+  lookupDni() {
+    const dni = this.createForm.get('documentNumber')?.value?.trim();
+    if (!dni || dni.length !== 8) {
+      this.toast.info('Ingrese un número de DNI válido de 8 dígitos.');
+      return;
+    }
+
+    this.consultingDni.set(true);
+
+    this.reniec
+      .lookupDni(dni)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se encontró información para el DNI ingresado.');
+          return of(null);
+        }),
+        finalize(() => this.consultingDni.set(false)),
+      )
+      .subscribe((res) => {
+        if (!res) return;
+
+        if (res.success && res.data) {
+          const nombres = res.data.nombres || '';
+          const apellidos =
+            res.data.apellidos ||
+            `${res.data.apellidoPaterno || ''} ${res.data.apellidoMaterno || ''}`.trim();
+
+          this.createForm.patchValue({
+            firstName: nombres.trim(),
+            lastName: apellidos.trim(),
+          });
+
+          this.toast.success(`¡RENIEC: ${nombres} ${apellidos}!`);
+        } else {
+          this.toast.error(res.message || 'No se encontró información para el DNI ingresado.');
+        }
+      });
+  }
+
   submitCreate() {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
@@ -176,29 +222,45 @@ export class PatientList {
       .pipe(
         take(1),
         catchError(() => {
-          this.toast.error('Failed to create patient.');
+          this.toast.error('Error al registrar el paciente.');
           return of(null);
         }),
         finalize(() => this.creating.set(false)),
       )
       .subscribe((patient) => {
         if (patient) {
-          this.toast.success('Patient created successfully.');
+          this.toast.success('Paciente registrado exitosamente.');
           this.showCreateModal.set(false);
           this.loadPatients();
-          return;
         }
-
-        this.toast.info('The backend accepted the request, but patient creation is still pending.');
-        this.showCreateModal.set(false);
-        this.loadPatients();
       });
   }
 
   private parseList(value: string): string[] {
+    if (!value) return [];
     return value
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
+  }
+
+  private formatDateToIso(rawDate: string | null | undefined): string | null {
+    if (!rawDate) return null;
+    const str = String(rawDate).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      return str;
+    }
+    const slashMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (slashMatch) {
+      const day = slashMatch[1].padStart(2, '0');
+      const month = slashMatch[2].padStart(2, '0');
+      const year = slashMatch[3];
+      return `${year}-${month}-${day}`;
+    }
+    const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (isoMatch) {
+      return isoMatch[1];
+    }
+    return null;
   }
 }
