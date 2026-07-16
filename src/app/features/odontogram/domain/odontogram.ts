@@ -10,17 +10,34 @@ export type ToothCondition =
   | 'sealant' // sellante
   | 'fracture'; // fractura
 
+export type ToothSurface =
+  | 'vestibular'
+  | 'lingualPalatal'
+  | 'mesial'
+  | 'distal'
+  | 'occlusal';
+
+export interface ToothSurfaceSelection {
+  fdiNumber: number;
+  surface: ToothSurface;
+}
+
 export interface ToothHistoryRecord {
   id: string;
   date: string;
   condition: ToothCondition;
+  surface?: ToothSurface;
   notes?: string;
-  // TODO: Add surface or specific treatment details when wiring to backend
 }
 
 export interface FdiTooth {
+  id?: string | number;
+  detailId?: string | number;
   fdiNumber: number;
   condition: ToothCondition; // current/latest condition
+  surface?: ToothSurface;
+  surfaceConditions?: Partial<Record<ToothSurface, ToothCondition>>;
+  surfaceDetailIds?: Partial<Record<ToothSurface, string | number>>;
   notes?: string;
   history?: ToothHistoryRecord[]; // frontend only for now
 }
@@ -116,6 +133,18 @@ export function toothConditionLabel(condition: ToothCondition): string {
     fracture: 'Fractura',
   };
   return labels[condition];
+}
+
+/** Returns a human-readable label for a tooth surface. */
+export function toothSurfaceLabel(surface: ToothSurface): string {
+  const labels: Record<ToothSurface, string> = {
+    vestibular: 'Vestibular',
+    lingualPalatal: 'Lingual / Palatina',
+    mesial: 'Mesial',
+    distal: 'Distal',
+    occlusal: 'Oclusal',
+  };
+  return labels[surface];
 }
 
 /** Default set of teeth for an adult odontogram (all healthy). */

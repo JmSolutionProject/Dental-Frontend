@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { take, catchError, of, finalize } from 'rxjs';
+import { take, catchError, finalize, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { GetOdontogramUseCase } from '../../application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../application/update-tooth-condition.usecase';
@@ -9,7 +9,10 @@ import {
   fdiTeethForQuadrant,
   fdiToGridPosition,
   ToothCondition,
+  ToothSurface,
+  ToothSurfaceSelection,
   toothConditionLabel,
+  toothSurfaceLabel,
   createDefaultAdultTeeth,
   createDefaultChildTeeth,
   Odontogram,
@@ -42,6 +45,7 @@ export class OdontogramChart {
   readonly loading = signal(true);
   readonly odontogram = signal<Odontogram | null>(null);
   readonly selectedTooth = signal<FdiTooth | null>(null);
+  readonly selectedSurface = signal<ToothSurface | null>(null);
   readonly saving = signal(false);
 
   readonly quadrant = signal<'adult' | 'child'>('adult');
@@ -77,6 +81,9 @@ export class OdontogramChart {
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
   });
+
+  readonly upperTeeth = computed(() => this.positionedTeeth().filter((item) => item.row === 0));
+  readonly lowerTeeth = computed(() => this.positionedTeeth().filter((item) => item.row === 1));
 
   /** Max columns in the grid — adult=16, child=10. */
   readonly gridCols = computed(() =>
@@ -120,10 +127,8 @@ export class OdontogramChart {
         .execute(id)
         .pipe(
           take(1),
-          catchError(() => {
-            // No existing odontogram — use default teeth set
-            return of(null);
-          }),
+          catchError(() => of(null)),
+          switchMap((odontogramData) => this.ensureOdontogram(id, odontogramData)),
           finalize(() => this.loading.set(false)),
         )
         .subscribe((odontogramData) => {
@@ -131,9 +136,41 @@ export class OdontogramChart {
             this.odontogram.set(odontogramData);
             this.quadrant.set(odontogramData.quadrant);
           }
-          // If null, the computed `teeth` will use default healthy set
         });
     });
+  }
+
+  private ensureOdontogram(patientId: string, odontogram: Odontogram | null) {
+    const quadrant = odontogram?.quadrant ?? this.quadrant();
+    const requiredFdi = fdiTeethForQuadrant(quadrant);
+    const existingTeeth = new Map<number, FdiTooth>();
+
+    for (const tooth of odontogram?.teeth ?? []) {
+      existingTeeth.set(tooth.fdiNumber, tooth);
+    }
+
+    const missingTeeth: FdiTooth[] = requiredFdi
+      .filter((fdiNumber) => !existingTeeth.has(fdiNumber))
+      .map((fdiNumber) => ({ fdiNumber, condition: 'healthy', notes: '' }));
+
+    const completeOdontogram: Odontogram = {
+      patientId,
+      quadrant,
+      teeth: requiredFdi.map(
+        (fdiNumber) => existingTeeth.get(fdiNumber) ?? ({ fdiNumber, condition: 'healthy', notes: '' } as FdiTooth),
+      ),
+    };
+
+    if (missingTeeth.length === 0) {
+      return of(completeOdontogram);
+    }
+
+    return forkJoin(
+      missingTeeth.map((tooth) => this.updateToothCondition.execute(patientId, tooth).pipe(take(1))),
+    ).pipe(
+      map((responses) => responses.at(-1) ?? completeOdontogram),
+      catchError(() => of(completeOdontogram)),
+    );
   }
 
   selectTooth(tooth: FdiTooth) {
@@ -141,9 +178,19 @@ export class OdontogramChart {
 
     if (this.selectedTooth()?.fdiNumber === tooth.fdiNumber) {
       this.selectedTooth.set(null);
+      this.selectedSurface.set(null);
     } else {
       this.selectedTooth.set(tooth);
+      this.selectedSurface.set(null);
     }
+  }
+
+  selectSurface(selection: ToothSurfaceSelection) {
+    const tooth = this.teeth().find((t) => t.fdiNumber === selection.fdiNumber);
+    if (!tooth || this.saving()) return;
+
+    this.selectedTooth.set(tooth);
+    this.selectedSurface.set(selection.surface);
   }
 
   applyCondition(condition: ToothCondition) {
@@ -152,6 +199,13 @@ export class OdontogramChart {
     if (!tooth || !patient) return;
 
     const updatedTooth: FdiTooth = { ...tooth, condition };
+    if (this.selectedSurface()) {
+      updatedTooth.surface = this.selectedSurface() ?? undefined;
+      updatedTooth.surfaceConditions = {
+        ...tooth.surfaceConditions,
+        [this.selectedSurface() as ToothSurface]: condition,
+      };
+    }
 
     this.saving.set(true);
 
@@ -167,11 +221,20 @@ export class OdontogramChart {
       )
       .subscribe((updatedOdontogram) => {
         if (updatedOdontogram) {
-          this.odontogram.set(updatedOdontogram);
-          // Update selected tooth reference
-          const refreshed = updatedOdontogram.teeth.find(
+          const persistedTooth = updatedOdontogram.teeth.find(
             (t) => t.fdiNumber === tooth.fdiNumber,
           );
+          const refreshed: FdiTooth = {
+            ...updatedTooth,
+            id: persistedTooth?.id ?? updatedTooth.id,
+            detailId: persistedTooth?.detailId ?? updatedTooth.detailId,
+            surfaceDetailIds: {
+              ...updatedTooth.surfaceDetailIds,
+              ...persistedTooth?.surfaceDetailIds,
+            },
+          };
+
+          this.mergeTooth(refreshed);
           this.selectedTooth.set(refreshed ?? null);
           this.toast.success(
             `Tooth ${tooth.fdiNumber} updated to ${toothConditionLabel(condition)}.`,
@@ -180,22 +243,45 @@ export class OdontogramChart {
       });
   }
 
+  private mergeTooth(tooth: FdiTooth) {
+    const current = this.odontogram();
+    const patientId = this.patientId();
+    if (!current || !patientId) return;
+
+    this.odontogram.set({
+      ...current,
+      teeth: current.teeth.map((item) =>
+        item.fdiNumber === tooth.fdiNumber ? { ...item, ...tooth } : item,
+      ),
+    });
+  }
+
   closeEditor() {
     this.selectedTooth.set(null);
+    this.selectedSurface.set(null);
   }
 
   conditionLabel(condition: ToothCondition): string {
     return toothConditionLabel(condition);
   }
 
+  surfaceLabel(surface: ToothSurface): string {
+    return toothSurfaceLabel(surface);
+  }
+
   setQuadrant(q: 'adult' | 'child') {
     this.quadrant.set(q);
     this.selectedTooth.set(null);
+    this.selectedSurface.set(null);
   }
 
   /** Determine grid column style for a tooth position. */
   gridColumnStyle(col: number): string {
     return String(col + 1);
+  }
+
+  gridRowStyle(row: number): string {
+    return row === 0 ? '1' : '3';
   }
 
   isSelected(tooth: FdiTooth): boolean {

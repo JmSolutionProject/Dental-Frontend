@@ -1,7 +1,7 @@
 <article class="dossier-card">
   <div class="odontogram-title-bar">
     <div>
-      <h2>Odontograma Clínico 2D (Notación FDI)</h2>
+      <h2>Odontograma Clínico</h2>
       <p class="subtitle">Selección de dientes y registro de caries, extracciones, coronas, implantes, endodoncias, restauraciones, prótesis y sellantes.</p>
     </div>
 
@@ -22,14 +22,47 @@
     </div>
   } @else {
     <div class="odontogram-canvas">
-      <div class="teeth-grid" [style.--grid-cols]="gridCols()">
-        @for (item of positionedTeeth(); track item.tooth.fdiNumber) {
-          <div class="tooth-card" [class.tooth-card--selected]="isSelected(item.tooth)" [style.grid-column]="gridColumnStyle(item.col)" (click)="selectTooth(item.tooth)">
-            <span class="tooth-fdi">{{ item.tooth.fdiNumber }}</span>
-            <app-tooth-chart [tooth]="item.tooth"></app-tooth-chart>
-          </div>
-        }
-      </div>
+      <section class="arch-grid-card arch-grid-card--upper">
+        <div class="arch-label">Arcada superior</div>
+        <div class="teeth-grid" [style.--grid-cols]="gridCols()">
+          @for (item of upperTeeth(); track item.tooth.fdiNumber) {
+            <div
+              class="tooth-card"
+              [class.tooth-card--selected]="isSelected(item.tooth)"
+              [style.grid-column]="gridColumnStyle(item.col)"
+            >
+              <app-tooth-chart
+                [tooth]="item.tooth"
+                [selected]="isSelected(item.tooth)"
+                [selectedSurface]="isSelected(item.tooth) ? selectedSurface() : null"
+                (toothClick)="selectTooth($event)"
+                (surfaceClick)="selectSurface($event)"
+              ></app-tooth-chart>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="arch-grid-card arch-grid-card--lower">
+        <div class="arch-label">Arcada inferior</div>
+        <div class="teeth-grid" [style.--grid-cols]="gridCols()">
+          @for (item of lowerTeeth(); track item.tooth.fdiNumber) {
+            <div
+              class="tooth-card"
+              [class.tooth-card--selected]="isSelected(item.tooth)"
+              [style.grid-column]="gridColumnStyle(item.col)"
+            >
+              <app-tooth-chart
+                [tooth]="item.tooth"
+                [selected]="isSelected(item.tooth)"
+                [selectedSurface]="isSelected(item.tooth) ? selectedSurface() : null"
+                (toothClick)="selectTooth($event)"
+                (surfaceClick)="selectSurface($event)"
+              ></app-tooth-chart>
+            </div>
+          }
+        </div>
+      </section>
     </div>
 
     <!-- Tooth Progress Modal -->
@@ -42,6 +75,9 @@
             <span class="badge" [class.badge-healthy]="selTooth.condition === 'healthy'">
               {{ conditionLabel(selTooth.condition) }}
             </span>
+            @if (selectedSurface(); as surface) {
+              <span class="badge">Superficie: {{ surfaceLabel(surface) }}</span>
+            }
           </div>
 
           <div class="tooth-history-list mb-4">
@@ -54,6 +90,9 @@
                   <li class="history-item">
                     <span class="history-date">{{ record.date }}</span>
                     <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
+                    @if (record.surface) {
+                      <span class="history-surface">{{ surfaceLabel(record.surface) }}</span>
+                    }
                     @if (record.notes) {
                       <p class="history-notes">{{ record.notes }}</p>
                     }
@@ -68,7 +107,12 @@
             
             <div class="treatment-grid">
               @for (cond of conditionOptions; track cond) {
-                <button class="btn btn--outline" [class.btn--primary]="selTooth.condition === cond" [disabled]="savingTooth()" (click)="applyCondition(cond)">
+                <button
+                  class="btn btn--outline"
+                  [class.btn--primary]="selectedCondition() === cond"
+                  [disabled]="savingTooth()"
+                  (click)="selectCondition(cond)"
+                >
                   {{ conditionLabel(cond) }}
                 </button>
               }
@@ -83,6 +127,18 @@
                 (input)="progressNotes.set($any($event.target).value)"
                 [value]="progressNotes()">
               </textarea>
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn btn--outline" type="button" [disabled]="savingTooth()" (click)="closeToothProgressModal()">
+                Cancelar
+              </button>
+              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || hasPersistedSelectedDetail()" (click)="saveToothProgress()">
+                {{ savingTooth() ? 'Guardando...' : 'Guardar' }}
+              </button>
+              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || !hasPersistedSelectedDetail()" (click)="saveToothProgress()">
+                {{ savingTooth() ? 'Actualizando...' : 'Actualizar' }}
+              </button>
             </div>
           </div>
 

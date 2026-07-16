@@ -59,19 +59,47 @@
 
     <!-- FDI SVG Chart -->
     <article class="card chart-container">
-      <div
-        class="tooth-grid"
-        [style.grid-template-columns]="'repeat(' + gridCols() + ', 1fr)'"
-      >
-        @for (item of positionedTeeth(); track item.tooth.fdiNumber) {
-          <app-tooth-chart
-            [tooth]="item.tooth"
-            [selected]="isSelected(item.tooth)"
-            [quadrant]="quadrant()"
-            (toothClick)="selectTooth($event)"
-          />
-        }
-      </div>
+      <section class="arch-grid-card arch-grid-card--upper">
+        <div class="arch-label">Upper arch</div>
+        <div
+          class="tooth-grid"
+          [style.grid-template-columns]="'repeat(' + gridCols() + ', 1fr)'"
+          [style.--grid-cols]="gridCols()"
+        >
+          @for (item of upperTeeth(); track item.tooth.fdiNumber) {
+            <app-tooth-chart
+              [style.grid-column]="gridColumnStyle(item.col)"
+              [tooth]="item.tooth"
+              [selected]="isSelected(item.tooth)"
+              [selectedSurface]="isSelected(item.tooth) ? selectedSurface() : null"
+              [quadrant]="quadrant()"
+              (toothClick)="selectTooth($event)"
+              (surfaceClick)="selectSurface($event)"
+            />
+          }
+        </div>
+      </section>
+
+      <section class="arch-grid-card arch-grid-card--lower">
+        <div class="arch-label">Lower arch</div>
+        <div
+          class="tooth-grid"
+          [style.grid-template-columns]="'repeat(' + gridCols() + ', 1fr)'"
+          [style.--grid-cols]="gridCols()"
+        >
+          @for (item of lowerTeeth(); track item.tooth.fdiNumber) {
+            <app-tooth-chart
+              [style.grid-column]="gridColumnStyle(item.col)"
+              [tooth]="item.tooth"
+              [selected]="isSelected(item.tooth)"
+              [selectedSurface]="isSelected(item.tooth) ? selectedSurface() : null"
+              [quadrant]="quadrant()"
+              (toothClick)="selectTooth($event)"
+              (surfaceClick)="selectSurface($event)"
+            />
+          }
+        </div>
+      </section>
     </article>
 
     <!-- Condition editor popover -->
@@ -88,6 +116,9 @@
           </button>
         </div>
         <p class="muted">Current: {{ conditionLabel(tooth.condition) }}</p>
+        @if (selectedSurface(); as surface) {
+          <p class="muted">Selected surface: {{ surfaceLabel(surface) }}</p>
+        }
         <div class="condition-options">
           @for (condition of conditionOptions; track condition) {
             <button

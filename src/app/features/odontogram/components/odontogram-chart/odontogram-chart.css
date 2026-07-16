@@ -109,15 +109,74 @@
 
 /* Chart container */
 .chart-container {
+  background: #eef2f7;
+  border: 2px solid #cbd5e1;
   overflow-x: auto;
   padding: 1.5rem;
 }
 
+.arch-grid-card {
+  background: #fff;
+  border: 2px solid #cbd5e1;
+  border-radius: 1rem;
+  min-width: calc(var(--grid-cols, 16) * 62px);
+  overflow: hidden;
+  padding: 0;
+}
+
+.arch-grid-card + .arch-grid-card {
+  margin-top: 1.25rem;
+}
+
+.arch-grid-card--upper {
+  border-color: #93c5fd;
+}
+
+.arch-grid-card--lower {
+  border-color: #86efac;
+}
+
+.arch-label {
+  background: #1e293b;
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.arch-grid-card--upper .arch-label {
+  background: #2563eb;
+}
+
+.arch-grid-card--lower .arch-label {
+  background: #16a34a;
+}
+
 .tooth-grid {
+  background-image:
+    linear-gradient(#e2e8f0 1px, transparent 1px),
+    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+  background-size: 62px 100%, 62px 100%;
   display: grid;
-  gap: 6px;
+  column-gap: 0;
   justify-items: center;
+  min-width: calc(var(--grid-cols, 16) * 62px);
   max-width: 100%;
+  padding: 0.75rem 0;
+}
+
+.tooth-grid app-tooth-chart {
+  align-items: center;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+  min-height: 148px;
+  padding: 0.25rem 0;
+  width: 100%;
 }
 
 /* Condition editor */

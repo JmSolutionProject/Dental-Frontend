@@ -1,85 +1,11 @@
-<svg
+<div
+  #canvas
   class="tooth-svg"
   [class.tooth-svg--selected]="selected()"
   [attr.data-condition]="tooth().condition"
-  viewBox="0 0 50 70"
-  width="40"
-  height="56"
-  (click)="onClick()"
   role="button"
-  [attr.aria-label]="'Tooth ' + tooth().fdiNumber + ' — ' + tooth().condition"
+  [attr.aria-label]="'Tooth ' + tooth().fdiNumber + ' - ' + tooth().condition"
   tabindex="0"
-  (keydown.enter)="onClick()"
-  (keydown.space)="onClick(); $event.preventDefault()"
->
-  <!-- Root Section -->
-  <g class="tooth-roots" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round">
-    <!-- Left Root -->
-    <path d="M 15 35 Q 12 10 20 5 Q 23 15 25 35 Z" />
-    <!-- Right Root -->
-    <path d="M 35 35 Q 38 10 30 5 Q 27 15 25 35 Z" />
-  </g>
-
-  <!-- Crown / Surfaces Section (Standard 5 surfaces) -->
-  <g class="tooth-surfaces" transform="translate(0, 35)">
-    <!-- Outer circle boundary for reference (optional) -->
-    <!-- <circle cx="25" cy="15" r="15" fill="none" stroke="#cbd5e1" stroke-width="1"/> -->
-
-    <!-- Vestibular (Top) -->
-    <path d="M 10 15 L 15 10 L 35 10 L 40 15 Z" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round"/>
-    
-    <!-- Lingual/Palatine (Bottom) -->
-    <path d="M 10 15 L 15 20 L 35 20 L 40 15 Z" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round"/>
-    
-    <!-- Distal / Mesial (Left) -->
-    <path d="M 10 15 L 15 10 L 15 20 Z" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round"/>
-    
-    <!-- Mesial / Distal (Right) -->
-    <path d="M 40 15 L 35 10 L 35 20 Z" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round"/>
-    
-    <!-- Oclusal/Incisal (Center) -->
-    <rect x="15" y="10" width="20" height="10" [attr.fill]="colors().fill" [attr.stroke]="colors().stroke" stroke-width="1.5" stroke-linejoin="round"/>
-    
-    <!-- Condition specific overlays (e.g. Endodontics line, Extraction X) -->
-    @if (tooth().condition === 'extraction') {
-      <path d="M 5 0 L 45 30 M 45 0 L 5 30" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>
-    }
-    @if (tooth().condition === 'endodontics') {
-      <!-- Red line through the roots for endodontics -->
-      <path d="M 25 -30 L 25 0" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
-    }
-    @if (tooth().condition === 'fracture') {
-      <!-- Jagged line across the crown -->
-      <path d="M 10 10 L 20 18 L 30 12 L 40 20" stroke="#dc2626" stroke-width="2" fill="none" stroke-linecap="round" />
-    }
-  </g>
-
-  <!-- FDI number label -->
-  <text
-    x="25"
-    y="65"
-    text-anchor="middle"
-    dominant-baseline="middle"
-    font-size="11"
-    font-family="sans-serif"
-    font-weight="700"
-    [attr.fill]="tooth().condition === 'healthy' ? '#334155' : '#1e293b'"
-  >
-    {{ displayLabel() }}
-  </text>
-
-  <!-- Selection indicator ring -->
-  @if (selected()) {
-    <rect
-      x="1"
-      y="1"
-      width="48"
-      height="68"
-      rx="8"
-      fill="none"
-      stroke="#6366f1"
-      stroke-width="2"
-      stroke-dasharray="4 2"
-    />
-  }
-</svg>
+  (click)="onClick()"
+  (keydown)="onKeydown($event)"
+></div>
