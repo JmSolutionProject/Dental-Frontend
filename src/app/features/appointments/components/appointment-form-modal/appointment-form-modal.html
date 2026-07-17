@@ -1,0 +1,48 @@
+<app-modal title="Nueva Cita" [visible]="visible" (close)="close()">
+  <form [formGroup]="form" class="appt-form" (ngSubmit)="submit()">
+    <app-form-field label="Paciente" [control]="form.get('patientId')!" [required]="true">
+      <select formControlName="patientId" class="appt-form-select">
+        <option value="" disabled>Seleccionar paciente…</option>
+        @for (p of patients(); track p.id) {
+          <option [value]="p.id">{{ p.firstName }} {{ p.lastName }}</option>
+        }
+      </select>
+    </app-form-field>
+
+    <div class="appt-form-row">
+      <app-form-field label="Fecha" [control]="form.get('date')!" [required]="true">
+        <input type="date" formControlName="date" class="appt-form-input" />
+      </app-form-field>
+      <app-form-field label="Hora" [control]="form.get('time')!" [required]="true">
+        <input type="time" formControlName="time" class="appt-form-input" />
+      </app-form-field>
+    </div>
+
+    <app-form-field label="Especialista" [control]="form.get('dentistId')!" [required]="true">
+      <select formControlName="dentistId" class="appt-form-select">
+        <option value="" disabled>Seleccionar doctor…</option>
+        @for (doc of doctors; track doc.id) {
+          <option [value]="doc.id">{{ doc.name }}</option>
+        }
+      </select>
+    </app-form-field>
+
+    <app-form-field label="Motivo de Consulta" [control]="form.get('reason')!" [required]="true">
+      <input
+        type="text"
+        formControlName="reason"
+        class="appt-form-input"
+        placeholder="Ej. Evaluación general, Endodoncia, Limpieza dental…"
+      />
+    </app-form-field>
+
+    <div class="appt-form-footer">
+      <button type="button" class="btn btn--secondary" (click)="close()" [disabled]="saving()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn btn--primary btn--lg" [disabled]="saving()">
+        {{ saving() ? 'Creando cita…' : 'Crear Cita' }}
+      </button>
+    </div>
+  </form>
+</app-modal>

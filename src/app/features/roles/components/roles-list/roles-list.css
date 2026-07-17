@@ -1,0 +1,73 @@
+.list-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.clinical-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clinical-table th {
+  background: var(--color-surface-hover);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.clinical-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.clinical-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.clinical-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.form-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}

@@ -1,0 +1,73 @@
+<div class="birth-date-field" [class.birth-date-field--readonly]="readonly()" [class.birth-date-field--filled]="isValid()">
+  <div class="birth-date-inputs">
+    <input
+      type="text"
+      inputmode="numeric"
+      class="bd-segment"
+      data-bd-field="day"
+      maxlength="2"
+      placeholder="DD"
+      [value]="day()"
+      [readOnly]="readonly()"
+      (input)="onDayInput($event, dayEl)"
+      (keydown)="onKeyDown($event, 'day')"
+      #dayEl
+    />
+    <span class="bd-separator">/</span>
+    <input
+      type="text"
+      inputmode="numeric"
+      class="bd-segment"
+      data-bd-field="month"
+      maxlength="2"
+      placeholder="MM"
+      [value]="month()"
+      [readOnly]="readonly()"
+      (input)="onMonthInput($event, monthEl)"
+      (keydown)="onKeyDown($event, 'month')"
+      #monthEl
+    />
+    <span class="bd-separator">/</span>
+    <input
+      type="text"
+      inputmode="numeric"
+      class="bd-segment"
+      data-bd-field="year"
+      maxlength="4"
+      placeholder="AAAA"
+      [value]="year()"
+      [readOnly]="readonly()"
+      (input)="onYearInput($event, yearEl)"
+      (keydown)="onKeyDown($event, 'year')"
+      #yearEl
+    />
+    <button
+      type="button"
+      class="bd-calendar-btn"
+      [disabled]="readonly()"
+      (click)="openNativePicker(nativeDateEl)"
+      title="Abrir calendario"
+      aria-label="Abrir calendario"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </button>
+    <input
+      #nativeDateEl
+      type="date"
+      class="bd-native"
+      [value]="year() && month() && day() ? year() + '-' + month().padStart(2,'0') + '-' + day().padStart(2,'0') : ''"
+      [readOnly]="readonly()"
+      tabindex="-1"
+      aria-hidden="true"
+      (change)="onNativeChange($event)"
+    />
+  </div>
+  @if (ageText(); as text) {
+    <span class="bd-age">{{ text }}</span>
+  }
+</div>

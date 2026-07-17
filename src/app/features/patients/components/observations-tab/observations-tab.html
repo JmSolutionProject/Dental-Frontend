@@ -1,0 +1,27 @@
+<article class="dossier-card observations-card">
+  <div class="card-title-bar">
+    <div>
+      <h2>Observaciones y Notas Internas del Paciente</h2>
+      <p class="subtitle">Indicaciones de conducta, recomendaciones de atención o notas internas del dentista.</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" class="observations-form">
+    <label class="observations-label" for="observations-field">
+      Observaciones
+    </label>
+    <textarea
+      id="observations-field"
+      formControlName="observations"
+      class="observations-textarea"
+      rows="8"
+      placeholder="Escriba observaciones sobre la conducta del paciente, preferencias de anestesia o indicaciones especiales..."
+    ></textarea>
+
+    <div class="observations-actions">
+      <button type="button" class="btn btn--success btn--lg" [disabled]="saving" (click)="onSave()">
+        {{ saving ? 'Guardando Observaciones…' : 'Guardar Observaciones' }}
+      </button>
+    </div>
+  </form>
+</article>

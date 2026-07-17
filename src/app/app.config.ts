@@ -34,6 +34,10 @@ import { MessageRepository } from './features/messages/domain/message.repository
 import { MessageApiRepository } from './features/messages/infrastructure/message-api.repository';
 import { PaymentRepository } from './features/payments/domain/payment.repository';
 import { PaymentApiRepository } from './features/payments/infrastructure/payment-api.repository';
+import { CatalogRepository } from './features/catalog/domain/catalog.repository';
+import { CatalogApiRepository } from './features/catalog/infrastructure/catalog-api.repository';
+import { RoleRepository } from './features/roles/domain/role.repository';
+import { RoleApiRepository } from './features/roles/infrastructure/role-api.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -54,5 +58,7 @@ export const appConfig: ApplicationConfig = {
     { provide: DashboardRepository, useClass: DashboardApiRepository },
     { provide: MessageRepository, useClass: MessageApiRepository },
     { provide: PaymentRepository, useClass: PaymentApiRepository },
+    { provide: CatalogRepository, useClass: CatalogApiRepository },
+    { provide: RoleRepository, useClass: RoleApiRepository },
   ],
 };

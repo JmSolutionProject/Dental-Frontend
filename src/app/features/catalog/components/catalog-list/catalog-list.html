@@ -1,0 +1,80 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Catálogo</p>
+      <h1>Servicios Médicos</h1>
+      <p class="muted">Gestión de servicios, precios y categorías.</p>
+    </div>
+    <button class="btn btn--primary" (click)="openCreateModal()">+ Nuevo Servicio</button>
+  </header>
+
+  @if (loading()) {
+    <div class="card" style="display: flex; justify-content: center; padding: 3rem;">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <article class="card list-card">
+      <table class="clinical-table">
+        <thead>
+          <tr>
+            <th>Nombre del Servicio</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (svc of services(); track svc.id) {
+            <tr>
+              <td><strong>{{ svc.name }}</strong></td>
+              <td>{{ svc.categoryName }}</td>
+              <td>{{ svc.price | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="table-pill" [class.table-pill--success]="svc.status === 'active'" [class.table-pill--danger]="svc.status === 'inactive'">
+                  {{ svc.status === 'active' ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn--outline btn--sm" (click)="openEditModal(svc)">Editar</button>
+                  <button class="btn btn--danger-outline btn--sm" (click)="deleteService(svc.id)">Eliminar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 2rem;" class="muted">No hay servicios registrados en el catálogo.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </article>
+  }
+</section>
+
+<app-modal [title]="editingService() ? 'Editar Servicio' : 'Nuevo Servicio'" [visible]="showModal()" (close)="closeModal()">
+  <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+    <div class="form-group" style="grid-column: 1 / -1;">
+      <label class="form-label">Nombre del Servicio</label>
+      <input type="text" class="form-input" formControlName="name" placeholder="Ej: Consulta Inicial" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">ID de Categoría</label>
+      <input type="number" class="form-input" formControlName="categoryId" placeholder="Ej: 1" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Precio ($)</label>
+      <input type="number" class="form-input" formControlName="price" min="0" step="0.01" />
+    </div>
+
+    <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 1.5rem;">
+      <button type="button" class="btn btn--secondary" (click)="closeModal()">Cancelar</button>
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</app-modal>

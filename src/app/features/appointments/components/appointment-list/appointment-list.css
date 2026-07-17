@@ -1,33 +1,449 @@
-.appointment {
-  display: grid;
-  gap: 0.35rem;
+:host {
+  display: block;
+  width: 100%;
 }
 
-.appointment strong {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 650;
-  letter-spacing: var(--tracking-tight);
+.appt-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.appointment span {
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  font-weight: 700;
+/* HEADER */
+.appt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.appointment p {
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
+.appt-header h1 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.appt-subtitle {
   margin: 0;
+  font-size: 0.92rem;
+  color: #64748b;
 }
 
-.appointment small {
-  color: var(--color-muted);
-  font-size: var(--text-xs);
+/* FILTERS */
+.appt-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-.empty-card {
-  color: var(--color-muted);
-  font-size: var(--text-sm);
+@media (max-width: 900px) {
+  .appt-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+.appt-filter {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.appt-filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.appt-filter-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  color: #0f172a;
+}
+
+.appt-select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #0f172a;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.1rem 1.5rem 0.1rem 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.appt-select:focus {
+  outline: none;
+}
+
+.appt-select-caret {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+  color: #64748b;
+}
+
+.appt-select-display {
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+/* STATUS PILLS */
+.appt-status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.appt-status-pill {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.appt-status-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.appt-status-pill--active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.appt-status-pill--active:hover {
+  background: #0369a1;
+  border-color: #0369a1;
+  color: #ffffff;
+}
+
+/* LOADING */
+.appt-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: appt-spin 0.8s linear infinite;
+}
+
+@keyframes appt-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* EMPTY STATE */
+.appt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 3rem 1rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #94a3b8;
+}
+
+.appt-empty h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.appt-empty p {
+  margin: 0;
+  font-size: 0.88rem;
+  max-width: 30rem;
+}
+
+/* DATE GROUPS */
+.appt-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.appt-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.appt-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0f172a;
+}
+
+.appt-group-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.appt-group-count {
+  font-size: 0.88rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* APPOINTMENT CARDS */
+.appt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.appt-card {
+  display: grid;
+  grid-template-columns: 85px 1px 2fr 2fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #d97706;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.appt-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.appt-card--completed {
+  border-left-color: #16a34a;
+}
+
+.appt-card--completed .appt-time,
+.appt-card--completed .appt-patient-name {
+  color: #0f172a;
+}
+
+.appt-card--cancelled {
+  border-left-color: #dc2626;
+  background: #fefbfb;
+}
+
+.appt-card--cancelled .appt-patient-name {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+@media (max-width: 900px) {
+  .appt-card {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .appt-card-divider {
+    display: none;
+  }
+}
+
+.appt-card-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.appt-time {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.appt-period {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 0.1rem;
+}
+
+.appt-card-divider {
+  width: 1px;
+  height: 60%;
+  background: #e2e8f0;
+  align-self: center;
+}
+
+.appt-card-patient {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.appt-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.appt-patient-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.appt-patient-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-patient-cancelled {
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.appt-card-service {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.appt-service {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: #334155;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-service::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230284c7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.appt-doctor {
+  font-size: 0.78rem;
+  color: #64748b;
+  padding-left: 1.55rem;
+}
+
+.appt-card-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.appt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.appt-status--scheduled {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.appt-status--scheduled::before {
+  content: "⏱";
+  font-size: 0.72rem;
+}
+
+.appt-status--completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.appt-status--completed::before {
+  content: "✓";
+}
+
+.appt-status--cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.appt-status--cancelled::before {
+  content: "✕";
+}
+
+.appt-more-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.appt-more-btn:hover {
+  background: #f1f5f9;
+  color: #475569;
 }

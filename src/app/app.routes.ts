@@ -55,7 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/odontogram',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['dentist'])],
         loadComponent: () =>
           import(
             './features/odontogram/components/odontogram-chart/odontogram-chart'
@@ -63,7 +63,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/treatment-plans',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['admin', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/treatment-plan/components/plan-editor/plan-editor'
@@ -71,7 +71,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/treatment-plans/:planId',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['admin', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/treatment-plan/components/plan-editor/plan-editor'
@@ -97,13 +97,13 @@ export const routes: Routes = [
         path: 'agenda',
         canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
         loadComponent: () =>
-          import('./features/agenda/components/timeline/timeline').then(
-            (m) => m.Timeline,
+          import('./features/agenda/components/agenda-page/agenda-page').then(
+            (m) => m.AgendaPage,
           ),
       },
       {
         path: 'patients/:id/billing',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['admin', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/billing/components/billing-list/billing-list'
@@ -111,7 +111,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/billing/new',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['admin', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/billing/components/quote-form/quote-form'
@@ -127,7 +127,7 @@ export const routes: Routes = [
       },
       {
         path: 'messages',
-        canActivate: [roleGuard(['admin', 'dentist'])],
+        canActivate: [roleGuard(['admin', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/messages/components/message-list/message-list'
@@ -143,11 +143,35 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['admin'])],
         loadComponent: () =>
           import(
             './features/reports/components/report-overview/report-overview'
           ).then((m) => m.ReportOverview),
+      },
+      {
+        path: 'catalog',
+        canActivate: [roleGuard(['admin'])],
+        loadComponent: () =>
+          import(
+            './features/catalog/components/catalog-list/catalog-list'
+          ).then((m) => m.CatalogList),
+      },
+      {
+        path: 'roles',
+        canActivate: [roleGuard(['admin'])],
+        loadComponent: () =>
+          import(
+            './features/roles/components/roles-list/roles-list'
+          ).then((m) => m.RolesList),
+      },
+      {
+        path: 'users',
+        canActivate: [roleGuard(['admin'])],
+        loadComponent: () =>
+          import(
+            './features/users/components/user-list/user-list'
+          ).then((m) => m.UserList),
       },
     ],
   },

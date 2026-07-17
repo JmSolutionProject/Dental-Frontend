@@ -16,12 +16,13 @@ import { Patient, CreatePatientRequest } from '../../domain/patient';
 import { Table, TableColumn } from '../../../../shared/components/table/table';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { FormField } from '../../../../shared/components/form-field/form-field';
+import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { ReniecService } from '../../../../core/services/reniec.service';
 
 @Component({
   selector: 'app-patient-list',
-  imports: [ReactiveFormsModule, Table, Modal, FormField],
+  imports: [ReactiveFormsModule, Table, Modal, FormField, BirthDateField],
   templateUrl: './patient-list.html',
   styleUrl: './patient-list.css',
 })
@@ -57,7 +58,6 @@ export class PatientList {
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
     phone: ['', [Validators.required]],
-    allergies: [''],
     birthDate: [''],
   });
 
@@ -212,9 +212,6 @@ export class PatientList {
       documentNumber: raw.documentNumber?.trim() || '',
       phone: raw.phone.trim(),
       birthDate: raw.birthDate || undefined,
-      medicalHistory: {
-        allergies: this.parseList(raw.allergies),
-      },
     };
 
     this.createPatient

@@ -31,8 +31,10 @@
     <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'medical-history'" (click)="setTab('medical-history')">Antecedentes Médicos</button>
     <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'odontogram'" (click)="setTab('odontogram')">Odontograma</button>
     <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'appointments-history'" (click)="setTab('appointments-history')">Historial de Citas</button>
-    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'budget-plan'" (click)="setTab('budget-plan')">Presupuesto / Plan</button>
-    <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'payments'" (click)="setTab('payments')">Pagos</button>
+    @if (role() !== 'dentist') {
+      <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'budget-plan'" (click)="setTab('budget-plan')">Presupuesto / Plan</button>
+      <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'payments'" (click)="setTab('payments')">Pagos</button>
+    }
     <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'attachments'" (click)="setTab('attachments')">Archivos, Imágenes y Documentos</button>
     <button class="nav-tab" [class.nav-tab--active]="activeTab() === 'observations'" (click)="setTab('observations')">Observaciones</button>
   </nav>
@@ -56,68 +58,58 @@
     }
 
     @if (activeTab() === 'personal-data') {
-      <article class="dossier-card">
+      <article class="dossier-card personal-data-card">
         <div class="card-title-bar">
           <div>
             <h2>Datos Personales y Administrativos</h2>
             <p class="subtitle">Información filiatoria completa y contacto de emergencia.</p>
           </div>
-        </div>
-
-        <form [formGroup]="form" class="form-grid">
-          <app-form-field label="Nombres" [control]="form.get('firstName')!">
-            <input type="text" formControlName="firstName" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Apellidos" [control]="form.get('lastName')!">
-            <input type="text" formControlName="lastName" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="DNI" [control]="form.get('documentNumber')!">
-            <div class="input-with-action">
-              <input type="text" formControlName="documentNumber" [readonly]="!editing()" />
-              @if (editing()) {
-                <button type="button" class="btn btn--accent" [disabled]="consultingDni()" (click)="lookupDni()">
-                  {{ consultingDni() ? 'Consultando…' : 'Consultar RENIEC' }}
-                </button>
-              }
-            </div>
-          </app-form-field>
-          <app-form-field label="Fecha de Nacimiento" [control]="form.get('birthDate')!">
-            <input type="date" formControlName="birthDate" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Sexo" [control]="form.get('gender')!">
-            <select formControlName="gender" [disabled]="!editing()">
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-            </select>
-          </app-form-field>
-          <app-form-field label="Teléfono de Contacto" [control]="form.get('phone')!">
-            <input type="text" formControlName="phone" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Correo Electrónico" [control]="form.get('email')!">
-            <input type="email" formControlName="email" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Dirección de Domicilio" [control]="form.get('address')!">
-            <input type="text" formControlName="address" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Contacto de Emergencia" [control]="form.get('emergencyContact')!">
-            <input type="text" formControlName="emergencyContact" [readonly]="!editing()" />
-          </app-form-field>
-          <app-form-field label="Seguro Médico / EPS" [control]="form.get('insurance')!">
-            <input type="text" formControlName="insurance" [readonly]="!editing()" />
-          </app-form-field>
-        </form>
-
-        <div class="tab-actions-footer mt-4">
-          <div class="footer-left-actions">
+          <div class="card-title-actions">
             @if (!editing()) {
-              <button type="button" class="btn btn--primary btn--lg" (click)="startEdit()">Editar Datos Personales</button>
-            } @else {
-              <button type="button" class="btn btn--success btn--lg" [disabled]="saving()" (click)="save()">{{ saving() ? 'Guardando Datos…' : 'Guardar Cambios' }}</button>
-              <button type="button" class="btn btn--secondary btn--lg ml-2" (click)="cancelEdit()">Cancelar</button>
+              <button type="button" class="btn btn--primary" (click)="startEdit()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar
+              </button>
             }
           </div>
-          <button type="button" class="btn btn--danger-outline" (click)="openDeleteModal()">Dar de Baja a este Paciente</button>
         </div>
+
+        <app-personal-data-form
+          [form]="form"
+          [editing]="editing()"
+          [consultingDni]="consultingDni()"
+          (lookupDni)="lookupDni()"
+        />
+
+        @if (editing()) {
+          <div class="tab-actions-footer">
+            <div class="footer-left-actions">
+              <button type="button" class="btn btn--success" [disabled]="saving()" (click)="save()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                {{ saving() ? 'Guardando…' : 'Guardar Cambios' }}
+              </button>
+              <button type="button" class="btn btn--secondary ml-2" (click)="cancelEdit()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Cancelar
+              </button>
+            </div>
+            <button type="button" class="btn btn--danger-outline" (click)="openDeleteModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+              Dar de Baja
+            </button>
+          </div>
+        }
       </article>
     }
 
@@ -169,11 +161,11 @@
       </article>
     }
 
-    @if (activeTab() === 'budget-plan') {
+    @if (role() !== 'dentist' && activeTab() === 'budget-plan') {
       <app-patient-treatment-plan-tab [treatmentPlans]="treatmentPlans()" />
     }
 
-    @if (activeTab() === 'payments') {
+    @if (role() !== 'dentist' && activeTab() === 'payments') {
       <app-patient-payments-tab 
         [budgetPaid]="budgetPaid()" 
         [budgetPending]="budgetPending()" 
@@ -185,24 +177,11 @@
     }
 
     @if (activeTab() === 'observations') {
-      <article class="dossier-card">
-        <div class="card-title-bar">
-          <div>
-            <h2>Observaciones y Notas Internas del Paciente</h2>
-            <p class="subtitle">Indicaciones de conducta, recomendaciones de atención o notas internas del dentista.</p>
-          </div>
-        </div>
-        <form [formGroup]="form">
-          <app-form-field label="" [control]="form.get('observations')!">
-            <textarea formControlName="observations" rows="8" placeholder="Escriba observaciones sobre la conducta del paciente, preferencias de anestesia o indicaciones especiales..."></textarea>
-          </app-form-field>
-          <div class="tab-actions-footer mt-4">
-            <button type="button" class="btn btn--success btn--lg" [disabled]="saving()" (click)="save()">
-              {{ saving() ? 'Guardando Observaciones…' : 'Guardar Observaciones' }}
-            </button>
-          </div>
-        </form>
-      </article>
+      <app-observations-tab
+        [form]="form"
+        [saving]="saving()"
+        (saveRequested)="save()"
+      />
     }
 
     <app-modal title="Dar de baja al paciente" [visible]="showDeleteModal()" (close)="closeDeleteModal()">

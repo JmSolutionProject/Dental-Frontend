@@ -1,23 +1,20 @@
-// ---------------------------------------------------------------------------
-// Dashboard — KPI domain models
-// ---------------------------------------------------------------------------
-
-/** Revenue KPIs for the dashboard summary. */
-export interface RevenueKpi {
-  today: number;
-  month: number;
-  outstanding: number;
-}
-
-/** Clinical KPIs for the dashboard summary. */
-export interface ClinicalKpi {
-  appointmentsToday: number;
-  newPatientsThisMonth: number;
-  activeTreatments: number;
-}
-
-/** Combined dashboard KPIs returned from the API. */
 export interface DashboardKpis {
-  revenue: RevenueKpi;
-  clinical: ClinicalKpi;
+  revenue: {
+    today: number;
+    month: number;
+    outstanding: number;
+  };
+  clinical: {
+    appointmentsToday: number;
+    newPatientsThisMonth: number;
+    activeTreatments: number;
+    myAppointmentsToday: number;
+  };
+  totals: {
+    patients: number;
+    appointments: number;
+  };
+  topServices: Array<{ name: string; count: number }>;
+  revenueByMethod: Array<{ method: string; total: number }>;
+  myCommissions: number;
 }

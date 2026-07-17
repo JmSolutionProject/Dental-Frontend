@@ -1,60 +1,92 @@
-<section class="page">
-  <header class="timeline-header">
-    <div class="timeline-title">
-      <p class="eyebrow">Agenda</p>
-      <h1>{{ dateLabel() }}</h1>
-      <p class="muted">Daily clinical agenda &bull; {{ agendaDay().appointments.length }} appointments</p>
+<section class="agenda-page">
+  <!-- HEADER -->
+  <header class="agenda-header">
+    <div>
+      <h1>Agenda Clínica</h1>
+      <p class="agenda-subtitle">{{ dateLabel() }}</p>
     </div>
-    <div class="timeline-controls">
-      <button class="button button--sm" type="button" (click)="goToToday()">Today</button>
+    <div class="agenda-header-actions">
+      <button type="button" class="btn btn--secondary" (click)="goToToday()">Hoy</button>
+      <button type="button" class="btn btn--primary btn--lg" (click)="navigate(0)">
+        + Crear Cita
+      </button>
     </div>
   </header>
 
-  <!-- Navigation -->
-  <div class="agenda-nav">
-    <button class="button button--sm" type="button" (click)="navigate(-1)">&larr; Previous day</button>
-    <button class="button button--sm" type="button" (click)="navigate(1)">Next day &rarr;</button>
-  </div>
+  <!-- WEEK NAVIGATION -->
+  <nav class="agenda-nav">
+    <button type="button" class="btn btn--secondary" (click)="navigate(-7)">← Anterior</button>
+    <div class="agenda-week">
+      @for (wd of weekDates(); track wd.key) {
+        <button
+          type="button"
+          class="agenda-day-pill"
+          [class.agenda-day-pill--active]="wd.key === dateKey(currentDate())"
+          [class.agenda-day-pill--today]="wd.isToday"
+          (click)="goToDate(wd.key)"
+        >
+          <span class="agenda-day-name">{{ wd.label }}</span>
+          <span class="agenda-day-count" [class.agenda-day-count--has]="(apptCountsByDay().get(wd.key) ?? 0) > 0">
+            {{ apptCountsByDay().get(wd.key) ?? 0 }}
+          </span>
+        </button>
+      }
+    </div>
+    <button type="button" class="btn btn--secondary" (click)="navigate(7)">Siguiente →</button>
+  </nav>
 
-  <!-- Dentist columns -->
-  @if (agendaDay().dentists.length === 0) {
-    <article class="card empty-state">
-      <strong>No appointments scheduled for this day.</strong>
-      <p class="muted">Create appointments in the calendar view.</p>
-    </article>
+  <!-- LOADING -->
+  @if (loading()) {
+    <div class="agenda-loading">
+      <div class="spinner"></div>
+      <p class="muted">Cargando agenda…</p>
+    </div>
+  } @else if (agendaDay().dentists.length === 0) {
+    <div class="agenda-empty">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <h3>Sin citas este día</h3>
+      <p class="muted">{{ agendaDay().date }}</p>
+    </div>
   } @else {
-    <div class="timeline-grid">
-      <!-- Hour labels -->
-      <div class="timeline-hours">
-        <div class="timeline-corner"></div>
+    <!-- TIMELINE GRID -->
+    <div class="agenda-grid">
+      <!-- HOUR COLUMN -->
+      <div class="agenda-hour-col">
+        <div class="agenda-corner"></div>
         @for (hour of hours; track hour) {
-          <div class="hour-marker">{{ hour }}</div>
+          <div class="agenda-hour-slot">
+            <span class="agenda-hour-label">{{ hour }}</span>
+          </div>
         }
       </div>
 
-      <!-- Per-dentist columns -->
+      <!-- DENTIST COLUMNS -->
       @for (dentist of agendaDay().dentists; track dentist.dentistId) {
-        <div class="dentist-column">
-          <div class="dentist-column-header">
-            <strong>{{ dentist.dentistName }}</strong>
-            <span class="badge">{{ dentist.appointments.length }}</span>
+        <div class="agenda-dentist-col">
+          <div class="agenda-dentist-header">
+            <span class="agenda-dentist-name">{{ dentist.dentistName }}</span>
+            <span class="agenda-dentist-count">{{ dentist.appointments.length }}</span>
           </div>
-          <div class="dentist-timeline">
-            <!-- Hour grid lines -->
+          <div class="agenda-dentist-timeline">
             @for (hour of hours; track hour) {
-              <div class="timeline-row"></div>
+              <div class="agenda-row-line"></div>
             }
-
-            <!-- Appointment blocks -->
             @for (apt of dentist.appointments; track apt.id) {
               <button
-                class="timeline-block"
+                type="button"
+                class="agenda-block"
                 [class]="statusClass(apt)"
                 [style]="blockStyle(apt)"
-                type="button"
-                (click)="openDetail(apt)">
-                <span class="block-time">{{ apt.scheduledAt.slice(11, 16) }}</span>
-                <span class="block-patient">{{ apt.patientName }}</span>
+                [title]="apt.patientName + ' - ' + apt.reason"
+                (click)="openDetail(apt)"
+              >
+                <span class="agenda-block-time">{{ apt.scheduledAt.slice(11, 16) }}</span>
+                <span class="agenda-block-patient">{{ apt.patientName }}</span>
               </button>
             }
           </div>
@@ -62,73 +94,59 @@
       }
     </div>
   }
-
-  <!-- Loading -->
-  @if (loading()) {
-    <div class="loading-overlay">Loading&hellip;</div>
-  }
 </section>
 
-<!-- Detail Modal -->
-<app-modal
-  title="Appointment Details"
-  [visible]="detailModalVisible()"
-  (close)="closeDetail()">
-  <div class="detail-modal">
-    @if (selectedAppointment(); as apt) {
-      <dl class="detail-list">
-        <dt>Patient</dt>
+<!-- DETAIL MODAL -->
+<app-modal title="Detalle de Cita" [visible]="detailModalVisible()" (close)="closeDetail()">
+  @if (selectedAppointment(); as apt) {
+    <div class="agenda-detail">
+      <dl class="agenda-dl">
+        <dt>Paciente</dt>
         <dd>{{ apt.patientName }}</dd>
-
-        <dt>Scheduled</dt>
-        <dd>{{ apt.scheduledAt | date: 'medium' }}</dd>
-
-        <dt>Dentist</dt>
-        <dd>{{ apt.dentistName ?? 'Unassigned' }}</dd>
-
-        <dt>Reason</dt>
+        <dt>Fecha y Hora</dt>
+        <dd>{{ apt.scheduledAt | date: "dd/MM/yyyy 'a las' HH:mm" }}</dd>
+        <dt>Especialista</dt>
+        <dd>{{ apt.dentistName ?? 'Sin asignar' }}</dd>
+        <dt>Motivo</dt>
         <dd>{{ apt.reason }}</dd>
-
-        <dt>Status</dt>
+        <dt>Estado</dt>
         <dd>
-          <span class="detail-status" [class]="statusClass(apt)">{{ apt.status }}</span>
+          <span class="agenda-dl-status" [class]="statusClass(apt)">{{ statusLabel(apt.status) }}</span>
         </dd>
-
         @if (apt.cancelReason) {
-          <dt>Cancel reason</dt>
+          <dt>Motivo cancelación</dt>
           <dd>{{ apt.cancelReason }}</dd>
         }
       </dl>
-
-      <div class="modal-actions">
+      <div class="agenda-modal-actions">
         @if (apt.status !== 'cancelled') {
-          <button class="button button--danger" type="button" (click)="closeDetail(); openCancel(apt)">
-            Cancel Appointment
-          </button>
+          <button type="button" class="btn btn--danger-outline" (click)="closeDetail(); openCancel(apt)">Cancelar Cita</button>
         }
-        <button class="button" type="button" (click)="closeDetail()">Close</button>
+        <button type="button" class="btn btn--secondary" (click)="closeDetail()">Cerrar</button>
       </div>
-    }
-  </div>
+    </div>
+  }
 </app-modal>
 
-<!-- Cancel Modal -->
-<app-modal
-  title="Cancel Appointment"
-  [visible]="cancelModalVisible()"
-  (close)="closeCancel()">
-  <form class="cancel-modal" (submit)="$event.preventDefault(); confirmCancel()">
+<!-- CANCEL MODAL -->
+<app-modal title="Cancelar Cita" [visible]="cancelModalVisible()" (close)="closeCancel()">
+  <form class="agenda-cancel-form" (submit)="$event.preventDefault()">
     <p>
-      Cancel appointment for
-      <strong>{{ cancelTarget()?.patientName }}</strong>?
+      ¿Cancelar la cita de <strong>{{ cancelTarget()?.patientName }}</strong>?
     </p>
-    <app-form-field label="Reason" [control]="cancelForm">
-      <input type="text" [formControl]="cancelForm" />
+    <app-form-field label="Motivo de Cancelación" [control]="cancelForm">
+      <input
+        type="text"
+        [formControl]="cancelForm"
+        class="form-input"
+        placeholder="Ej. Paciente canceló, reagendar..."
+      />
     </app-form-field>
-
-    <div class="modal-actions">
-      <button class="button" type="button" (click)="closeCancel()">Keep</button>
-      <button class="button button--danger" type="submit">Cancel Appointment</button>
+    <div class="agenda-modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="closeCancel()" [disabled]="canceling()">Mantener</button>
+      <button type="button" class="btn btn--danger" [disabled]="canceling()" (click)="confirmCancel()">
+        {{ canceling() ? 'Cancelando…' : 'Cancelar Cita' }}
+      </button>
     </div>
   </form>
 </app-modal>

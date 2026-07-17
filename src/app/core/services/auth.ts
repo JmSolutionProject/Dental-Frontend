@@ -29,8 +29,8 @@ export class AuthService {
     return t ? jwtDecode(t) : null;
   });
   readonly isAuthenticated = computed(() => this.user() !== null);
-  readonly role = computed(() => this.user()?.role ?? null);
-  readonly roles = computed(() => this.user()?.roles ?? []);
+  readonly role = computed(() => this.user()?.role?.toLowerCase() ?? null);
+  readonly roles = computed(() => this.user()?.roles?.map(r => r.toLowerCase()) ?? []);
   readonly clinicId = computed(() => this.user()?.clinicId ?? null);
 
   login(email: string, password: string): Observable<void> {

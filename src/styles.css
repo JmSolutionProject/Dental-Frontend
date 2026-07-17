@@ -167,3 +167,487 @@ small {
     display: grid;
   }
 }
+
+/* ===== Buttons (shared) ===== */
+.btn {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn svg {
+  flex-shrink: 0;
+}
+
+.btn--primary {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.btn--success {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.btn--secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.btn--accent {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.btn--danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn--danger-outline {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  transition: all 0.2s ease;
+}
+
+.btn--danger-outline:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.btn--outline {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.btn--outline:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.btn--sm {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+}
+
+.btn--lg {
+  font-size: 0.95rem;
+  padding: 0.75rem 1.75rem;
+  font-weight: 700;
+  border-radius: 7px;
+}
+
+.btn--xs {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+}
+
+/* ===== Spacing utilities ===== */
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.ml-2 { margin-left: 0.5rem; }
+.w-100 { width: 100%; }
+
+/* ===== Cards & Titles (shared) ===== */
+.dossier-card {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.card--compact {
+  padding: 1.15rem 1.35rem;
+}
+
+.card-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.card-title-bar h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* ===== Tables (shared) ===== */
+.clinical-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.clinical-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.clinical-table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.clinical-table tr:hover td {
+  background: #f8fafc;
+}
+
+.table-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: inline-block;
+}
+
+.table-pill--success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.table-pill--primary {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.table-pill--warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* ===== KPI / Summary cards (shared) ===== */
+.summary-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.kpi-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.summary-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.15rem;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detail-val {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+/* ===== Medical Risk Badges (shared) ===== */
+.medical-risk-badges-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.75rem;
+}
+
+.risk-badge-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.risk-badge-item--red {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.risk-badge-item--red strong {
+  color: #991b1b;
+}
+
+.risk-badge-item--orange {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.risk-badge-item--orange strong {
+  color: #9a3412;
+}
+
+.risk-badge-item--gray {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.risk-badge-item--gray strong {
+  color: #475569;
+}
+
+.badge-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: #ea580c;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.badge-tag--critical {
+  background: #dc2626;
+}
+
+.badge-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+  line-height: 1.35;
+}
+
+/* ===== Form inputs (shared) ===== */
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.form-input-sm {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  transition: all 0.2s ease;
+}
+
+.form-input-sm:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.form-input-lg {
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+}
+
+/* ===== Checkbox matrix (shared) ===== */
+.checkbox-matrix {
+  display: grid;
+  gap: 0.35rem 0.5rem;
+}
+
+.checkbox-matrix-2col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.checkbox-matrix-3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1200px) {
+  .checkbox-matrix-3col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.checkbox-row:hover {
+  background: #f1f5f9;
+}
+
+.checkbox-row--selected {
+  color: #0284c7;
+  font-weight: 700;
+}
+
+/* ===== Radio group (shared) ===== */
+.radio-group-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+/* ===== Section title (shared) ===== */
+.section-title-compact {
+  margin-bottom: 0.65rem;
+}
+
+.section-title-compact h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.section-title-compact .subtitle {
+  font-size: 0.75rem;
+}
+
+/* ===== Financial cards (shared) ===== */
+.financial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.fin-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 1.15rem;
+  border-radius: 8px;
+}
+
+.fin-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.fin-val {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 0.2rem;
+  color: #0f172a;
+}

@@ -1,0 +1,270 @@
+<section class="agenda">
+  <!-- TOP BAR -->
+  <div class="agenda-topbar">
+    <div class="agenda-topbar-left">
+      <h2 class="agenda-title">Vista de Agenda</h2>
+      <span class="agenda-divider"></span>
+      <div class="agenda-view-toggle">
+        @for (mode of ['day', 'week', 'month']; track mode) {
+          <button
+            type="button"
+            class="agenda-view-btn"
+            [class.agenda-view-btn--active]="viewMode() === mode"
+            (click)="setViewMode($any(mode))"
+          >{{ mode === 'day' ? 'Día' : mode === 'week' ? 'Semana' : 'Mes' }}</button>
+        }
+      </div>
+    </div>
+    <div class="agenda-topbar-right">
+      <button type="button" class="btn btn--secondary" (click)="goToToday()">Hoy</button>
+      <button type="button" class="btn btn--primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva Cita
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="agenda-layout">
+    <!-- CALENDAR WEEK VIEW -->
+    <div class="agenda-calendar">
+      <!-- Calendar Header -->
+      <div class="agenda-cal-header">
+        <div class="agenda-cal-nav">
+          <button type="button" class="agenda-cal-arrow" (click)="navigateWeek(-1)" title="Semana anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span class="agenda-cal-label">{{ monthLabel() }}</span>
+          <button type="button" class="agenda-cal-arrow" (click)="navigateWeek(1)" title="Semana siguiente">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+        <button type="button" class="btn btn--secondary" (click)="goToToday()">Hoy</button>
+      </div>
+
+      <!-- Day Headers -->
+      <div class="agenda-day-headers">
+        <div class="agenda-time-corner">
+          <span class="agenda-timezone">{{ monthLabel() }}</span>
+        </div>
+        @for (col of dayColumns(); track col.dateKey) {
+          <button
+            type="button"
+            class="agenda-day-header"
+            [class.agenda-day-header--today]="col.isToday"
+            (click)="goToDate(col.dateKey)"
+          >
+            <span class="agenda-day-name">{{ col.label }}</span>
+            <span class="agenda-day-num">{{ col.sublabel }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Calendar Body -->
+      <div class="agenda-body">
+        @if (loading()) {
+          <div class="agenda-loading-overlay">
+            <div class="spinner"></div>
+            <p>Cargando citas…</p>
+          </div>
+        }
+
+        <!-- Grid Lines Background -->
+        <div class="agenda-grid-bg">
+          @for (hour of hours; track hour) {
+            <div class="agenda-hour-row">
+              <div class="agenda-hour-label">{{ hour }}</div>
+              <div class="agenda-hour-cells">
+                @for (col of dayColumns(); track col.dateKey) {
+                  <div
+                    class="agenda-hour-cell"
+                    [class.agenda-hour-cell--today]="col.isToday"
+                  ></div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Appointment Blocks -->
+        <div class="agenda-blocks">
+          @for (col of dayColumns(); track col.dateKey) {
+            <div class="agenda-day-col">
+              @for (apt of col.appointments; track apt.id) {
+                <button
+                  type="button"
+                  class="agenda-block"
+                  [class]="'agenda-block ' + statusClass(apt)"
+                  [style]="blockStyle(apt)"
+                  [title]="apt.patientName + ' — ' + apt.reason"
+                  (click)="openDetail(apt)"
+                >
+                  <div class="agenda-block-top">
+                    <span class="agenda-block-time">{{ apt.scheduledAt.slice(11, 16) }}</span>
+                    <span class="agenda-block-type">{{ apt.reason.slice(0, 16) }}{{ apt.reason.length > 16 ? '…' : '' }}</span>
+                    <span class="agenda-block-icon">{{ statusIcon(apt.status) }}</span>
+                  </div>
+                  <div class="agenda-block-name">{{ apt.patientName }}</div>
+                  @if (apt.dentistName) {
+                    <div class="agenda-block-doctor">{{ apt.dentistName }}</div>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="agenda-sidebar">
+      <!-- Mini Calendar -->
+      <div class="agenda-minical">
+        <div class="agenda-minical-header">
+          <h3>{{ miniCalLabel() }}</h3>
+          <div class="agenda-minical-nav">
+            <button type="button" (click)="navigateCalendarMonth(-1)" title="Mes anterior">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <button type="button" (click)="navigateCalendarMonth(1)" title="Mes siguiente">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="agenda-minical-grid">
+          @for (d of monthDaysShort; track $index) {
+            <span class="agenda-minical-dow">{{ d }}</span>
+          }
+          @for (day of miniCalDays(); track day.key) {
+            <button
+              type="button"
+              class="agenda-minical-day"
+              [class.agenda-minical-day--today]="day.isToday"
+              [class.agenda-minical-day--other]="!day.isCurrentMonth"
+              [class.agenda-minical-day--has-appts]="day.hasAppointments"
+              (click)="goToDate(day.key)"
+            >{{ day.day }}</button>
+          }
+        </div>
+      </div>
+
+      <!-- Upcoming Appointments -->
+      <div class="agenda-upcoming">
+        <div class="agenda-upcoming-header">
+          <div>
+            <h3>Próximas Citas</h3>
+            <p>{{ todayLabel() }}</p>
+          </div>
+          @if (totalUpcoming() > 0) {
+            <span class="agenda-upcoming-badge">{{ totalUpcoming() }} hoy</span>
+          }
+        </div>
+        <div class="agenda-upcoming-list">
+          @for (apt of upcomingAppointments(); track apt.id) {
+            <button
+              type="button"
+              class="agenda-upcoming-card"
+              [class.agenda-upcoming-card--scheduled]="apt.status === 'scheduled'"
+              [class.agenda-upcoming-card--completed]="apt.status === 'completed'"
+              (click)="openDetail(apt)"
+            >
+              <span class="agenda-upcoming-bar" [class]="statusClass(apt)"></span>
+              <div class="agenda-upcoming-info">
+                <div class="agenda-upcoming-top">
+                  <strong>{{ apt.patientName }}</strong>
+                  <span class="agenda-upcoming-hour">{{ apt.scheduledAt.slice(11, 16) }}</span>
+                </div>
+                <p>{{ apt.reason }} • {{ apt.dentistName ?? 'Sin asignar' }}</p>
+              </div>
+              <span class="agenda-upcoming-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </span>
+            </button>
+          } @empty {
+            <div class="agenda-upcoming-empty">
+              <p>Sin citas para hoy.</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DETAIL MODAL -->
+@if (detailVisible()) {
+  <div class="agenda-modal-backdrop" (click)="closeDetail()"></div>
+  <div class="agenda-modal">
+    <header class="agenda-modal-header">
+      <h3>Detalle de Cita</h3>
+      <button type="button" class="agenda-modal-close" (click)="closeDetail()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </header>
+    @if (selectedAppointment(); as apt) {
+      <dl class="agenda-dl">
+        <dt>Paciente</dt><dd>{{ apt.patientName }}</dd>
+        <dt>Fecha</dt><dd>{{ apt.scheduledAt | date: "EEEE, d 'de' MMMM, yyyy" }}</dd>
+        <dt>Hora</dt><dd>{{ apt.scheduledAt.slice(11, 16) }}</dd>
+        <dt>Especialista</dt><dd>{{ apt.dentistName ?? 'Sin asignar' }}</dd>
+        <dt>Motivo</dt><dd>{{ apt.reason }}</dd>
+        <dt>Estado</dt>
+        <dd><span class="agenda-modal-status" [class]="statusClass(apt)">{{ statusLabel(apt.status) }}</span></dd>
+      </dl>
+      <div class="agenda-modal-actions">
+        @if (apt.status !== 'cancelled') {
+          <button type="button" class="btn btn--danger-outline" (click)="openCancel()">Cancelar Cita</button>
+        }
+        <button type="button" class="btn btn--secondary" (click)="closeDetail()">Cerrar</button>
+      </div>
+    }
+  </div>
+}
+
+<!-- CANCEL MODAL -->
+@if (cancelVisible()) {
+  <div class="agenda-modal-backdrop" (click)="closeCancel()"></div>
+  <div class="agenda-modal">
+    <header class="agenda-modal-header">
+      <h3>Cancelar Cita</h3>
+      <button type="button" class="agenda-modal-close" (click)="closeCancel()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </header>
+    <p class="agenda-modal-text">
+      ¿Cancelar la cita de <strong>{{ selectedAppointment()?.patientName }}</strong>?
+    </p>
+    <label class="agenda-modal-label">
+      Motivo de Cancelación
+      <input
+        type="text"
+        class="agenda-modal-input"
+        [value]="cancelReason()"
+        (input)="cancelReason.set($any($event.target).value)"
+        placeholder="Ej. Paciente canceló, reagendar..."
+      />
+    </label>
+    <div class="agenda-modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="closeCancel()" [disabled]="canceling()">Mantener</button>
+      <button type="button" class="btn btn--danger" (click)="confirmCancel()" [disabled]="canceling()">
+        {{ canceling() ? 'Cancelando…' : 'Cancelar Cita' }}
+      </button>
+    </div>
+  </div>
+}

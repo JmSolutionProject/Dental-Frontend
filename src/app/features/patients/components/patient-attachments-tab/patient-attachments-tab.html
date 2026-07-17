@@ -33,9 +33,9 @@
       <p class="subtitle">Arrastre un archivo a la zona superior para guardar su primera radiografía o documento.</p>
     </div>
   } @else {
-    <div class="attachments-unified-grid mt-4">
+    <div class="attachments-grid mt-4">
       @for (att of attachments(); track att.id) {
-        <div class="attachment-unified-card" (click)="openAttachmentPreview(att)">
+        <div class="attachment-card" (click)="openAttachmentPreview(att)">
           <div class="att-media-preview">
             @if (isImageFile(att.mimeType)) {
               <img [src]="att.url" [alt]="att.fileName" class="att-img-thumb" />
@@ -51,7 +51,7 @@
               <span>{{ att.createdAt }}</span>
               <span>{{ (att.size / 1024).toFixed(1) }} KB</span>
             </div>
-            <a [href]="att.url" target="_blank" (click)="$event.stopPropagation()" class="btn btn--secondary btn--sm mt-2">
+            <a [href]="att.url" target="_blank" (click)="$event.stopPropagation()" class="btn btn--secondary btn--sm w-100">
               Descargar Archivo
             </a>
           </div>
@@ -61,16 +61,15 @@
   }
 </article>
 
-<!-- MODAL DE PREVISUALIZACIÓN DE IMÁGENES Y ARCHIVOS -->
 @if (previewAttachment(); as att) {
   <app-modal [title]="att.fileName" [visible]="true" (close)="closeAttachmentPreview()">
-    <div class="image-preview-modal-body">
+    <div class="preview-body">
       @if (isImageFile(att.mimeType)) {
         <img [src]="att.url" [alt]="att.fileName" class="preview-full-img" />
       } @else {
-        <div class="pdf-document-preview">
+        <div class="pdf-preview">
           <p>Documento adjunto: <strong>{{ att.fileName }}</strong></p>
-          <a [href]="att.url" target="_blank" class="btn btn--primary mt-3">Descargar / Abrir Documento</a>
+          <a [href]="att.url" target="_blank" class="btn btn--primary">Descargar / Abrir Documento</a>
         </div>
       }
       <p class="muted text-center mt-2">Fecha de registro: {{ att.createdAt }}</p>

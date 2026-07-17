@@ -1,5 +1,10 @@
 <div class="form-field" [class.form-field--invalid]="isInvalid">
-  <label class="form-field-label" [for]="label()">{{ label() }}</label>
+  <label class="form-field-label" [for]="label()">
+    {{ label() }}
+    @if (required()) {
+      <span class="form-field-required" aria-label="campo obligatorio">*</span>
+    }
+  </label>
   <div class="form-field-input-wrapper">
     <ng-content></ng-content>
   </div>

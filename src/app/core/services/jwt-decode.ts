@@ -51,7 +51,10 @@ export function jwtDecode(token: string): JwtPayload | null {
 
 function normalizeRole(role: string): string {
   const map: Record<string, string> = {
+    MEDICO: 'dentist',
     medico: 'dentist',
+    SECRETARIA: 'receptionist',
+    secretaria: 'receptionist',
   };
 
   return map[role] ?? role;

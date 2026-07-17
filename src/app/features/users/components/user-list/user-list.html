@@ -1,0 +1,91 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administración</p>
+      <h1>Usuarios</h1>
+      <p class="muted">Crear y gestionar usuarios del sistema con sus roles.</p>
+    </div>
+    <button class="btn btn--primary" (click)="openCreate()">+ Nuevo Usuario</button>
+  </header>
+
+  @if (loading()) {
+    <p class="muted" style="text-align:center; padding:2rem">Cargando...</p>
+  } @else {
+    <article class="card">
+      <table class="clinical-table">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Roles</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody>
+          @for (u of users(); track u.id) {
+            <tr>
+              <td><strong>{{ u.nombreCompleto }}</strong></td>
+              <td>{{ u.email }}</td>
+              <td>
+                @for (r of u.roles; track r.id) {
+                  <span class="table-pill" style="margin-right: 0.35rem">{{ r.nombreRol }}</span>
+                }
+              </td>
+              <td>
+                <span class="table-pill" [class.table-pill--success]="u.estado" [class.table-pill--danger]="!u.estado">
+                  {{ u.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem">
+                  <button class="btn btn--outline btn--sm" (click)="openEdit(u)">Editar</button>
+                  <button class="btn btn--danger-outline btn--sm" (click)="disableUser(u.id)">Desactivar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">No hay usuarios registrados</td></tr>
+          }
+        </tbody>
+      </table>
+    </article>
+  }
+</section>
+
+<app-modal [title]="editingUser() ? 'Editar Usuario' : 'Nuevo Usuario'" [visible]="showModal()" (close)="closeModal()">
+  <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+    <div class="form-group">
+      <label class="form-label">Nombre Completo</label>
+      <input class="form-input" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" formControlName="email" placeholder="juan@clinica.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña {{ editingUser() ? '(dejar vacía para no cambiar)' : '' }}</label>
+      <input class="form-input" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rol</label>
+      <button #triggerRef type="button" class="dropdown-trigger" (click)="toggleDropdown()">
+        <span [class.placeholder]="selectedRoleId() === null">{{ selectedRoleLabel() }}</span>
+        <span class="dropdown-arrow">&#9662;</span>
+      </button>
+      @if (selectedRoleId() === null) {
+        <small style="color: #ef4444; display: block; margin-top: 0.25rem">Selecciona un rol</small>
+      }
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="closeModal()">Cancelar</button>
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Guardando...' : 'Guardar' }}</button>
+    </div>
+  </form>
+</app-modal>
+
+@if (dropdownOpen()) {
+  <div class="dropdown-menu-portal"
+       [style.top.px]="dropdownPos().top"
+       [style.left.px]="dropdownPos().left"
+       [style.width.px]="dropdownPos().width">
+    @for (role of roles(); track role.id) {
+      <button type="button" class="dropdown-item" (click)="selectRole(role.id)">
+        <span>{{ role.nombreRol }}</span>
+        @if (selectedRoleId() === role.id) { <span class="check">&#10003;</span> }
+      </button>
+    }
+  </div>
+}

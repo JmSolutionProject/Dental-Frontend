@@ -109,21 +109,9 @@
           </app-form-field>
 
           <app-form-field label="Fecha de Nacimiento" [control]="createForm.get('birthDate')!">
-            <input type="date" formControlName="birthDate" />
+            <app-birth-date-field [control]="createForm.get('birthDate')!" />
           </app-form-field>
         </div>
-      </section>
-
-      <section class="create-section create-section--clinical">
-        <h3>Alertas Médicas y Alergias</h3>
-        <app-form-field label="Alergias Críticas o Condiciones" [control]="createForm.get('allergies')!">
-          <textarea
-            formControlName="allergies"
-            rows="3"
-            placeholder="Ej: Penicilina, anestesia, látex, hipertensión"
-          ></textarea>
-        </app-form-field>
-        <p class="create-hint">Separa múltiples alergias o condiciones con comas.</p>
       </section>
 
       <div class="create-actions">

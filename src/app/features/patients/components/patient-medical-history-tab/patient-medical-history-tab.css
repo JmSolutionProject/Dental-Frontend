@@ -1,0 +1,179 @@
+/* Medical History Tab — Compact 2-column layout, fits on screen */
+.anamnesis-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.anamnesis-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .anamnesis-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.anam-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.anam-card-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.anam-card-title h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.anam-card-title .subtitle {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.anam-checkbox-grid {
+  display: grid;
+  gap: 0.2rem 0.6rem;
+}
+
+.anam-checkbox-grid--2col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.anam-checkbox-grid--3col {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.anam-checkbox-grid--4col {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+  .anam-checkbox-grid--4col {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  .anam-checkbox-grid--3col,
+  .anam-checkbox-grid--4col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.anam-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #334155;
+  padding: 0.18rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.anam-row:hover {
+  background: #f1f5f9;
+}
+
+.anam-row input[type="checkbox"] {
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: #0284c7;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.anam-row--selected {
+  color: #0284c7;
+  font-weight: 700;
+  background: #f0f9ff;
+}
+
+.anam-row--selected:hover {
+  background: #e0f2fe;
+}
+
+.anam-custom-input,
+.anam-textarea {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.anam-custom-input:focus,
+.anam-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.anam-textarea {
+  resize: vertical;
+  min-height: 2.2rem;
+  font-family: inherit;
+}
+
+.anam-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.anam-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #334155;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.anam-radio:hover {
+  background: #f1f5f9;
+}
+
+.anam-radio input[type="radio"] {
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.anam-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}

@@ -1,75 +1,166 @@
 <section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Resumen General</p>
-      <h1>Panel Control de Clínica</h1>
-      <p class="muted">Métricas clave e indicadores de rendimiento operativo en tiempo real.</p>
-    </div>
-    <a class="button" href="/appointments">+ Nueva Cita</a>
-  </header>
+  <!-- ADMIN DASHBOARD -->
+  @if (role() === 'admin') {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Panel de Administración</p>
+        <h1>Bienvenido, {{ userName }}</h1>
+        <p class="muted">Resumen general de la clínica — ingresos, citas y rendimiento.</p>
+      </div>
+      <a class="btn btn--primary" routerLink="/appointments/calendar">+ Nueva Cita</a>
+    </header>
 
-  @if (kpis$ | async; as kpis) {
-    <!-- Revenue section -->
-    <section class="kpi-section">
-      <h2 class="kpi-section-title">Ingresos y Finanzas</h2>
-      <div class="grid grid--4col">
-        <article class="card metric metric--revenue">
-          <span>Ingresos de Hoy</span>
-          <strong>{{ kpis.revenue.today | currency:'USD':'symbol':'1.2-2' }}</strong>
-          <small>Recaudado el día de hoy</small>
+    @if (kpis$ | async; as kpis) {
+      <!-- KPI Cards -->
+      <div class="summary-kpis-grid" style="margin-bottom: 1.75rem;">
+        <article class="kpi-card" style="border-left: 4px solid var(--color-primary, #0ea5e9);">
+          <span class="kpi-label">Ingresos Hoy</span>
+          <strong class="kpi-value">{{ kpis.revenue.today | currency:'USD':'symbol':'1.2-2' }}</strong>
         </article>
-        <article class="card metric metric--revenue">
-          <span>Ingresos del Mes</span>
-          <strong>{{ kpis.revenue.month | currency:'USD':'symbol':'1.2-2' }}</strong>
-          <small>Total este mes</small>
+        <article class="kpi-card" style="border-left: 4px solid #10b981;">
+          <span class="kpi-label">Ingresos del Mes</span>
+          <strong class="kpi-value">{{ kpis.revenue.month | currency:'USD':'symbol':'1.2-2' }}</strong>
         </article>
-        <article class="card metric metric--outstanding">
-          <span>Por Cobrar</span>
-          <strong>{{ kpis.revenue.outstanding | currency:'USD':'symbol':'1.2-2' }}</strong>
-          <small>Facturas pendientes</small>
+        <article class="kpi-card" style="border-left: 4px solid #f59e0b;">
+          <span class="kpi-label">Citas Hoy</span>
+          <strong class="kpi-value">{{ kpis.clinical.appointmentsToday }}</strong>
+        </article>
+        <article class="kpi-card" style="border-left: 4px solid #8b5cf6;">
+          <span class="kpi-label">Total Pacientes</span>
+          <strong class="kpi-value">{{ kpis.totals.patients }}</strong>
         </article>
       </div>
-    </section>
 
-    <!-- Clinical section -->
-    <section class="kpi-section">
-      <h2 class="kpi-section-title">Gestión Clínica</h2>
-      <div class="grid grid--4col">
-        <article class="card metric metric--clinical">
-          <span>Citas de Hoy</span>
-          <strong>{{ kpis.clinical.appointmentsToday }}</strong>
-          <small>Programadas</small>
+      <!-- Revenue by Method & Top Services -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+        <article class="card">
+          <h3 style="font-size: var(--text-sm); color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 0.85rem 0;">Ingresos por Método de Pago</h3>
+          @if (kpis.revenueByMethod.length > 0) {
+            <table class="clinical-table">
+              <thead><tr><th>Método</th><th>Total</th></tr></thead>
+              <tbody>
+                @for (item of kpis.revenueByMethod; track item.method) {
+                  <tr><td>{{ item.method }}</td><td>{{ item.total | currency:'USD':'symbol':'1.2-2' }}</td></tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="muted">Sin datos este mes</p>
+          }
         </article>
-        <article class="card metric metric--clinical">
-          <span>Nuevos Pacientes</span>
-          <strong>{{ kpis.clinical.newPatientsThisMonth }}</strong>
-          <small>Registrados este mes</small>
-        </article>
-        <article class="card metric metric--clinical">
-          <span>Tratamientos Activos</span>
-          <strong>{{ kpis.clinical.activeTreatments }}</strong>
-          <small>En curso</small>
+        <article class="card">
+          <h3 style="font-size: var(--text-sm); color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 0.85rem 0;">Servicios Más Solicitados</h3>
+          @if (kpis.topServices.length > 0) {
+            <table class="clinical-table">
+              <thead><tr><th>Servicio</th><th>Veces</th></tr></thead>
+              <tbody>
+                @for (svc of kpis.topServices; track svc.name) {
+                  <tr><td>{{ svc.name }}</td><td>{{ svc.count }}</td></tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="muted">Sin datos este mes</p>
+          }
         </article>
       </div>
-    </section>
+
+      <!-- Quick Actions -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem;">
+        <a class="btn btn--outline" routerLink="/payments">Ver Pagos</a>
+        <a class="btn btn--outline" routerLink="/messages">WhatsApp</a>
+        <a class="btn btn--outline" routerLink="/patients">Pacientes</a>
+        <a class="btn btn--outline" routerLink="/reports">Reportes</a>
+      </div>
+    }
   }
 
-  <!-- General Summary Grid -->
-  <div class="grid">
-    <article class="card metric">
-      <span>Pacientes Totales</span>
-      <strong>{{ (patientsTotal$ | async) ?? 0 }}</strong>
-      <small>Pacientes registrados en sistema</small>
-    </article>
-    <article class="card metric">
-      <span>Citas Registradas</span>
-      <strong>{{ (appointments$ | async)?.length ?? 0 }}</strong>
-      <small>Total de citas agendadas</small>
-    </article>
-    <article class="card metric">
-      <span>Mensajes WhatsApp</span>
-      <strong>0</strong>
-      <small>Notificaciones enviadas</small>
-    </article>
-  </div>
+  <!-- SECRETARIA DASHBOARD -->
+  @if (role() === 'receptionist') {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Recepción</p>
+        <h1>Bienvenida, {{ userName }}</h1>
+        <p class="muted">Agenda del día y registro rápido de pacientes y cobros.</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <a class="btn btn--primary" routerLink="/patients">+ Registrar Paciente</a>
+        <a class="btn btn--success" routerLink="/appointments/calendar">+ Nueva Cita</a>
+      </div>
+    </header>
+
+    @if (kpis$ | async; as kpis) {
+      <div class="summary-kpis-grid" style="margin-bottom: 1.75rem;">
+        <article class="kpi-card" style="border-left: 4px solid #10b981;">
+          <span class="kpi-label">Citas Hoy</span>
+          <strong class="kpi-value">{{ kpis.clinical.appointmentsToday }}</strong>
+        </article>
+        <article class="kpi-card" style="border-left: 4px solid var(--color-primary, #0ea5e9);">
+          <span class="kpi-label">Cobros del Día</span>
+          <strong class="kpi-value">{{ kpis.revenue.today | currency:'USD':'symbol':'1.2-2' }}</strong>
+        </article>
+        <article class="kpi-card" style="border-left: 4px solid #f59e0b;">
+          <span class="kpi-label">Pacientes Nuevos (Mes)</span>
+          <strong class="kpi-value">{{ kpis.clinical.newPatientsThisMonth }}</strong>
+        </article>
+      </div>
+    }
+
+    <!-- Quick links -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem;">
+      <a class="btn btn--outline" routerLink="/appointments">Ver Citas</a>
+      <a class="btn btn--outline" routerLink="/patients">Buscar Paciente</a>
+      <a class="btn btn--outline" routerLink="/payments">Registrar Pago</a>
+      <a class="btn btn--outline" routerLink="/agenda">Agenda del Día</a>
+    </div>
+  }
+
+  <!-- MEDICO DASHBOARD -->
+  @if (role() === 'dentist') {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Consultorio</p>
+        <h1>Dr(a). {{ userName }}</h1>
+        <p class="muted">Tus citas de hoy, pacientes y odontograma.</p>
+      </div>
+      <a class="btn btn--primary" routerLink="/patients">Buscar Paciente</a>
+    </header>
+
+    @if (kpis$ | async; as kpis) {
+      <div class="summary-kpis-grid" style="margin-bottom: 1.75rem;">
+        <article class="kpi-card" style="border-left: 4px solid var(--color-primary, #0ea5e9);">
+          <span class="kpi-label">Mis Citas Hoy</span>
+          <strong class="kpi-value">{{ kpis.clinical.myAppointmentsToday }}</strong>
+        </article>
+        <article class="kpi-card" style="border-left: 4px solid #10b981;">
+          <span class="kpi-label">Citas Totales Hoy</span>
+          <strong class="kpi-value">{{ kpis.clinical.appointmentsToday }}</strong>
+        </article>
+        <article class="kpi-card" style="border-left: 4px solid #f59e0b;">
+          <span class="kpi-label">Mis Comisiones (Mes)</span>
+          <strong class="kpi-value">{{ kpis.myCommissions | currency:'USD':'symbol':'1.2-2' }}</strong>
+        </article>
+      </div>
+
+      @if (kpis.topServices.length > 0) {
+        <article class="card" style="margin-bottom: 1.5rem;">
+          <h3 style="font-size: var(--text-sm); color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 0.85rem 0;">Servicios Más Realizados</h3>
+          <table class="clinical-table">
+            <thead><tr><th>Servicio</th><th>Veces</th></tr></thead>
+            <tbody>
+              @for (svc of kpis.topServices; track svc.name) {
+                <tr><td>{{ svc.name }}</td><td>{{ svc.count }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </article>
+      }
+    }
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem;">
+      <a class="btn btn--outline" routerLink="/appointments">Mis Citas</a>
+      <a class="btn btn--outline" routerLink="/patients">Mis Pacientes</a>
+      <a class="btn btn--outline" routerLink="/agenda">Agenda</a>
+    </div>
+  }
 </section>

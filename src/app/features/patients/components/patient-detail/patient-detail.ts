@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { take, catchError, of, finalize } from 'rxjs';
 import {
@@ -10,18 +10,15 @@ import {
 
 import { ReniecService } from '../../../../core/services/reniec.service';
 import { MedicalAlertService } from '../../../../core/services/medical-alert.service';
+import { AuthService } from '../../../../core/services/auth';
 
 import { GetPatientUseCase } from '../../application/get-patient.usecase';
 import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
 import { DeletePatientUseCase } from '../../application/delete-patient.usecase';
 import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, BudgetItemRecord, PaymentRecord, InstallmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
 
-
-
-
 import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
 import { Modal as ModalComponent } from '../../../../shared/components/modal/modal';
-import { FormField as FormFieldComponent } from '../../../../shared/components/form-field/form-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { PatientSummaryTab } from '../patient-summary-tab/patient-summary-tab';
 import { PatientOdontogramTab } from '../patient-odontogram-tab/patient-odontogram-tab';
@@ -29,28 +26,26 @@ import { PatientTreatmentPlanTab } from '../patient-treatment-plan-tab/patient-t
 import { PatientMedicalHistoryTab, MedicalHistoryData } from '../patient-medical-history-tab/patient-medical-history-tab';
 import { PatientAttachmentsTab } from '../patient-attachments-tab/patient-attachments-tab';
 import { PatientPaymentsTab } from '../patient-payments-tab/patient-payments-tab';
+import { PersonalDataForm } from '../personal-data-form/personal-data-form';
+import { ObservationsTab } from '../observations-tab/observations-tab';
 
 export type DetailTab =
-  | 'summary'             // 1. Resumen
-  | 'personal-data'       // 2. Datos personales
-  | 'medical-history'     // 3. Antecedentes médicos
-  | 'odontogram'          // 4. Odontograma
-  | 'appointments-history'// 5. Historial de citas
-  | 'budget-plan'         // 6. Presupuesto / Plan
-  | 'payments'            // 7. Pagos
-  | 'attachments'         // 8. Archivos, Imágenes y Documentos
-  | 'observations';       // 9. Observaciones
-
-
-
-
+  | 'summary'
+  | 'personal-data'
+  | 'medical-history'
+  | 'odontogram'
+  | 'appointments-history'
+  | 'budget-plan'
+  | 'payments'
+  | 'attachments'
+  | 'observations';
 
 @Component({
   selector: 'app-patient-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent, FormFieldComponent, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PersonalDataForm, ObservationsTab, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab],
   templateUrl: './patient-detail.html',
-  styleUrl: './patient-detail.css', encapsulation: ViewEncapsulation.None,
+  styleUrl: './patient-detail.css',
 })
 export class PatientDetail {
   private readonly route = inject(ActivatedRoute);
@@ -62,7 +57,9 @@ export class PatientDetail {
   private readonly fb = inject(FormBuilder);
   private readonly reniec = inject(ReniecService);
   private readonly medicalAlert = inject(MedicalAlertService);
+  private readonly auth = inject(AuthService);
 
+  readonly role = this.auth.role;
   readonly patient = signal<Patient | null>(null);
   readonly loading = signal(true);
   readonly editing = signal(false);
@@ -136,9 +133,8 @@ export class PatientDetail {
     email: [''],
     birthDate: [''],
     gender: ['Masculino'],
-    address: [''],
-    emergencyContact: [''],
-    insurance: [''],
+    emergencyRelationship: [''],
+    emergencyPhone: [''],
     customAllergy: [''],
     customDisease: [''],
     medicationDetails: ['Metformina 850mg diario, Losartán 50mg'],
@@ -200,9 +196,8 @@ export class PatientDetail {
       email: p.email ?? '',
       birthDate: p.birthDate ?? '',
       gender: 'Masculino',
-      address: p.address ?? '',
-      emergencyContact: 'María Rengifo (Madre) - +51 988 123 456',
-      insurance: 'Rimac EPS / Sin Seguro',
+      emergencyRelationship: 'Madre',
+      emergencyPhone: '+51 988 123 456',
       customAllergy: '',
       customDisease: '',
       medicationDetails: 'Metformina 850mg diario, Losartán 50mg',
@@ -301,20 +296,23 @@ export class PatientDetail {
 
   private buildUpdateRequest(): UpdatePatientRequest {
     const raw = this.form.getRawValue();
+    const emergencyRelationship = (raw.emergencyRelationship || '').trim();
+    const emergencyPhone = (raw.emergencyPhone || '').trim();
+    const emergencyContact = [emergencyRelationship, emergencyPhone].filter(Boolean).join(' ');
+
     return {
       firstName: raw.firstName,
       lastName: raw.lastName,
       documentNumber: raw.documentNumber,
       phone: raw.phone,
       email: raw.email || undefined,
-      address: raw.address || undefined,
       birthDate: raw.birthDate || undefined,
       medicalHistory: {
         allergies: this.medicalHistoryData().allergies,
         conditions: this.medicalHistoryData().diseases,
         medications: this.medicalHistoryData().takesMedication ? this.parseList(raw.medicationDetails) : [],
       },
-      notes: raw.notes,
+      notes: [emergencyContact, raw.notes].filter(Boolean).join('\n'),
     };
   }
 

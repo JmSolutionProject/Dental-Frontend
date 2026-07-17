@@ -13,6 +13,7 @@ import {
 export class FormField {
   label = input.required<string>();
   control = input.required<FormControl | AbstractControl>();
+  required = input<boolean>(false);
 
   get isInvalid(): boolean {
     const control = this.control();
