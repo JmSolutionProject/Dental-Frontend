@@ -39,8 +39,15 @@
   align-content: start;
 }
 
+.user-settings {
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
 .nav a,
-.logout-button {
+.settings-link {
   align-items: center;
   border-radius: 0.625rem;
   color: #334155;
@@ -53,17 +60,11 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.logout-button {
-  background: transparent;
-  border: 0;
-  color: var(--logout-color);
-  cursor: pointer;
-  font-family: inherit;
-  width: 100%;
+.settings-link {
+  cursor: default;
 }
 
 .nav-icon {
-  fill: currentColor;
   flex: 0 0 auto;
   height: 1.15rem;
   opacity: 0.78;
@@ -72,18 +73,15 @@
 }
 
 .nav a:hover,
-.nav a.active {
+.nav a.active,
+.settings-link:hover {
   background: #e0f2fe;
   color: #0284c7;
 }
 
-.logout-button:hover {
-  background: var(--logout-hover-bg, var(--logout-bg));
-}
-
 .nav a:hover .nav-icon,
 .nav a.active .nav-icon,
-.logout-button:hover .nav-icon {
+.settings-link:hover .nav-icon {
   opacity: 1;
   transform: translateX(1px);
 }
@@ -100,8 +98,14 @@
     overflow-x: auto;
   }
 
+  .user-settings {
+    border-top: 0;
+    overflow-x: auto;
+    padding-top: 0;
+  }
+
   .nav a,
-  .logout-button {
+  .settings-link {
     justify-content: center;
   }
 }

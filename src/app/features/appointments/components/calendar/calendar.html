@@ -2,8 +2,9 @@
   <!-- Header -->
   <header class="calendar-header">
     <div class="calendar-title">
-      <p class="eyebrow">Calendar</p>
+      <p class="eyebrow">Agenda</p>
       <h1>{{ viewTitle() }}</h1>
+      <p class="muted">Calendario de citas por día, semana y mes.</p>
     </div>
     <div class="calendar-controls">
       <div class="view-tabs">
@@ -11,23 +12,23 @@
           class="tab"
           [class.tab--active]="view() === 'day'"
           (click)="setView('day')">
-          Day
+          Día
         </button>
         <button
           class="tab"
           [class.tab--active]="view() === 'week'"
           (click)="setView('week')">
-          Week
+          Semana
         </button>
         <button
           class="tab"
           [class.tab--active]="view() === 'month'"
           (click)="setView('month')">
-          Month
+          Mes
         </button>
       </div>
       <button class="button button--sm" type="button" (click)="goToToday()">
-        Today
+        Hoy
       </button>
     </div>
   </header>
@@ -36,54 +37,82 @@
   <div class="calendar-toolbar">
     <div class="nav-group">
       <button class="button button--sm" type="button" (click)="navigate(-1)">
-        &larr; Prev
+        &larr; Anterior
       </button>
       <button class="button button--sm" type="button" (click)="navigate(1)">
-        Next &rarr;
+        Siguiente &rarr;
       </button>
     </div>
 
     <div class="filter-group">
-      <label class="filter-label">Dentist:</label>
+      <label class="filter-label">Odontólogo:</label>
       <select
         class="select-field"
         [value]="selectedDentistId() ?? ''"
         (change)="selectDentist($any($event.target).value || null)">
-        <option value="">All dentists</option>
+        <option value="">Todos</option>
         @for (dentist of dentists(); track dentist.id) {
           <option [value]="dentist.id">{{ dentist.name }}</option>
         }
       </select>
       <button class="button button--primary button--sm" type="button" (click)="openCreateModal()">
-        + New
+        + Nueva cita
       </button>
     </div>
+  </div>
+
+  <div class="calendar-settings" aria-label="Configuración de agenda">
+    <label>
+      Inicio
+      <select [value]="startHour()" (change)="setStartHour($any($event.target).value)">
+        @for (hour of [6,7,8,9,10,11,12,13,14,15,16,17,18]; track hour) {
+          <option [value]="hour">{{ formatHour(hour) }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Fin
+      <select [value]="endHour()" (change)="setEndHour($any($event.target).value)">
+        @for (hour of [12,13,14,15,16,17,18,19,20,21,22,23]; track hour) {
+          <option [value]="hour">{{ formatHour(hour) }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Duración
+      <select [value]="appointmentDuration()" (change)="setAppointmentDuration($any($event.target).value)">
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+        <option value="45">45 min</option>
+        <option value="60">60 min</option>
+      </select>
+    </label>
   </div>
 
   <!-- Day View -->
   @if (view() === 'day') {
     <div class="day-view">
-      @for (hour of hours; track hour) {
+      @for (hour of hours(); track hour) {
         <div class="hour-row">
-          <span class="hour-label">{{ hour }}</span>
+          <span class="hour-label">{{ formatHour(hour) }}</span>
           <div
             class="hour-slot"
-            [class.hour-slot--occupied]="getAppointmentsForHour(currentDate(), 8 + $index).length > 0"
-            (click)="onHourClick(currentDate(), 8 + $index)">
-            @for (apt of getAppointmentsForHour(currentDate(), 8 + $index); track apt.id) {
+            [class.hour-slot--occupied]="getAppointmentsForHour(currentDate(), hour).length > 0"
+            (click)="onHourClick(currentDate(), hour)">
+            @for (apt of getAppointmentsForHour(currentDate(), hour); track apt.id) {
               <div
                 class="slot-appointment"
                 [class]="getStatusClass(apt.status)"
                 (click)="$event.stopPropagation(); openEditModal(apt)">
                 <strong>{{ apt.patientName }}</strong>
                 <span>{{ apt.reason }}</span>
-                <small>{{ apt.dentistName ?? 'Unassigned' }}</small>
+                <small>{{ apt.dentistName ?? 'Sin asignar' }}</small>
                 @if (apt.status !== 'cancelled') {
                   <button
                     class="btn-cancel"
                     type="button"
                     (click)="$event.stopPropagation(); openCancelModal(apt)">
-                    Cancel
+                    Cancelar
                   </button>
                 }
               </div>
@@ -98,6 +127,7 @@
   @if (view() === 'week') {
     <div class="week-view">
       <div class="week-header">
+        <div class="week-corner" aria-hidden="true"></div>
         @for (day of weekDays(); track day.date.toISOString()) {
           <div
             class="week-day-header"
@@ -106,14 +136,14 @@
           </div>
         }
       </div>
-      @for (hour of hours; track hour) {
+      @for (hour of hours(); track hour) {
         <div class="week-row">
-          <span class="hour-label week-hour-label">{{ hour }}</span>
+          <span class="hour-label week-hour-label">{{ formatHour(hour) }}</span>
           @for (day of weekDays(); track day.date.toISOString()) {
             <div
               class="week-slot"
-              (click)="onHourClick(day.date, 8 + $index)">
-              @for (apt of getAppointmentsForHour(day.date, 8 + $index); track apt.id) {
+              (click)="onHourClick(day.date, hour)">
+              @for (apt of getAppointmentsForHour(day.date, hour); track apt.id) {
                 <div
                   class="week-appointment"
                   [class]="getStatusClass(apt.status)"
@@ -132,7 +162,7 @@
   @if (view() === 'month') {
     <div class="month-view">
       <div class="month-header">
-        @for (label of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; track label) {
+        @for (label of ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']; track label) {
           <div class="month-day-label">{{ label }}</div>
         }
       </div>
@@ -146,9 +176,18 @@
               (click)="currentDate.set(cell.date); setView('day')">
               <span class="month-cell-num">{{ cell.label }}</span>
               @if (cell.appointments.length > 0) {
-                <div class="month-cell-dots">
-                  @for (_ of cell.appointments; track $index) {
-                    <span class="dot"></span>
+                <div class="month-cell-events">
+                  @for (apt of cell.appointments.slice(0, 3); track apt.id) {
+                    <button
+                      class="month-event"
+                      [class]="getStatusClass(apt.status)"
+                      type="button"
+                      (click)="$event.stopPropagation(); openEditModal(apt)">
+                      {{ apt.scheduledAt.slice(11, 16) }} {{ apt.patientName }}
+                    </button>
+                  }
+                  @if (cell.appointments.length > 3) {
+                    <small class="more-events">+{{ cell.appointments.length - 3 }} más</small>
                   }
                 </div>
               }
@@ -161,7 +200,7 @@
 
   <!-- Loading state -->
   @if (loading()) {
-    <div class="loading-overlay">Loading&hellip;</div>
+    <div class="loading-overlay">Cargando&hellip;</div>
   }
 </section>
 
@@ -171,38 +210,38 @@
   [visible]="modalVisible()"
   (close)="closeModal()">
   <form class="modal-form" (submit)="$event.preventDefault(); submitForm()">
-    <app-form-field label="Patient Name" [control]="form.controls.patientName">
+    <app-form-field label="Paciente" [control]="form.controls.patientName">
       <input type="text" [formControl]="form.controls.patientName" />
     </app-form-field>
 
-    <app-form-field label="Patient ID" [control]="form.controls.patientId">
+    <app-form-field label="ID del paciente" [control]="form.controls.patientId">
       <input type="text" [formControl]="form.controls.patientId" />
     </app-form-field>
 
-    <app-form-field label="Dentist ID" [control]="form.controls.dentistId">
+    <app-form-field label="ID del odontólogo" [control]="form.controls.dentistId">
       <input type="text" [formControl]="form.controls.dentistId" />
     </app-form-field>
 
-    <app-form-field label="Dentist Name" [control]="form.controls.dentistName">
+    <app-form-field label="Odontólogo" [control]="form.controls.dentistName">
       <input type="text" [formControl]="form.controls.dentistName" />
     </app-form-field>
 
-    <app-form-field label="Date" [control]="form.controls.scheduledDate">
+    <app-form-field label="Fecha" [control]="form.controls.scheduledDate">
       <input type="date" [formControl]="form.controls.scheduledDate" />
     </app-form-field>
 
-    <app-form-field label="Time" [control]="form.controls.scheduledTime">
+    <app-form-field label="Hora" [control]="form.controls.scheduledTime">
       <input type="time" [formControl]="form.controls.scheduledTime" />
     </app-form-field>
 
-    <app-form-field label="Reason" [control]="form.controls.reason">
+    <app-form-field label="Motivo" [control]="form.controls.reason">
       <input type="text" [formControl]="form.controls.reason" />
     </app-form-field>
 
     <div class="modal-actions">
-      <button class="button" type="button" (click)="closeModal()">Cancel</button>
+      <button class="button" type="button" (click)="closeModal()">Cancelar</button>
       <button class="button button--primary" type="submit">
-        {{ editingAppointment() ? 'Update' : 'Create' }}
+        {{ editingAppointment() ? 'Actualizar' : 'Registrar' }}
       </button>
     </div>
   </form>
@@ -210,23 +249,23 @@
 
 <!-- Cancel Confirmation Modal -->
 <app-modal
-  title="Cancel Appointment"
+  title="Cancelar cita"
   [visible]="cancelModalVisible()"
   (close)="closeCancelModal()">
   <form class="cancel-modal" (submit)="$event.preventDefault(); confirmCancel()">
     <p>
-      You are about to cancel the appointment for
-      <strong>{{ cancelTarget()?.patientName }}</strong> on
+      Vas a cancelar la cita de
+      <strong>{{ cancelTarget()?.patientName }}</strong> el
       {{ cancelTarget()?.scheduledAt | date: 'medium' }}.
     </p>
-    <app-form-field label="Reason" [control]="cancelForm">
+    <app-form-field label="Motivo" [control]="cancelForm">
       <input type="text" [formControl]="cancelForm" />
     </app-form-field>
 
     <div class="modal-actions">
-      <button class="button" type="button" (click)="closeCancelModal()">Keep</button>
+      <button class="button" type="button" (click)="closeCancelModal()">Mantener</button>
       <button class="button button--danger" type="submit">
-        Cancel Appointment
+        Cancelar cita
       </button>
     </div>
   </form>

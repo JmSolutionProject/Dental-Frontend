@@ -62,11 +62,14 @@ export class Calendar {
   readonly view = signal<CalendarView>('week');
   readonly currentDate = signal(new Date());
   readonly selectedDentistId = signal<string | null>(null);
+  readonly startHour = signal(8);
+  readonly endHour = signal(20);
+  readonly appointmentDuration = signal(30);
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(false);
 
   readonly modalVisible = signal(false);
-  readonly modalTitle = signal('New Appointment');
+  readonly modalTitle = signal('Nueva cita');
   readonly editingAppointment = signal<Appointment | null>(null);
   readonly cancelModalVisible = signal(false);
   readonly cancelTarget = signal<Appointment | null>(null);
@@ -127,7 +130,12 @@ export class Calendar {
     return all.filter((a) => a.dentistId === dentist);
   });
 
-  readonly hours = Array.from({ length: 13 }, (_, i) => `${i + 8}:00`);
+  readonly hours = computed<number[]>(() =>
+    Array.from(
+      { length: this.endHour() - this.startHour() + 1 },
+      (_, i) => this.startHour() + i,
+    ),
+  );
 
   readonly weekDays = computed<CalendarDay[]>(() => {
     const date = this.currentDate();
@@ -144,10 +152,7 @@ export class Calendar {
       d.setDate(monday.getDate() + i);
       return {
         date: d,
-        label: d.toLocaleDateString('en-US', {
-          weekday: 'short',
-          day: 'numeric',
-        }),
+        label: this.weekDayLabel(d),
         isToday: d.getTime() === today.getTime(),
         isCurrentMonth: true,
         appointments: this.getAppointmentsForDate(d),
@@ -218,7 +223,7 @@ export class Calendar {
   });
 
   private getAppointmentsForDate(date: Date): Appointment[] {
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = this.dateKey(date);
     return this.filteredAppointments().filter((a) =>
       a.scheduledAt.startsWith(dateStr),
     );
@@ -270,7 +275,7 @@ export class Calendar {
     const d = this.currentDate();
     const view = this.view();
     if (view === 'day') {
-      return d.toLocaleDateString('en-US', {
+      return d.toLocaleDateString('es-PE', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -278,14 +283,14 @@ export class Calendar {
       });
     }
     if (view === 'week') {
-      return `Week of ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+      return `Semana del ${d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}`;
     }
-    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
   }
 
   openCreateModal(slotDate?: Date, slotTime?: string) {
     this.editingAppointment.set(null);
-    this.modalTitle.set('New Appointment');
+    this.modalTitle.set('Nueva cita');
     this.form.reset();
 
     if (slotDate) {
@@ -311,7 +316,7 @@ export class Calendar {
 
   openEditModal(appointment: Appointment) {
     this.editingAppointment.set(appointment);
-    this.modalTitle.set('Edit Appointment');
+    this.modalTitle.set('Editar cita');
 
     const scheduledDate = appointment.scheduledAt.slice(0, 10);
     const scheduledTime = appointment.scheduledAt.slice(11, 16);
@@ -357,13 +362,13 @@ export class Calendar {
         })
         .pipe(
           catchError(() => {
-            this.toast.error('Failed to update appointment.');
+            this.toast.error('No se pudo actualizar la cita.');
             return of(null);
           }),
         )
         .subscribe((appointment) => {
           if (appointment) {
-            this.toast.success('Appointment updated.');
+            this.toast.success('Cita actualizada.');
             this.closeModal();
             this.loadAppointments();
           }
@@ -374,7 +379,7 @@ export class Calendar {
     const slot: CalendarSlot = {
       dentistId: formVal.dentistId,
       start: scheduledAt,
-      end: this.addMinutes(scheduledAt, 30),
+      end: this.addMinutes(scheduledAt, this.appointmentDuration()),
     };
 
     this.checkAvailability
@@ -383,7 +388,7 @@ export class Calendar {
         switchMap((result) => {
           if (!result.available) {
             this.toast.error(
-              'Slot is unavailable. This dentist already has an appointment at that time.',
+              'El horario no está disponible. Este odontólogo ya tiene una cita en ese horario.',
             );
             throw new Error('Slot unavailable');
           }
@@ -398,14 +403,14 @@ export class Calendar {
         }),
         catchError((err) => {
           if (err.message !== 'Slot unavailable') {
-            this.toast.error('Failed to create appointment.');
+            this.toast.error('No se pudo registrar la cita.');
           }
           return of(null);
         }),
       )
       .subscribe((appointment) => {
         if (appointment) {
-          this.toast.success('Appointment created.');
+          this.toast.success('Cita registrada.');
           this.closeModal();
           this.loadAppointments();
         }
@@ -437,13 +442,13 @@ export class Calendar {
       .execute(target.id, reason)
         .pipe(
           catchError(() => {
-            this.toast.error('Failed to cancel appointment.');
+            this.toast.error('No se pudo cancelar la cita.');
             return of(null);
           }),
         )
       .subscribe((appointment) => {
         if (appointment) {
-          this.toast.success('Appointment cancelled.');
+          this.toast.success('Cita cancelada.');
           this.closeCancelModal();
           this.loadAppointments();
         }
@@ -457,7 +462,7 @@ export class Calendar {
   getAppointmentsForHour(date: Date, hour: number): Appointment[] {
     const pad = (n: number) => String(n).padStart(2, '0');
     const hourStr = pad(hour);
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = this.dateKey(date);
     const prefix = `${dateStr}T${hourStr}`;
     return this.filteredAppointments().filter((a) =>
       a.scheduledAt.startsWith(prefix),
@@ -471,6 +476,40 @@ export class Calendar {
 
   selectDentist(id: string | null) {
     this.selectedDentistId.set(id);
+  }
+
+  setStartHour(value: string) {
+    const hour = Number(value);
+    if (Number.isNaN(hour)) return;
+    this.startHour.set(Math.min(hour, this.endHour() - 1));
+  }
+
+  setEndHour(value: string) {
+    const hour = Number(value);
+    if (Number.isNaN(hour)) return;
+    this.endHour.set(Math.max(hour, this.startHour() + 1));
+  }
+
+  setAppointmentDuration(value: string) {
+    const minutes = Number(value);
+    if (Number.isNaN(minutes)) return;
+    this.appointmentDuration.set(minutes);
+  }
+
+  formatHour(hour: number): string {
+    return `${String(hour).padStart(2, '0')}:00`;
+  }
+
+  private weekDayLabel(date: Date): string {
+    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+    return `${date.getDate()} ${days[date.getDay()]}`;
+  }
+
+  private dateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private addMinutes(isoString: string, minutes: number): string {

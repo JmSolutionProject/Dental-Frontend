@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { inject } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroArrowRightStartOnRectangle } from '@ng-icons/heroicons/outline';
 
 import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  imports: [NgIcon],
+  providers: [provideIcons({ heroArrowRightStartOnRectangle })],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })

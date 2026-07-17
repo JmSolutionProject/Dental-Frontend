@@ -1,21 +1,33 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from '../../../core/services/auth';
-import { MenuService } from '../../../core/services/menu';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroCalendarDays,
+  heroChartBarSquare,
+  heroChatBubbleBottomCenterText,
+  heroClipboardDocumentList,
+  heroCog6Tooth,
+  heroCreditCard,
+  heroHome,
+  heroUsers,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NgIcon],
+  providers: [
+    provideIcons({
+      heroCalendarDays,
+      heroChartBarSquare,
+      heroChatBubbleBottomCenterText,
+      heroClipboardDocumentList,
+      heroCog6Tooth,
+      heroCreditCard,
+      heroHome,
+      heroUsers,
+    }),
+  ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar {
-  private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
-  protected readonly menu = inject(MenuService).items;
-
-  logout(): void {
-    this.auth.logout();
-    void this.router.navigateByUrl('/login');
-  }
-}
+export class Sidebar {}

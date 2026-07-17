@@ -4,20 +4,40 @@
   </a>
 
   <nav class="nav" aria-label="Navegación principal">
-    @for (item of menu; track item.route) {
-      <a [routerLink]="item.route" routerLinkActive="active">
-        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path [attr.d]="item.iconPath" />
-        </svg>
-        <span>{{ item.label }}</span>
-      </a>
-    }
+    <a routerLink="/dashboard" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroHome" aria-hidden="true" />
+      <span>Panel Principal</span>
+    </a>
+    <a routerLink="/patients" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroUsers" aria-hidden="true" />
+      <span>Pacientes</span>
+    </a>
+    <a routerLink="/appointments" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroCalendarDays" aria-hidden="true" />
+      <span>Citas Médicas</span>
+    </a>
+    <a routerLink="/agenda" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroClipboardDocumentList" aria-hidden="true" />
+      <span>Agenda</span>
+    </a>
+    <a routerLink="/messages" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroChatBubbleBottomCenterText" aria-hidden="true" />
+      <span>Mensajes</span>
+    </a>
+    <a routerLink="/payments" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroCreditCard" aria-hidden="true" />
+      <span>Pagos y Caja</span>
+    </a>
+    <a routerLink="/reports" routerLinkActive="active">
+      <ng-icon class="nav-icon" name="heroChartBarSquare" aria-hidden="true" />
+      <span>Reportes</span>
+    </a>
   </nav>
 
-  <button class="logout-button" type="button" (click)="logout()">
-    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 3h8a2 2 0 0 1 2 2v3h-2V5H5v14h8v-3h2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm11.59 5.59L18 10h-7v2h7l-1.41 1.41L18 14.83 21.83 11 18 7.17l-1.41 1.42Z" />
-    </svg>
-    <span>Cerrar Sesión</span>
-  </button>
+  <div class="user-settings">
+    <a class="settings-link">
+      <ng-icon class="nav-icon" name="heroCog6Tooth" aria-hidden="true" />
+      <span>Configuración de usuario</span>
+    </a>
+  </div>
 </aside>
