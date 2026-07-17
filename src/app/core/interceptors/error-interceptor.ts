@@ -6,6 +6,12 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { ToastService } from '../../shared/components/toast/toast.service';
 
+const SERVICE_401_ENDPOINTS = ['/whatsapp/'];
+
+function isServiceEndpoint(url: string): boolean {
+  return SERVICE_401_ENDPOINTS.some((segment) => url.includes(segment));
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -15,6 +21,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
         if (error.status === 401) {
+          if (isServiceEndpoint(req.url)) {
+            return throwError(() => error);
+          }
           auth.logout();
           void router.navigate(['/login']);
         } else if (error.status === 403) {

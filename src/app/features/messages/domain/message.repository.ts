@@ -5,7 +5,11 @@ import {
   FindMessagesParams,
   Message,
   PaginatedMessagesResponse,
+  SendWhatsAppMessageRequest,
+  SendWhatsAppMessageResponse,
   UpdateMessageRequest,
+  WhatsAppQrResponse,
+  WhatsAppStatus,
 } from './messages';
 
 export abstract class MessageRepository {
@@ -14,4 +18,10 @@ export abstract class MessageRepository {
   abstract create(data: CreateMessageRequest): Observable<Message>;
   abstract update(id: string, data: UpdateMessageRequest): Observable<Message>;
   abstract delete(id: string): Observable<Message>;
+  abstract getWhatsAppStatus(): Observable<WhatsAppStatus>;
+  abstract getWhatsAppQr(): Observable<WhatsAppQrResponse>;
+  abstract sendWhatsAppMessage(
+    patientId: string,
+    data: SendWhatsAppMessageRequest,
+  ): Observable<SendWhatsAppMessageResponse>;
 }

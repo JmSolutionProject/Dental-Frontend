@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
 .sidebar {
   --logout-bg: #fee2e2;
   --logout-color: #dc2626;
@@ -8,7 +13,9 @@
   display: grid;
   gap: 2rem;
   grid-template-rows: auto 1fr auto;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   padding: 1.25rem;
 }
 
@@ -37,6 +44,8 @@
   display: grid;
   gap: 0.25rem;
   align-content: start;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .user-settings {
@@ -87,15 +96,22 @@
 }
 
 @media (max-width: 900px) {
+  :host {
+    min-height: auto;
+  }
+
   .sidebar {
     gap: 1rem;
     grid-template-rows: auto auto auto;
+    height: auto;
     min-height: auto;
+    overflow: visible;
   }
 
   .nav {
     grid-template-columns: repeat(7, minmax(max-content, 1fr));
     overflow-x: auto;
+    overflow-y: visible;
   }
 
   .user-settings {
