@@ -11,7 +11,11 @@ import {
   MessageChannel,
   MessageStatus,
   PaginatedMessagesResponse,
+  SendWhatsAppMessageRequest,
+  SendWhatsAppMessageResponse,
   UpdateMessageRequest,
+  WhatsAppQrResponse,
+  WhatsAppStatus,
 } from '../domain/messages';
 
 interface BackendMessage {
@@ -81,6 +85,34 @@ export class MessageApiRepository implements MessageRepository {
     return this.http
       .delete<BackendMessage>(`${this.apiUrl}/messages/${id}`)
       .pipe(map((message) => this.fromBackend(message)));
+  }
+
+  getWhatsAppStatus(): Observable<WhatsAppStatus> {
+    return this.http
+      .get<Partial<WhatsAppStatus>>(`${this.apiUrl}/whatsapp/status`)
+      .pipe(
+        map((status) => ({
+          status: status.status ?? 'unknown',
+          ready: Boolean(status.ready),
+          message: status.message,
+        })),
+      );
+  }
+
+  getWhatsAppQr(): Observable<WhatsAppQrResponse> {
+    return this.http
+      .get<{ qr?: string | null }>(`${this.apiUrl}/whatsapp/qr`)
+      .pipe(map((response) => ({ qr: response.qr ?? null })));
+  }
+
+  sendWhatsAppMessage(
+    patientId: string,
+    data: SendWhatsAppMessageRequest,
+  ): Observable<SendWhatsAppMessageResponse> {
+    return this.http.post<SendWhatsAppMessageResponse>(
+      `${this.apiUrl}/whatsapp/patients/${patientId}/send`,
+      data,
+    );
   }
 
   private fromBackend(message: BackendMessage): Message {

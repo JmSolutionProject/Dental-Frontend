@@ -35,3 +35,22 @@ export interface CreateMessageRequest {
 }
 
 export type UpdateMessageRequest = Partial<CreateMessageRequest>;
+
+export interface WhatsAppStatus {
+  status: string;
+  ready: boolean;
+  message?: string;
+}
+
+export interface WhatsAppQrResponse {
+  qr: string | null;
+}
+
+export interface SendWhatsAppMessageRequest {
+  content: string;
+}
+
+export interface SendWhatsAppMessageResponse {
+  success: boolean;
+  message?: string;
+}
