@@ -17,7 +17,7 @@
 }
 
 .quadrant-toggle {
-  background: #f5f5f4;
+  background: var(--color-stone-100);
   border-radius: 0.85rem;
   display: flex;
   gap: 0.25rem;
@@ -28,29 +28,29 @@
   background: transparent;
   border: 0;
   border-radius: 0.65rem;
-  color: #57534e;
+  color: var(--color-stone-600);
   cursor: pointer;
   font-weight: 700;
   padding: 0.65rem 1rem;
 }
 
 .toggle-btn--active {
-  background: #fff;
-  color: #0f172a;
-  box-shadow: 0 1px 4px rgb(15 23 42 / 0.08);
+  background: var(--color-white);
+  color: var(--color-slate-900);
+  box-shadow: 0 1px 4px var(--color-slate-900-a08);
 }
 
 .odontogram-canvas {
-  background: #eef2f7;
-  border: 2px solid #cbd5e1;
+  background: var(--color-cloud-50);
+  border: 2px solid var(--color-slate-300);
   border-radius: 1rem;
   overflow-x: auto;
   padding: 1.25rem;
 }
 
 .arch-grid-card {
-  background: #fff;
-  border: 2px solid #cbd5e1;
+  background: var(--color-white);
+  border: 2px solid var(--color-slate-300);
   border-radius: 1rem;
   min-width: calc(var(--grid-cols, 16) * 62px);
   overflow: hidden;
@@ -62,16 +62,16 @@
 }
 
 .arch-grid-card--upper {
-  border-color: #93c5fd;
+  border-color: var(--color-blue-300);
 }
 
 .arch-grid-card--lower {
-  border-color: #86efac;
+  border-color: var(--color-green-300);
 }
 
 .arch-label {
-  background: #1e293b;
-  color: #fff;
+  background: var(--color-slate-800);
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -82,18 +82,18 @@
 }
 
 .arch-grid-card--upper .arch-label {
-  background: #2563eb;
+  background: var(--color-blue-600);
 }
 
 .arch-grid-card--lower .arch-label {
-  background: #16a34a;
+  background: var(--color-green-600);
 }
 
 .teeth-grid {
   align-items: center;
   background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+    linear-gradient(var(--color-slate-200) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-slate-200) 1px, transparent 1px);
   background-size: 62px 100%, 62px 100%;
   display: grid;
   column-gap: 0;
@@ -104,7 +104,7 @@
 
 .tooth-card {
   align-items: center;
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid var(--color-slate-200);
   display: flex;
   justify-content: center;
   min-height: 148px;
@@ -112,11 +112,11 @@
 }
 
 .tooth-card:last-child {
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--color-slate-200);
 }
 
 .tooth-card--selected {
-  filter: drop-shadow(0 6px 10px rgb(37 99 235 / 0.18));
+  filter: drop-shadow(0 6px 10px var(--color-blue-a18));
 }
 
 .tooth-current-state {

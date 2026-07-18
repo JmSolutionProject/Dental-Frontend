@@ -2,7 +2,7 @@
   <header class="patient-hero">
     <div class="hero-content">
       <div class="hero-top">
-        <a class="back-link" routerLink="/patients">← Volver al Directorio de Pacientes</a>
+        <a class="back-link" routerLink="/patients"><ng-icon name="heroArrowLeftCircle" aria-hidden="true" /> Volver al Directorio de Pacientes</a>
         @if (patient(); as p) {
           <span class="status-pill" [class.status-pill--active]="p.status === 'active'">
             {{ p.status === 'active' ? 'Estado: Paciente Activo' : 'Estado: Inactivo' }}

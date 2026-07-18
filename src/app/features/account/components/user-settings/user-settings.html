@@ -1,0 +1,124 @@
+<section class="page user-settings-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Cuenta</p>
+      <h1>Configuración de usuario</h1>
+      <p class="muted">Gestiona tus datos personales y credenciales de acceso.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="muted loading-state">Cargando configuración...</p>
+  }
+
+  <div class="settings-grid">
+    <article class="card settings-card">
+      <div class="card-title-bar">
+        <div>
+          <h2>Perfil</h2>
+          <p class="subtitle">Información visible dentro del sistema.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="settings-form">
+        <div class="form-group">
+          <label class="form-label" for="nombreCompleto">Nombre completo</label>
+          <input
+            id="nombreCompleto"
+            class="form-input"
+            type="text"
+            formControlName="nombreCompleto"
+            placeholder="Ej: Juan Pérez"
+          />
+          @if (profileForm.controls.nombreCompleto.invalid && profileForm.controls.nombreCompleto.touched) {
+            <small class="field-error">El nombre completo es obligatorio.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Correo electrónico</label>
+          <input
+            id="email"
+            class="form-input"
+            type="email"
+            formControlName="email"
+            placeholder="usuario@clinica.com"
+          />
+          @if (profileForm.controls.email.invalid && profileForm.controls.email.touched) {
+            <small class="field-error">Ingresa un correo válido.</small>
+          }
+        </div>
+
+        <div class="readonly-box">
+          <span class="detail-label">Rol actual</span>
+          <strong>{{ roleLabel() }}</strong>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit" [disabled]="savingProfile()">
+            <ng-icon name="heroCheck" aria-hidden="true" />
+            {{ savingProfile() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card settings-card">
+      <div class="card-title-bar">
+        <div>
+          <h2>Seguridad</h2>
+          <p class="subtitle">Actualiza tu contraseña de acceso.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="settings-form">
+        <div class="form-group">
+          <label class="form-label" for="currentPassword">Contraseña actual</label>
+          <input
+            id="currentPassword"
+            class="form-input"
+            type="password"
+            formControlName="currentPassword"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newPassword">Nueva contraseña</label>
+          <input
+            id="newPassword"
+            class="form-input"
+            type="password"
+            formControlName="newPassword"
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+          />
+          @if (passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.touched) {
+            <small class="field-error">La nueva contraseña debe tener al menos 6 caracteres.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Confirmar contraseña</label>
+          <input
+            id="confirmPassword"
+            class="form-input"
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+          />
+          @if (passwordForm.controls.confirmPassword.errors?.['mismatch']) {
+            <small class="field-error">Las contraseñas no coinciden.</small>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit" [disabled]="savingPassword()">
+            <ng-icon name="heroKey" aria-hidden="true" />
+            {{ savingPassword() ? 'Actualizando...' : 'Actualizar contraseña' }}
+          </button>
+        </div>
+      </form>
+    </article>
+  </div>
+</section>

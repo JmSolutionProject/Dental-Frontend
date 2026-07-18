@@ -7,7 +7,7 @@
         <h1>Bienvenido, {{ userName }}</h1>
         <p class="muted">Resumen general de la clínica — ingresos, citas y rendimiento.</p>
       </div>
-      <a class="btn btn--primary" routerLink="/appointments/calendar">+ Nueva Cita</a>
+      <a class="btn btn--primary" routerLink="/appointments/calendar"> <ng-icon name="heroPlus" /> Nueva Cita</a>
     </header>
 
     @if (kpis$ | async; as kpis) {
@@ -84,8 +84,8 @@
         <p class="muted">Agenda del día y registro rápido de pacientes y cobros.</p>
       </div>
       <div style="display: flex; gap: 0.5rem;">
-        <a class="btn btn--primary" routerLink="/patients">+ Registrar Paciente</a>
-        <a class="btn btn--success" routerLink="/appointments/calendar">+ Nueva Cita</a>
+        <a class="btn btn--primary" routerLink="/patients"> <ng-icon name="heroPlus" /> Registrar Paciente</a>
+        <a class="btn btn--success" routerLink="/appointments/calendar"> <ng-icon name="heroPlus" /> Nueva Cita</a>
       </div>
     </header>
 
@@ -109,7 +109,7 @@
     <!-- Quick links -->
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem;">
       <a class="btn btn--outline" routerLink="/appointments">Ver Citas</a>
-      <a class="btn btn--outline" routerLink="/patients">Buscar Paciente</a>
+      <a class="btn btn--outline" routerLink="/patients"> Paciente</a>
       <a class="btn btn--outline" routerLink="/payments">Registrar Pago</a>
       <a class="btn btn--outline" routerLink="/agenda">Agenda del Día</a>
     </div>
@@ -123,7 +123,7 @@
         <h1>Dr(a). {{ userName }}</h1>
         <p class="muted">Tus citas de hoy, pacientes y odontograma.</p>
       </div>
-      <a class="btn btn--primary" routerLink="/patients">Buscar Paciente</a>
+      <a class="btn btn--primary" routerLink="/patients"> <ng-icon name="heroMagnifyingGlass" /> Buscar Paciente</a>
     </header>
 
     @if (kpis$ | async; as kpis) {
@@ -157,10 +157,34 @@
       }
     }
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem;">
-      <a class="btn btn--outline" routerLink="/appointments">Mis Citas</a>
-      <a class="btn btn--outline" routerLink="/patients">Mis Pacientes</a>
-      <a class="btn btn--outline" routerLink="/agenda">Agenda</a>
+    <div class="quick-actions-grid">
+      <a class="quick-action-card quick-action-card--blue" routerLink="/appointments">
+        <span class="quick-action-icon">
+          <ng-icon name="heroCalendarDays" aria-hidden="true" />
+        </span>
+        <span>
+          <strong>Mis Citas</strong>
+          <small>Revisa tus próximas atenciones y el estado de cada cita.</small>
+        </span>
+      </a>
+      <a class="quick-action-card quick-action-card--green" routerLink="/patients">
+        <span class="quick-action-icon">
+          <ng-icon name="heroUsers" aria-hidden="true" />
+        </span>
+        <span>
+          <strong>Mis Pacientes</strong>
+          <small>Accede al historial clínico y seguimiento de pacientes.</small>
+        </span>
+      </a>
+      <a class="quick-action-card quick-action-card--amber" routerLink="/agenda">
+        <span class="quick-action-icon">
+          <ng-icon name="heroClipboardDocumentList" aria-hidden="true" />
+        </span>
+        <span>
+          <strong>Agenda</strong>
+          <small>Organiza tu jornada y consulta la programación del día.</small>
+        </span>
+      </a>
     </div>
   }
 </section>

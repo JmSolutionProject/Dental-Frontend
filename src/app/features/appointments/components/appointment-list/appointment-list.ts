@@ -5,7 +5,7 @@ import { GetAppointmentsUseCase } from '../../application/get-appointments.useca
 import { AppointmentFormModal } from '../appointment-form-modal/appointment-form-modal';
 
 type StatusFilter = 'all' | AppointmentStatus;
-type DateRange = 'today' | 'tomorrow' | 'week' | 'month';
+type DateRange = 'all' | 'today' | 'tomorrow' | 'week' | 'month';
 
 interface AppointmentGroup {
   key: string;
@@ -27,6 +27,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 ];
 
 const DATE_RANGES: { id: DateRange; label: string }[] = [
+  { id: 'all', label: 'Todos' },
   { id: 'today', label: 'Hoy' },
   { id: 'tomorrow', label: 'Mañana' },
   { id: 'week', label: 'Esta semana' },
@@ -44,9 +45,10 @@ export class AppointmentList {
 
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
+  readonly loadError = signal(false);
 
   readonly statusFilter = signal<StatusFilter>('all');
-  readonly dateRange = signal<DateRange>('today');
+  readonly dateRange = signal<DateRange>('all');
   readonly dentistFilter = signal<string>('all');
 
   readonly statusOptions: StatusOption[] = STATUS_OPTIONS;
@@ -54,9 +56,7 @@ export class AppointmentList {
 
   readonly dentistOptions = [
     { id: 'all', name: 'Todos los especialistas' },
-    { id: 'dr-carlos-perez', name: 'Dr. Carlos Pérez S.' },
-    { id: 'dra-maria-ruiz', name: 'Dra. María Ruiz M.' },
-    { id: 'dr-jorge-mendoza', name: 'Dr. Jorge Mendoza' },
+    { id: '1', name: 'Dr. Juan Perez' },
   ];
 
   readonly showCreateModal = signal(false);
@@ -154,17 +154,23 @@ export class AppointmentList {
 
   loadAppointments(): void {
     this.loading.set(true);
+    this.loadError.set(false);
     this.getAppointments
       .execute()
       .pipe(
         take(1),
-        catchError(() => of([])),
+        catchError(() => {
+          this.loadError.set(true);
+          return of([]);
+        }),
         finalize(() => this.loading.set(false)),
       )
       .subscribe((list) => this.appointments.set(list));
   }
 
   private matchesDateRange(iso: string, range: DateRange): boolean {
+    if (range === 'all') return true;
+
     const target = new Date(iso);
     const today = new Date();
     today.setHours(0, 0, 0, 0);

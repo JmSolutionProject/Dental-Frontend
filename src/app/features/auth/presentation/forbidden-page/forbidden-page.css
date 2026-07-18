@@ -1,13 +1,13 @@
 .forbidden-page {
   align-items: center;
-  background: #ffffff;
+  background: var(--color-white);
   display: grid;
   min-height: 100dvh;
   padding: 1.5rem;
 }
 
 .forbidden-card {
-  background: #ffffff;
+  background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;
   max-width: 440px;

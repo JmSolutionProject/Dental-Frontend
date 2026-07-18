@@ -9,10 +9,29 @@ import { GetAppointmentsUseCase } from '../../../appointments/application/get-ap
 import { CancelAppointmentUseCase } from '../../../appointments/application/cancel-appointment.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
 import { AgendaDay, DentistColumn } from '../../domain/agenda';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroArrowLeftCircle,
+  heroArrowRightCircle,
+  heroCalendarDays,
+  heroClock,
+  heroPlus,
+  heroUserGroup,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-timeline',
-  imports: [DatePipe, Modal, FormField, ReactiveFormsModule],
+  imports: [DatePipe, Modal, FormField, ReactiveFormsModule, NgIcon],
+  providers: [
+    provideIcons({
+      heroArrowLeftCircle,
+      heroArrowRightCircle,
+      heroCalendarDays,
+      heroClock,
+      heroPlus,
+      heroUserGroup,
+    }),
+  ],
   templateUrl: './timeline.html',
   styleUrl: './timeline.css',
 })

@@ -10,7 +10,7 @@
 
 .preview-image-wrapper {
   align-items: center;
-  background: #000;
+  background: var(--color-black);
   border-radius: var(--radius-md);
   display: flex;
   justify-content: center;

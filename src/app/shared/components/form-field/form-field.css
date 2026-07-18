@@ -13,7 +13,7 @@
 }
 
 .form-field-required {
-  color: #dc2626;
+  color: var(--color-red-600);
   font-weight: 700;
   font-size: 0.9rem;
   line-height: 1;
@@ -32,31 +32,31 @@
 }
 
 .form-field-input-wrapper :is(input, textarea, select):hover:not(:disabled):not([readonly]) {
-  border-color: #94a3b8;
+  border-color: var(--color-slate-400);
 }
 
 .form-field-input-wrapper :is(input, textarea, select):focus {
   border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 0 0 3px var(--color-primary-a15);
 }
 
 .form-field-input-wrapper :is(input, textarea, select)[readonly] {
-  background: #f8fafc;
-  color: #475569;
+  background: var(--color-slate-50);
+  color: var(--color-slate-600);
   cursor: default;
 }
 
 .form-field--invalid .form-field-input-wrapper :is(input, textarea, select) {
-  border-color: #dc2626;
+  border-color: var(--color-red-600);
 }
 
 .form-field--invalid .form-field-input-wrapper :is(input, textarea, select):focus {
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 0 0 3px var(--color-danger-a15);
 }
 
 .form-field-error {
-  color: #dc2626;
+  color: var(--color-red-600);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   display: flex;

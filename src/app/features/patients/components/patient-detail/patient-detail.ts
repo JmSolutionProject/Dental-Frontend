@@ -28,6 +28,8 @@ import { PatientAttachmentsTab } from '../patient-attachments-tab/patient-attach
 import { PatientPaymentsTab } from '../patient-payments-tab/patient-payments-tab';
 import { PersonalDataForm } from '../personal-data-form/personal-data-form';
 import { ObservationsTab } from '../observations-tab/observations-tab';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroArrowLeftCircle } from '@ng-icons/heroicons/outline';
 
 export type DetailTab =
   | 'summary'
@@ -43,7 +45,10 @@ export type DetailTab =
 @Component({
   selector: 'app-patient-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PersonalDataForm, ObservationsTab, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab],
+  imports: [ReactiveFormsModule, RouterLink, ModalComponent, PersonalDataForm, ObservationsTab, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab, NgIcon],
+  providers: [
+    provideIcons({ heroArrowLeftCircle })
+  ],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-detail.css',
 })
@@ -107,7 +112,7 @@ export class PatientDetail {
     }
   ]);
 
-  readonly budgetTotal = computed(() => 
+  readonly budgetTotal = computed(() =>
     this.treatmentPlans().reduce((acc, p) => acc + p.totalCost, 0)
   );
 
@@ -116,7 +121,7 @@ export class PatientDetail {
       if (p.paymentType === 'A Cuotas' && p.installments) {
         return acc + p.installments.filter(i => i.status === 'Pagado').reduce((sum, i) => sum + i.amount, 0);
       }
-      return acc; 
+      return acc;
     }, 0);
   });
 

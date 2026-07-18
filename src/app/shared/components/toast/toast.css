@@ -12,7 +12,7 @@
 .toast-item {
   align-items: center;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px var(--color-black-a12);
   display: flex;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
@@ -42,21 +42,21 @@
 }
 
 .toast--success {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #065f46;
+  background: var(--color-teal-50);
+  border: 1px solid var(--color-teal-200);
+  color: var(--color-teal-800);
 }
 
 .toast--error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: var(--color-red-50);
+  border: 1px solid var(--color-red-200);
+  color: var(--color-red-800);
 }
 
 .toast--info {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
+  background: var(--color-blue-50);
+  border: 1px solid var(--color-blue-200);
+  color: var(--color-blue-800);
 }
 
 @keyframes toast-in {

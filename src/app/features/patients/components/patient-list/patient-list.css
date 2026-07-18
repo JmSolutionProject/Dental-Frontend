@@ -54,8 +54,8 @@
 
 .create-form-intro {
   align-items: center;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(59, 130, 246, 0.08));
-  border: 1px solid rgba(20, 184, 166, 0.22);
+  background: linear-gradient(135deg, var(--color-teal-a12), var(--color-info-a08));
+  border: 1px solid var(--color-teal-a22);
   border-radius: 1rem;
   display: flex;
   gap: 0.85rem;
@@ -104,11 +104,11 @@
 }
 
 .create-section--clinical {
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: var(--color-warning-a30);
 }
 
 .create-section--optional {
-  background: rgba(148, 163, 184, 0.06);
+  background: var(--color-slate-a06);
 }
 
 .create-grid {
@@ -142,7 +142,7 @@
 }
 
 .lookup-btn {
-  background: #1c75b9;
+  background: var(--color-brand-600);
   border: 0;
   border-radius: 0.625rem;
   color: white;
@@ -154,7 +154,7 @@
 }
 
 .lookup-btn:hover:not(:disabled) {
-  background: #155a8a;
+  background: var(--color-brand-700);
   cursor: pointer;
 }
 

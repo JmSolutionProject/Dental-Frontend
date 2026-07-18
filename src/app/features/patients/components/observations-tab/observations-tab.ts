@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -8,10 +8,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   styleUrl: './observations-tab.css',
 })
 export class ObservationsTab {
-  @Input({ required: true }) form!: FormGroup;
-  @Input() saving = false;
+  readonly form = input.required<FormGroup>();
+  readonly saving = input(false);
 
-  @Output() readonly saveRequested = new EventEmitter<void>();
+  readonly saveRequested = output<void>();
 
   onSave(): void {
     this.saveRequested.emit();

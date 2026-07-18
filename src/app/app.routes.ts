@@ -173,6 +173,13 @@ export const routes: Routes = [
             './features/users/components/user-list/user-list'
           ).then((m) => m.UserList),
       },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import(
+            './features/account/components/user-settings/user-settings'
+          ).then((m) => m.UserSettings),
+      },
     ],
   },
   {

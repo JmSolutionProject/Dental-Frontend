@@ -72,14 +72,17 @@ export class AppointmentApiRepository implements AppointmentRepository {
   private toBackendAppointmentDto(data: CreateAppointmentRequest | UpdateAppointmentRequest) {
     const start = data.scheduledAt;
     const cancelReason = 'cancelReason' in data ? data.cancelReason : undefined;
+    const medicoId = data.dentistId ? Number(data.dentistId) : undefined;
+    const observations = 'observations' in data ? data.observations : undefined;
+
     return {
       pacienteId: data.patientId ? Number(data.patientId) : undefined,
-      medicoId: data.dentistId ? Number(data.dentistId) : undefined,
-      estadoCitaId: undefined,
+      ...(Number.isFinite(medicoId) ? { medicoId } : {}),
+      estadoCitaId: 1,
       fechaHoraInicio: start,
-      fechaHoraFin: start ? this.addMinutes(start, 30) : undefined,
+      fechaHoraFin: start ? this.addMinutes(start, 60) : undefined,
       motivoPrincipal: data.reason,
-      observaciones: cancelReason,
+      observaciones: observations ?? cancelReason,
     };
   }
 

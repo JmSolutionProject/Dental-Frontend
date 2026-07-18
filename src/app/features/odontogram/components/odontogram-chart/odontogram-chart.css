@@ -69,28 +69,28 @@
 }
 
 .legend-swatch[data-condition='healthy'] {
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-300);
 }
 .legend-swatch[data-condition='caries'] {
-  background: #fecaca;
-  border: 1px solid #ef4444;
+  background: var(--color-red-200);
+  border: 1px solid var(--color-red-500);
 }
 .legend-swatch[data-condition='restoration'] {
-  background: #bfdbfe;
-  border: 1px solid #3b82f6;
+  background: var(--color-blue-200);
+  border: 1px solid var(--color-blue-500);
 }
 .legend-swatch[data-condition='extraction'] {
-  background: #e2e8f0;
-  border: 1px solid #64748b;
+  background: var(--color-slate-200);
+  border: 1px solid var(--color-slate-500);
 }
 .legend-swatch[data-condition='crown'] {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
+  background: var(--color-amber-50);
+  border: 1px solid var(--color-amber-500);
 }
 .legend-swatch[data-condition='missing'] {
-  background: #f1f5f9;
-  border: 1px solid #94a3b8;
+  background: var(--color-slate-100);
+  border: 1px solid var(--color-slate-400);
 }
 
 /* Quadrant labels */
@@ -109,15 +109,15 @@
 
 /* Chart container */
 .chart-container {
-  background: #eef2f7;
-  border: 2px solid #cbd5e1;
+  background: var(--color-cloud-50);
+  border: 2px solid var(--color-slate-300);
   overflow-x: auto;
   padding: 1.5rem;
 }
 
 .arch-grid-card {
-  background: #fff;
-  border: 2px solid #cbd5e1;
+  background: var(--color-white);
+  border: 2px solid var(--color-slate-300);
   border-radius: 1rem;
   min-width: calc(var(--grid-cols, 16) * 62px);
   overflow: hidden;
@@ -129,16 +129,16 @@
 }
 
 .arch-grid-card--upper {
-  border-color: #93c5fd;
+  border-color: var(--color-blue-300);
 }
 
 .arch-grid-card--lower {
-  border-color: #86efac;
+  border-color: var(--color-green-300);
 }
 
 .arch-label {
-  background: #1e293b;
-  color: #fff;
+  background: var(--color-slate-800);
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -149,17 +149,17 @@
 }
 
 .arch-grid-card--upper .arch-label {
-  background: #2563eb;
+  background: var(--color-blue-600);
 }
 
 .arch-grid-card--lower .arch-label {
-  background: #16a34a;
+  background: var(--color-green-600);
 }
 
 .tooth-grid {
   background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+    linear-gradient(var(--color-slate-200) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-slate-200) 1px, transparent 1px);
   background-size: 62px 100%, 62px 100%;
   display: grid;
   column-gap: 0;
@@ -171,7 +171,7 @@
 
 .tooth-grid app-tooth-chart {
   align-items: center;
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid var(--color-slate-200);
   display: flex;
   justify-content: center;
   min-height: 148px;
@@ -221,13 +221,13 @@
 .condition-btn:hover:not(:disabled) {
   background: var(--color-primary);
   border-color: var(--color-primary-dark);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .condition-btn--active {
   background: var(--color-primary);
   border-color: var(--color-primary-dark);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .condition-btn:disabled {
@@ -238,32 +238,32 @@
 /* Condition button color accents */
 .condition-btn[data-condition='caries']:hover:not(:disabled),
 .condition-btn--active[data-condition='caries'] {
-  background: #ef4444;
-  border-color: #dc2626;
+  background: var(--color-red-500);
+  border-color: var(--color-red-600);
 }
 
 .condition-btn[data-condition='restoration']:hover:not(:disabled),
 .condition-btn--active[data-condition='restoration'] {
-  background: #3b82f6;
-  border-color: #2563eb;
+  background: var(--color-blue-500);
+  border-color: var(--color-blue-600);
 }
 
 .condition-btn[data-condition='extraction']:hover:not(:disabled),
 .condition-btn--active[data-condition='extraction'] {
-  background: #64748b;
-  border-color: #475569;
+  background: var(--color-slate-500);
+  border-color: var(--color-slate-600);
 }
 
 .condition-btn[data-condition='crown']:hover:not(:disabled),
 .condition-btn--active[data-condition='crown'] {
-  background: #f59e0b;
-  border-color: #d97706;
+  background: var(--color-amber-500);
+  border-color: var(--color-orange-700);
 }
 
 .condition-btn[data-condition='missing']:hover:not(:disabled),
 .condition-btn--active[data-condition='missing'] {
-  background: #94a3b8;
-  border-color: #64748b;
+  background: var(--color-slate-400);
+  border-color: var(--color-slate-500);
 }
 
 .saving-msg {

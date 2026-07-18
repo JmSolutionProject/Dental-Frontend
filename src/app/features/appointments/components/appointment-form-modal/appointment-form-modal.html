@@ -1,4 +1,4 @@
-<app-modal title="Nueva Cita" [visible]="visible" (close)="close()">
+<app-modal title="Nueva Cita" [visible]="visible()" (close)="close()">
   <form [formGroup]="form" class="appt-form" (ngSubmit)="submit()">
     <app-form-field label="Paciente" [control]="form.get('patientId')!" [required]="true">
       <select formControlName="patientId" class="appt-form-select">
@@ -34,6 +34,15 @@
         class="appt-form-input"
         placeholder="Ej. Evaluación general, Endodoncia, Limpieza dental…"
       />
+    </app-form-field>
+
+    <app-form-field label="Observaciones" [control]="form.get('observations')!">
+      <textarea
+        formControlName="observations"
+        class="appt-form-input"
+        rows="3"
+        placeholder="Ej. Paciente requiere radiografia"
+      ></textarea>
     </app-form-field>
 
     <div class="appt-form-footer">
