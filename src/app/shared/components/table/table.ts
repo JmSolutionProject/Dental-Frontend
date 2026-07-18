@@ -1,14 +1,26 @@
-import { Component, input, output } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, Directive, TemplateRef, computed, contentChildren, input, output } from '@angular/core';
 
 export interface TableColumn {
   key: string;
   label: string;
   sortable?: boolean;
+  align?: 'left' | 'center' | 'right';
+  value?: (row: unknown) => unknown;
+}
+
+@Directive({
+  selector: 'ng-template[appTableCell]',
+})
+export class TableCell {
+  readonly key = input.required<string>({ alias: 'appTableCell' });
+
+  constructor(readonly template: TemplateRef<unknown>) {}
 }
 
 @Component({
   selector: 'app-table',
-  imports: [],
+  imports: [NgTemplateOutlet],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -21,11 +33,23 @@ export class Table {
   totalItems = input(0);
   sortKey = input<string | null>(null);
   sortDir = input<'asc' | 'desc'>('asc');
+  rowClickable = input(false);
+  emptyMessage = input('No data available.');
+  showPagination = input(true);
 
   sortChange = output<{ key: string; dir: 'asc' | 'desc' }>();
   pageChange = output<number>();
   pageSizeChange = output<number>();
   rowClick = output<unknown>();
+
+  private readonly cellTemplates = contentChildren(TableCell);
+  readonly cellTemplateMap = computed(() => {
+    const map = new Map<string, TemplateRef<unknown>>();
+    for (const cell of this.cellTemplates()) {
+      map.set(cell.key(), cell.template);
+    }
+    return map;
+  });
 
   get totalPages(): number {
     if (this.totalItems() <= 0 || this.pageSize() <= 0) return 1;
@@ -76,14 +100,24 @@ export class Table {
   }
 
   onRowClick(row: unknown) {
+    if (!this.rowClickable()) return;
     this.rowClick.emit(row);
   }
 
-  getCellValue(row: unknown, key: string): string {
+  getCellValue(row: unknown, col: TableColumn): string {
+    const val = col.value ? col.value(row) : this.getValueByKey(row, col.key);
+    return val != null && val !== '' ? String(val) : '—';
+  }
+
+  getCellTemplate(key: string): TemplateRef<unknown> | null {
+    return this.cellTemplateMap().get(key) ?? null;
+  }
+
+  private getValueByKey(row: unknown, key: string): unknown {
     if (typeof row === 'object' && row !== null && key in row) {
       const val = (row as Record<string, unknown>)[key];
       return val != null ? String(val) : '—';
     }
-    return '—';
+    return null;
   }
 }

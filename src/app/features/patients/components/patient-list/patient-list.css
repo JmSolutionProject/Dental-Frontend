@@ -35,6 +35,24 @@
   margin-bottom: 0.5rem;
 }
 
+.patient-name {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+}
+
+.badge--success {
+  background: var(--color-teal-100);
+  color: var(--color-teal-800);
+}
+
 .button--ghost {
   background: transparent;
   border: 1px solid var(--color-border);

@@ -14,37 +14,30 @@
     </div>
   } @else {
     <article class="card list-card">
-      <table class="clinical-table">
-        <thead>
-          <tr>
-            <th>Nombre del Rol</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (role of roles(); track role.id) {
-            <tr>
-              <td><strong>{{ role.nombreRol }}</strong></td>
-              <td>
-                <span class="table-pill" [class.table-pill--success]="role.estado === 'active'" [class.table-pill--danger]="role.estado === 'inactive'">
-                  {{ role.estado === 'active' ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              <td>
-                <div style="display: flex; gap: 0.5rem;">
-                  <button class="btn btn--outline btn--sm" (click)="openEditModal(role)">Editar</button>
-                  <button class="btn btn--danger-outline btn--sm" (click)="deleteRoleRecord(role.id)">Desactivar</button>
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="3" style="text-align: center; padding: 2rem;" class="muted">No hay roles registrados.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <app-table
+        [columns]="columns"
+        [data]="roles()"
+        [totalItems]="roles().length"
+        [showPagination]="false"
+        emptyMessage="No hay roles registrados."
+      >
+        <ng-template appTableCell="nombreRol" let-role>
+          <strong>{{ role.nombreRol }}</strong>
+        </ng-template>
+
+        <ng-template appTableCell="estado" let-role>
+          <span class="table-pill" [class.table-pill--success]="role.estado === 'active'" [class.table-pill--danger]="role.estado === 'inactive'">
+            {{ role.estado === 'active' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </ng-template>
+
+        <ng-template appTableCell="actions" let-role>
+          <div class="table-actions">
+            <button class="btn btn--outline btn--sm" (click)="openEditModal(role)">Editar</button>
+            <button class="btn btn--danger-outline btn--sm" (click)="deleteRoleRecord(role.id)">Desactivar</button>
+          </div>
+        </ng-template>
+      </app-table>
     </article>
   }
 </section>

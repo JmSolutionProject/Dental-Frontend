@@ -42,11 +42,21 @@
           [totalItems]="totalItems()"
           [sortKey]="sortKey()"
           [sortDir]="sortDir()"
+          [rowClickable]="true"
+          emptyMessage="No hay pacientes registrados."
           (sortChange)="onSortChange($event)"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
-        />
+        >
+          <ng-template appTableCell="firstName" let-row>
+            <strong class="patient-name">{{ row.firstName }}</strong>
+          </ng-template>
+
+          <ng-template appTableCell="status" let-row>
+            <span class="badge badge--success">{{ statusLabel(row.status) }}</span>
+          </ng-template>
+        </app-table>
       }
     }
   </article>

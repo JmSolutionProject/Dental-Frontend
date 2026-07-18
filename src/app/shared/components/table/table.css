@@ -1,24 +1,37 @@
 .table-wrapper {
   display: grid;
-  gap: 1rem;
+  gap: 1.05rem;
+  overflow-x: auto;
 }
 
 .table {
   border-collapse: collapse;
+  min-width: 52rem;
   width: 100%;
 }
 
-.table th {
-  background: var(--color-accent);
-  border-bottom: 2px solid var(--color-border);
-  color: var(--color-primary-dark);
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 0.75rem 1rem;
+.table th,
+.table td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 0.75rem;
   text-align: left;
+  vertical-align: middle;
+}
+
+.table th {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding-bottom: 0.95rem;
+  padding-top: 0.95rem;
   text-transform: uppercase;
+}
+
+.table td {
+  color: var(--color-text);
+  font-size: var(--text-base);
 }
 
 .table th.sortable {
@@ -27,26 +40,35 @@
 }
 
 .table th.sortable:hover {
-  background: var(--color-primary-a10);
+  background: var(--color-surface);
 }
 
 .sort-indicator {
   margin-left: 0.25rem;
 }
 
-.table td {
-  border-bottom: 1px solid var(--color-border);
-  font-size: var(--text-sm);
-  padding: 0.75rem 1rem;
+.table .align-center {
+  text-align: center;
+}
+
+.table .align-right {
+  text-align: right;
+}
+
+.table-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
 }
 
 .data-row {
   cursor: pointer;
-  transition: background 0.1s ease;
+  transition: background 0.15s ease;
 }
 
 .data-row:hover {
-  background: var(--color-accent);
+  background: var(--color-slate-50);
 }
 
 .empty-cell {
@@ -63,7 +85,7 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
-  padding-top: 0.85rem;
+  padding-top: 1rem;
 }
 
 .pagination-summary {

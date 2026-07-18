@@ -1,5 +1,5 @@
-import { Component, computed, input, signal } from '@angular/core';
-import { TreatmentPlan } from '../../domain/patient';
+import { CurrencyPipe } from '@angular/common';
+import { Component, input, signal } from '@angular/core';
 
 export interface PaymentRecord {
   id: string;
@@ -12,7 +12,7 @@ export interface PaymentRecord {
 @Component({
   selector: 'app-patient-payments-tab',
   standalone: true,
-  imports: [],
+  imports: [CurrencyPipe],
   templateUrl: './patient-payments-tab.html',
   styleUrl: './patient-payments-tab.css'
 })

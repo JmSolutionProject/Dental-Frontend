@@ -1,16 +1,18 @@
 <div class="tab-wrapper">
-  <div class="financial-summary-grid">
-    <div class="fin-card">
-      <span class="fin-label">Total Cobrado</span>
-      <strong class="fin-val text-success">S/ {{ budgetPaid() }}</strong>
+  <div class="summary-grid">
+    <div class="summary-card summary-card--green">
+      <span>Total cobrado</span>
+      <strong>{{ budgetPaid() | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <small>Pagos registrados en caja</small>
     </div>
-    <div class="fin-card">
-      <span class="fin-label">Saldo por Cobrar</span>
-      <strong class="fin-val text-danger">S/ {{ budgetPending() }}</strong>
+    <div class="summary-card summary-card--red">
+      <span>Saldo por cobrar</span>
+      <strong>{{ budgetPending() | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <small>Monto pendiente del tratamiento</small>
     </div>
   </div>
 
-  <article class="dossier-card">
+  <article class="dossier-card payments-card">
     <div class="card-title-bar">
       <div>
         <h2>Historial de Pagos y Abonos</h2>
@@ -18,25 +20,32 @@
       </div>
     </div>
 
-    <table class="clinical-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Concepto</th>
-          <th>Método de Pago</th>
-          <th>Monto Abonado</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (pay of paymentsHistory(); track pay.id) {
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
           <tr>
-            <td><strong>{{ pay.date }}</strong></td>
-            <td>{{ pay.concept }}</td>
-            <td>{{ pay.method }}</td>
-            <td><strong class="text-success">S/ {{ pay.amount }}</strong></td>
+            <th>Pago</th>
+            <th>Concepto</th>
+            <th>Método</th>
+            <th>Monto</th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (pay of paymentsHistory(); track pay.id) {
+            <tr>
+              <td>
+                <strong>{{ pay.date }}</strong>
+                <small>#{{ pay.id }}</small>
+              </td>
+              <td>{{ pay.concept }}</td>
+              <td>
+                <span class="badge badge--muted">{{ pay.method }}</span>
+              </td>
+              <td class="amount">{{ pay.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   </article>
 </div>

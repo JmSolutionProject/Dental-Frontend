@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { take, catchError, of, finalize } from 'rxjs';
 import { API_URL } from '../../../../core/config/api.config';
 import { Modal } from '../../../../shared/components/modal/modal';
+import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { User, SaveUserRequest } from '../../domain/user';
 import { UserRepository } from '../../infrastructure/user-api.repository';
@@ -14,7 +15,7 @@ interface DropdownPos { top: number; left: number; width: number; }
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [ReactiveFormsModule, Modal],
+  imports: [ReactiveFormsModule, Modal, Table, TableCell],
   templateUrl: './user-list.html',
   styleUrl: './user-list.css',
 })
@@ -34,6 +35,14 @@ export class UserList implements OnInit {
   readonly selectedRoleId = signal<number | null>(null);
   readonly dropdownOpen = signal(false);
   readonly dropdownPos = signal<DropdownPos>({ top: 0, left: 0, width: 0 });
+
+  readonly columns: TableColumn[] = [
+    { key: 'nombreCompleto', label: 'Nombre' },
+    { key: 'email', label: 'Email' },
+    { key: 'roles', label: 'Roles' },
+    { key: 'estado', label: 'Estado' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+  ];
 
   readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('triggerRef');
 

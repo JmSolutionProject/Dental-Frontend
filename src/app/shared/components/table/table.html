@@ -5,6 +5,8 @@
         @for (col of columns(); track col.key) {
           <th
             [class.sortable]="col.sortable"
+            [class.align-center]="col.align === 'center'"
+            [class.align-right]="col.align === 'right'"
             (click)="toggleSort(col)"
           >
             {{ col.label }}
@@ -19,14 +21,26 @@
       @if (data().length === 0) {
         <tr>
           <td [attr.colspan]="columns().length" class="empty-cell">
-            No data available.
+            {{ emptyMessage() }}
           </td>
         </tr>
       } @else {
         @for (row of data(); track row) {
-          <tr class="data-row" (click)="onRowClick(row)">
+          <tr [class.data-row]="rowClickable()" (click)="onRowClick(row)">
             @for (col of columns(); track col.key) {
-              <td>{{ getCellValue(row, col.key) }}</td>
+              <td
+                [class.align-center]="col.align === 'center'"
+                [class.align-right]="col.align === 'right'"
+              >
+                @if (getCellTemplate(col.key); as cellTemplate) {
+                  <ng-container
+                    [ngTemplateOutlet]="cellTemplate"
+                    [ngTemplateOutletContext]="{ $implicit: row, row: row, column: col }"
+                  />
+                } @else {
+                  {{ getCellValue(row, col) }}
+                }
+              </td>
             }
           </tr>
         }
@@ -34,48 +48,50 @@
     </tbody>
   </table>
 
-  <div class="pagination-bar">
-    <p class="pagination-summary">
-      Mostrando <strong>{{ firstItem }}</strong>-<strong>{{ lastItem }}</strong> de <strong>{{ totalItems() }}</strong> registros
-    </p>
+  @if (showPagination()) {
+    <div class="pagination-bar">
+      <p class="pagination-summary">
+        Mostrando <strong>{{ firstItem }}</strong>-<strong>{{ lastItem }}</strong> de <strong>{{ totalItems() }}</strong> registros
+      </p>
 
-    <label class="page-size-control">
-      <span>Filas</span>
-      <select [value]="pageSize()" (change)="changePageSize($event)">
-        @for (size of pageSizeOptions(); track size) {
-          <option [value]="size">{{ size }}</option>
-        }
-      </select>
-    </label>
+      <label class="page-size-control">
+        <span>Filas</span>
+        <select [value]="pageSize()" (change)="changePageSize($event)">
+          @for (size of pageSizeOptions(); track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </label>
 
-    @if (totalItems() > pageSize()) {
-      <div class="pagination">
-        <button
-          class="page-btn page-btn--wide"
-          [disabled]="currentPage() <= 1"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          Anterior
-        </button>
-
-        @for (p of pageNumbers; track p) {
+      @if (totalItems() > pageSize()) {
+        <div class="pagination">
           <button
-            class="page-btn"
-            [class.active]="p === currentPage()"
-            (click)="goToPage(p)"
+            class="page-btn page-btn--wide"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)"
           >
-            {{ p }}
+            Anterior
           </button>
-        }
 
-        <button
-          class="page-btn page-btn--wide"
-          [disabled]="currentPage() >= totalPages"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          Siguiente
-        </button>
-      </div>
-    }
-  </div>
+          @for (p of pageNumbers; track p) {
+            <button
+              class="page-btn"
+              [class.active]="p === currentPage()"
+              (click)="goToPage(p)"
+            >
+              {{ p }}
+            </button>
+          }
+
+          <button
+            class="page-btn page-btn--wide"
+            [disabled]="currentPage() >= totalPages"
+            (click)="goToPage(currentPage() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    </div>
+  }
 </div>
