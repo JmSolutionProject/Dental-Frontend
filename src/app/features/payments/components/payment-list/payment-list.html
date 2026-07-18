@@ -3,7 +3,7 @@
     <div>
       <p class="eyebrow">Pagos y Caja</p>
       <h1>Control de pagos</h1>
-      <p class="muted">Registra pagos de citas usando la API de pagos del backend.</p>
+      <p class="muted">Registra pagos de citas.</p>
     </div>
 
     <div class="header-actions">
@@ -65,90 +65,49 @@
         <p class="muted">No hay coincidencias para "{{ searchText() }}".</p>
       </div>
     } @else {
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Pago</th>
-              <th>Cita</th>
-              <th>Cobrador</th>
-              <th>Método</th>
-              <th>Monto</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (payment of payments(); track payment.id) {
-              <tr>
-                <td>
-                  <strong>#{{ payment.id }}</strong>
-                  <small>{{ payment.reference || 'Sin operación' }}</small>
-                </td>
-                <td>#{{ payment.appointmentId || '-' }}</td>
-                <td>{{ payment.cashierName || ('Usuario #' + payment.cashierId) }}</td>
-                <td>{{ payment.methodName || ('Método #' + payment.methodId) }}</td>
-                <td class="amount">{{ payment.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
-                <td>{{ payment.paidAt | date: 'short' }}</td>
-                <td>
-                  <span class="badge" [class]="statusClass(payment.status)">
-                    {{ statusLabel(payment.status) }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <app-table
+        [columns]="columns"
+        [data]="payments()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        [totalItems]="total()"
+        emptyMessage="No hay pagos registrados."
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="changePageSizeValue($event)"
+      >
+        <ng-template appTableCell="payment" let-payment>
+          <span class="payment-cell">
+            <strong>#{{ payment.id }}</strong>
+            <small>{{ payment.reference || 'Sin operación' }}</small>
+          </span>
+        </ng-template>
 
-      <div class="pagination-bar">
-        <p class="pagination-summary">
-          Mostrando <strong>{{ firstItem() }}</strong>-<strong>{{ lastItem() }}</strong>
-          de <strong>{{ total() }}</strong> pagos
-        </p>
+        <ng-template appTableCell="appointmentId" let-payment>
+          #{{ payment.appointmentId || '-' }}
+        </ng-template>
 
-        <label class="page-size-control">
-          <span>Filas</span>
-          <select [value]="pageSize()" (change)="changePageSize($event)">
-            <option [value]="10">10</option>
-            <option [value]="20">20</option>
-            <option [value]="50">50</option>
-          </select>
-        </label>
+        <ng-template appTableCell="cashierName" let-payment>
+          {{ payment.cashierName || ('Usuario #' + payment.cashierId) }}
+        </ng-template>
 
-        @if (total() > pageSize()) {
-          <div class="pagination">
-            <button
-              class="page-btn page-btn--wide"
-              type="button"
-              [disabled]="currentPage() <= 1"
-              (click)="goToPage(currentPage() - 1)"
-            >
-              Anterior
-            </button>
+        <ng-template appTableCell="methodName" let-payment>
+          {{ payment.methodName || ('Método #' + payment.methodId) }}
+        </ng-template>
 
-            @for (page of pageNumbers(); track page) {
-              <button
-                class="page-btn"
-                type="button"
-                [class.active]="page === currentPage()"
-                (click)="goToPage(page)"
-              >
-                {{ page }}
-              </button>
-            }
+        <ng-template appTableCell="amount" let-payment>
+          <span class="amount">{{ payment.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</span>
+        </ng-template>
 
-            <button
-              class="page-btn page-btn--wide"
-              type="button"
-              [disabled]="currentPage() >= totalPages()"
-              (click)="goToPage(currentPage() + 1)"
-            >
-              Siguiente
-            </button>
-          </div>
-        }
-      </div>
+        <ng-template appTableCell="paidAt" let-payment>
+          {{ payment.paidAt | date: 'short' }}
+        </ng-template>
+
+        <ng-template appTableCell="status" let-payment>
+          <span [class]="'badge ' + statusClass(payment.status)">
+            {{ statusLabel(payment.status) }}
+          </span>
+        </ng-template>
+      </app-table>
     }
   </article>
 

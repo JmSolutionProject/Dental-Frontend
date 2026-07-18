@@ -5,6 +5,7 @@ import { catchError, finalize, of, take } from 'rxjs';
 
 import { AuthService } from '../../../../core/services/auth';
 import { Modal } from '../../../../shared/components/modal/modal';
+import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
@@ -21,7 +22,7 @@ import {
 
 @Component({
   selector: 'app-payment-list',
-  imports: [CurrencyPipe, DatePipe, Modal, ReactiveFormsModule],
+  imports: [CurrencyPipe, DatePipe, Modal, ReactiveFormsModule, Table, TableCell],
   templateUrl: './payment-list.html',
   styleUrl: './payment-list.css',
 })
@@ -45,6 +46,16 @@ export class PaymentList implements OnInit {
   readonly saving = signal(false);
   readonly showForm = signal(false);
 
+  readonly columns: TableColumn[] = [
+    { key: 'payment', label: 'Pago' },
+    { key: 'appointmentId', label: 'Cita' },
+    { key: 'cashierName', label: 'Cobrador' },
+    { key: 'methodName', label: 'Método' },
+    { key: 'amount', label: 'Monto' },
+    { key: 'paidAt', label: 'Fecha' },
+    { key: 'status', label: 'Estado' },
+  ];
+
   readonly summary = computed(() => {
     const payments = this.payments();
     return payments.length ? calculatePaymentSummary(payments) : createEmptyPaymentSummary();
@@ -54,27 +65,6 @@ export class PaymentList implements OnInit {
     if (this.total() <= 0 || this.pageSize() <= 0) return 1;
     return Math.ceil(this.total() / this.pageSize());
   });
-
-  readonly pageNumbers = computed(() => {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const first = Math.max(1, Math.min(current - 3, total - 6));
-    const last = Math.min(total, first + 6);
-    const pages: number[] = [];
-
-    for (let page = first; page <= last; page += 1) {
-      pages.push(page);
-    }
-
-    return pages;
-  });
-
-  readonly firstItem = computed(() => {
-    if (this.total() === 0) return 0;
-    return (this.currentPage() - 1) * this.pageSize() + 1;
-  });
-
-  readonly lastItem = computed(() => Math.min(this.currentPage() * this.pageSize(), this.total()));
 
   readonly cashierName = computed(() => this.auth.user()?.name || 'Usuario actual');
 
@@ -129,10 +119,7 @@ export class PaymentList implements OnInit {
     this.loadPayments();
   }
 
-  changePageSize(event: Event): void {
-    const value = Number((event.target as HTMLSelectElement).value);
-    if (!Number.isFinite(value) || value <= 0) return;
-
+  changePageSizeValue(value: number): void {
     this.pageSize.set(value);
     this.currentPage.set(1);
     this.loadPayments();
