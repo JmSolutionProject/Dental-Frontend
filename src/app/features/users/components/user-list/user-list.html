@@ -12,35 +12,36 @@
     <p class="muted" style="text-align:center; padding:2rem">Cargando...</p>
   } @else {
     <article class="card">
-      <table class="clinical-table">
-        <thead><tr><th>Nombre</th><th>Email</th><th>Roles</th><th>Estado</th><th>Acciones</th></tr></thead>
-        <tbody>
-          @for (u of users(); track u.id) {
-            <tr>
-              <td><strong>{{ u.nombreCompleto }}</strong></td>
-              <td>{{ u.email }}</td>
-              <td>
-                @for (r of u.roles; track r.id) {
-                  <span class="table-pill" style="margin-right: 0.35rem">{{ r.nombreRol }}</span>
-                }
-              </td>
-              <td>
-                <span class="table-pill" [class.table-pill--success]="u.estado" [class.table-pill--danger]="!u.estado">
-                  {{ u.estado ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              <td>
-                <div style="display: flex; gap: 0.35rem">
-                  <button class="btn btn--outline btn--sm" (click)="openEdit(u)">Editar</button>
-                  <button class="btn btn--danger-outline btn--sm" (click)="disableUser(u.id)">Desactivar</button>
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">No hay usuarios registrados</td></tr>
+      <app-table
+        [columns]="columns"
+        [data]="users()"
+        [totalItems]="users().length"
+        [showPagination]="false"
+        emptyMessage="No hay usuarios registrados"
+      >
+        <ng-template appTableCell="nombreCompleto" let-user>
+          <strong>{{ user.nombreCompleto }}</strong>
+        </ng-template>
+
+        <ng-template appTableCell="roles" let-user>
+          @for (r of user.roles; track r.id) {
+            <span class="table-pill" style="margin-right: 0.35rem">{{ r.nombreRol }}</span>
           }
-        </tbody>
-      </table>
+        </ng-template>
+
+        <ng-template appTableCell="estado" let-user>
+          <span class="table-pill" [class.table-pill--success]="user.estado" [class.table-pill--danger]="!user.estado">
+            {{ user.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </ng-template>
+
+        <ng-template appTableCell="actions" let-user>
+          <div class="table-actions">
+            <button class="btn btn--outline btn--sm" (click)="openEdit(user)">Editar</button>
+            <button class="btn btn--danger-outline btn--sm" (click)="disableUser(user.id)">Desactivar</button>
+          </div>
+        </ng-template>
+      </app-table>
     </article>
   }
 </section>

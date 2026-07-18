@@ -13,7 +13,7 @@ import { GetPatientsUseCase } from '../../application/get-patients.usecase';
 import { CreatePatientUseCase } from '../../application/create-patient.usecase';
 import { PaginatedResponse, FindAllParams } from '../../domain/patient.repository';
 import { Patient, CreatePatientRequest } from '../../domain/patient';
-import { Table, TableColumn } from '../../../../shared/components/table/table';
+import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
@@ -24,7 +24,7 @@ import { heroPlus } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-patient-list',
-  imports: [ReactiveFormsModule, Table, Modal, FormField, BirthDateField, NgIcon],
+  imports: [ReactiveFormsModule, Table, TableCell, Modal, FormField, BirthDateField, NgIcon],
   providers: [provideIcons({ heroPlus })],
   templateUrl: './patient-list.html',
   styleUrl: './patient-list.css',
@@ -142,6 +142,10 @@ export class PatientList {
     if (patient && patient.id) {
       this.router.navigate(['/patients', patient.id]);
     }
+  }
+
+  statusLabel(status: string | null | undefined): string {
+    return status?.toLowerCase() === 'active' ? 'Activo' : status || '—';
   }
 
   readonly displayData = computed(() => {

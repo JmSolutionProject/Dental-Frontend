@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
 import { Modal } from '../../../../shared/components/modal/modal';
+import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Role, SaveRoleRequest } from '../../domain/role';
 import { GetRolesUseCase } from '../../application/get-roles.usecase';
@@ -11,7 +12,7 @@ import { DeleteRoleUseCase } from '../../application/delete-role.usecase';
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [ReactiveFormsModule, Modal],
+  imports: [ReactiveFormsModule, Modal, Table, TableCell],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.css',
 })
@@ -27,6 +28,12 @@ export class RolesList implements OnInit {
   readonly saving = signal(false);
   readonly showModal = signal(false);
   readonly editingRole = signal<Role | null>(null);
+
+  readonly columns: TableColumn[] = [
+    { key: 'nombreRol', label: 'Nombre del Rol' },
+    { key: 'estado', label: 'Estado' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+  ];
 
   readonly form: FormGroup = this.fb.group({
     nombreRol: ['', [Validators.required]],

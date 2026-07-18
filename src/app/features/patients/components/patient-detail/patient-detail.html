@@ -134,30 +134,35 @@
             <p class="subtitle">Registro cronológico de citas atendidas, programadas o canceladas.</p>
           </div>
         </div>
-        <table class="clinical-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Odontólogo</th>
-              <th>Motivo de Consulta</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (app of appointmentsHistory(); track app.id) {
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
               <tr>
-                <td><strong>{{ app.date }}</strong></td>
-                <td>{{ app.doctor }}</td>
-                <td>{{ app.reason }}</td>
-                <td>
-                  <span class="table-pill" [class.table-pill--success]="app.status === 'Finalizada'" [class.table-pill--primary]="app.status === 'Programada'">
-                    {{ app.status }}
-                  </span>
-                </td>
+                <th>Fecha</th>
+                <th>Odontólogo</th>
+                <th>Motivo de Consulta</th>
+                <th>Estado</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (app of appointmentsHistory(); track app.id) {
+                <tr>
+                  <td>
+                    <strong>{{ app.date }}</strong>
+                    <small>#{{ app.id }}</small>
+                  </td>
+                  <td>{{ app.doctor }}</td>
+                  <td>{{ app.reason }}</td>
+                  <td>
+                    <span class="badge" [class.badge--success]="app.status === 'Finalizada'" [class.badge--primary]="app.status === 'Programada'">
+                      {{ app.status }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </article>
     }
 
