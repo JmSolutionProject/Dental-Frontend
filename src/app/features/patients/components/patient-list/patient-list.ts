@@ -19,10 +19,13 @@ import { FormField } from '../../../../shared/components/form-field/form-field';
 import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { ReniecService } from '../../../../core/services/reniec.service';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroPlus } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-patient-list',
-  imports: [ReactiveFormsModule, Table, Modal, FormField, BirthDateField],
+  imports: [ReactiveFormsModule, Table, Modal, FormField, BirthDateField, NgIcon],
+  providers: [provideIcons({ heroPlus })],
   templateUrl: './patient-list.html',
   styleUrl: './patient-list.css',
 })
@@ -125,6 +128,12 @@ export class PatientList {
 
   onPageChange(page: number) {
     this.currentPage.set(page);
+    this.loadPatients();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
     this.loadPatients();
   }
 

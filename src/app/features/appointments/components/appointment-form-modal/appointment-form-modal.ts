@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -20,9 +20,7 @@ interface DoctorOption {
 }
 
 const DOCTORS: DoctorOption[] = [
-  { id: 'dr-carlos-perez', name: 'Dr. Carlos Pérez S.' },
-  { id: 'dra-maria-ruiz', name: 'Dra. María Ruiz M.' },
-  { id: 'dr-jorge-mendoza', name: 'Dr. Jorge Mendoza' },
+  { id: '1', name: 'Dr. Juan Perez' },
 ];
 
 @Component({
@@ -37,10 +35,10 @@ export class AppointmentFormModal {
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly toast = inject(ToastService);
 
-  @Input() visible = false;
+  readonly visible = input(false);
 
-  @Output() readonly closed = new EventEmitter<void>();
-  @Output() readonly saved = new EventEmitter<void>();
+  readonly closed = output<void>();
+  readonly saved = output<void>();
 
   readonly doctors: DoctorOption[] = DOCTORS;
 
@@ -54,6 +52,7 @@ export class AppointmentFormModal {
     time: ['10:00', [Validators.required]],
     dentistId: ['', [Validators.required]],
     reason: ['', [Validators.required]],
+    observations: [''],
   });
 
   constructor() {
@@ -76,6 +75,7 @@ export class AppointmentFormModal {
       dentistId: raw.dentistId || undefined,
       scheduledAt: this.buildIso(raw.date, raw.time),
       reason: raw.reason.trim(),
+      observations: raw.observations?.trim() || undefined,
       patientName: this.getPatientName(raw.patientId),
       dentistName: raw.dentistId ? this.getDoctorName(raw.dentistId) : undefined,
     };

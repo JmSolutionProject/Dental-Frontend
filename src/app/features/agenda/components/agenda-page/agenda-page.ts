@@ -6,6 +6,8 @@ import { GetAppointmentsUseCase } from '../../../appointments/application/get-ap
 import { CancelAppointmentUseCase } from '../../../appointments/application/cancel-appointment.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroPlus } from '@ng-icons/heroicons/outline';
 
 const BLOCK_MIN_HEIGHT = 34;
 const PIXELS_PER_HOUR = 96;
@@ -35,7 +37,8 @@ interface CalendarDay {
 
 @Component({
   selector: 'app-agenda-page',
-  imports: [DatePipe],
+  imports: [DatePipe, NgIcon],
+  providers: [provideIcons({ heroPlus })],
   templateUrl: './agenda-page.html',
   styleUrl: './agenda-page.css',
   host: {

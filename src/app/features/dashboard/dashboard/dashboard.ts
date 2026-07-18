@@ -2,6 +2,14 @@ import { AsyncPipe, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroCalendarDays,
+  heroClipboardDocumentList,
+  heroMagnifyingGlass,
+  heroPlus,
+  heroUsers,
+} from '@ng-icons/heroicons/outline';
 
 import { AuthService } from '../../../core/services/auth';
 import { GetAppointmentsUseCase } from '../../appointments/application/get-appointments.usecase';
@@ -10,7 +18,16 @@ import { GetDashboardKpisUseCase } from '../application/get-dashboard-kpis.useca
 
 @Component({
   selector: 'app-dashboard',
-  imports: [AsyncPipe, CurrencyPipe, RouterLink],
+  imports: [AsyncPipe, CurrencyPipe, RouterLink, NgIcon],
+  providers: [
+    provideIcons({
+      heroCalendarDays,
+      heroClipboardDocumentList,
+      heroMagnifyingGlass,
+      heroPlus,
+      heroUsers,
+    }),
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

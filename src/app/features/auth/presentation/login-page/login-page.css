@@ -1,13 +1,13 @@
 /* ===== OMAYA Dental Brand Color Tokens ===== */
 :host {
-  --omaya-blue: #1c75b9;
-  --omaya-blue-dark: #13598e;
-  --omaya-blue-light: #f0f7fc;
-  --omaya-pink: #dc6788;
-  --omaya-text-dark: #0f172a;
-  --omaya-text-muted: #64748b;
-  --omaya-border: #e2e8f0;
-  --omaya-shadow: 0 20px 40px -15px rgba(28, 117, 185, 0.15), 0 0 0 1px rgba(28, 117, 185, 0.06);
+  --omaya-blue: var(--color-brand-600);
+  --omaya-blue-dark: var(--color-brand-800);
+  --omaya-blue-light: var(--color-cyan-50);
+  --omaya-pink: var(--color-pink-500);
+  --omaya-text-dark: var(--color-slate-900);
+  --omaya-text-muted: var(--color-slate-500);
+  --omaya-border: var(--color-slate-200);
+  --omaya-shadow: 0 20px 40px -15px var(--color-brand-a15), 0 0 0 1px var(--color-brand-a06);
 }
 
 .login-wrapper {
@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f1f5f9 100%);
+  background: radial-gradient(circle at 50% 30%, var(--color-white) 0%, var(--color-slate-100) 100%);
   overflow: hidden;
   padding: 1.5rem;
 }
@@ -30,7 +30,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(28, 117, 185, 0.08) 0%, rgba(220, 103, 136, 0.05) 50%, rgba(255, 255, 255, 0) 75%);
+  background: radial-gradient(circle, var(--color-brand-a08) 0%, var(--color-pink-a05) 50%, var(--color-white-a00) 75%);
   pointer-events: none;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .login-card {
-  background: #ffffff;
+  background: var(--color-white);
   border-radius: 2rem;
   box-shadow: var(--omaya-shadow);
   padding: 3rem 2.25rem 2rem;
@@ -66,7 +66,7 @@
   width: 150px;
   height: auto;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(28, 117, 185, 0.12));
+  filter: drop-shadow(0 4px 12px var(--color-brand-a12));
   transition: transform 0.3s ease;
 }
 
@@ -146,7 +146,7 @@
   height: 48px !important;
   padding-left: 2.75rem !important;
   padding-right: 2.75rem !important;
-  background: #f8fafc !important;
+  background: var(--color-slate-50) !important;
   border-radius: 0.85rem !important;
   border: 1px solid var(--omaya-border) !important;
   color: var(--omaya-text-dark) !important;
@@ -156,9 +156,9 @@
 }
 
 .input-with-icon input:focus {
-  background: #ffffff !important;
+  background: var(--color-white) !important;
   border-color: var(--omaya-blue) !important;
-  box-shadow: 0 0 0 4px rgba(28, 117, 185, 0.14) !important;
+  box-shadow: 0 0 0 4px var(--color-brand-a14) !important;
 }
 
 .input-with-icon:focus-within .input-icon {
@@ -192,10 +192,10 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--color-red-50);
+  border: 1px solid var(--color-red-200);
   border-radius: 0.85rem;
-  color: #991b1b;
+  color: var(--color-red-800);
   font-size: var(--text-sm);
   padding: 0.75rem 1rem;
   animation: shake 0.3s ease;
@@ -215,23 +215,23 @@
   gap: 0.65rem;
   width: 100%;
   height: 50px;
-  background: linear-gradient(135deg, #1c75b9 0%, #13598e 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-800) 100%);
+  color: var(--color-white);
   font-family: var(--font-display);
   font-size: var(--text-base);
   font-weight: 700;
   border: none;
   border-radius: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 8px 20px -4px rgba(28, 117, 185, 0.35);
+  box-shadow: 0 8px 20px -4px var(--color-brand-a35);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   margin-top: 0.5rem;
 }
 
 .login-submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1f7fc7 0%, #1665a0 100%);
+  background: linear-gradient(135deg, var(--color-brand-650) 0%, var(--color-brand-750) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 12px 25px -4px rgba(28, 117, 185, 0.45);
+  box-shadow: 0 12px 25px -4px var(--color-brand-a45);
 }
 
 .login-submit-btn:active:not(:disabled) {
@@ -248,8 +248,8 @@
 .spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--color-white-a30);
+  border-top-color: var(--color-white);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -263,7 +263,7 @@
   text-align: center;
   margin-top: 2rem;
   width: 100%;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-slate-100);
   padding-top: 1.25rem;
 }
 

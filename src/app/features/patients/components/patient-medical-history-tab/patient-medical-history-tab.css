@@ -18,8 +18,8 @@
 }
 
 .anam-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
   border-radius: 8px;
   padding: 0.85rem 1rem;
   display: flex;
@@ -38,14 +38,14 @@
   margin: 0;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-slate-900);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .anam-card-title .subtitle {
   font-size: 0.7rem;
-  color: #64748b;
+  color: var(--color-slate-500);
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -87,7 +87,7 @@
   gap: 0.35rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #334155;
+  color: var(--color-slate-700);
   padding: 0.18rem 0.4rem;
   border-radius: 4px;
   cursor: pointer;
@@ -96,32 +96,32 @@
 }
 
 .anam-row:hover {
-  background: #f1f5f9;
+  background: var(--color-slate-100);
 }
 
 .anam-row input[type="checkbox"] {
   width: 0.9rem;
   height: 0.9rem;
-  accent-color: #0284c7;
+  accent-color: var(--color-sky-600);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .anam-row--selected {
-  color: #0284c7;
+  color: var(--color-sky-600);
   font-weight: 700;
-  background: #f0f9ff;
+  background: var(--color-sky-50);
 }
 
 .anam-row--selected:hover {
-  background: #e0f2fe;
+  background: var(--color-sky-100);
 }
 
 .anam-custom-input,
 .anam-textarea {
   width: 100%;
   padding: 0.4rem 0.6rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-slate-300);
   border-radius: 5px;
   font-family: inherit;
   font-size: 0.78rem;
@@ -134,7 +134,7 @@
 .anam-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-a10);
 }
 
 .anam-textarea {
@@ -155,20 +155,20 @@
   gap: 0.4rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #334155;
+  color: var(--color-slate-700);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .anam-radio:hover {
-  background: #f1f5f9;
+  background: var(--color-slate-100);
 }
 
 .anam-radio input[type="radio"] {
   width: 0.9rem;
   height: 0.9rem;
-  accent-color: #0284c7;
+  accent-color: var(--color-sky-600);
   cursor: pointer;
 }
 

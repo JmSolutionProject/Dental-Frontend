@@ -32,7 +32,7 @@
 }
 
 .view-tabs {
-  background: var(--color-bg-secondary, #f8fafc);
+  background: var(--color-bg-secondary, var(--color-slate-50));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 0.75rem);
   display: flex;
@@ -51,7 +51,7 @@
 
 .tab--active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .filter-label {
@@ -61,7 +61,7 @@
 
 .select-field,
 .calendar-settings select {
-  background: #fff;
+  background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm, 0.5rem);
   color: var(--color-text);
@@ -71,7 +71,7 @@
 
 .calendar-settings {
   align-items: center;
-  background: #f8fafc;
+  background: var(--color-slate-50);
   border: 1px solid var(--color-border);
   border-radius: 1rem;
   display: flex;
@@ -155,15 +155,15 @@
 .hour-slot:hover,
 .week-slot:hover,
 .month-cell:hover {
-  background: var(--color-bg-secondary, #f8fafc);
+  background: var(--color-bg-secondary, var(--color-slate-50));
 }
 
 .hour-slot--occupied {
-  background: var(--color-bg-accent, #f0f9ff);
+  background: var(--color-bg-accent, var(--color-sky-50));
 }
 
 .slot-appointment {
-  background: var(--color-primary-light, #e0f2fe);
+  background: var(--color-primary-light, var(--color-sky-100));
   border-left: 3px solid var(--color-primary);
   border-radius: var(--radius-sm, 0.5rem);
   display: flex;
@@ -187,10 +187,10 @@
 
 .btn-cancel {
   align-self: flex-end;
-  background: var(--color-danger, #dc2626);
+  background: var(--color-danger, var(--color-red-600));
   border: 0;
   border-radius: var(--radius-sm, 0.5rem);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   font-size: var(--text-xs);
   margin-top: 0.15rem;
@@ -224,7 +224,7 @@
 
 .week-day-header--today,
 .month-cell--today {
-  background: var(--color-primary-light, #e0f2fe);
+  background: var(--color-primary-light, var(--color-sky-100));
 }
 
 .week-row {
@@ -247,7 +247,7 @@
   background: var(--color-primary);
   border: 0;
   border-radius: 999px;
-  color: #fff;
+  color: var(--color-white);
   display: block;
   font-size: var(--text-xs);
   overflow: hidden;
@@ -259,7 +259,7 @@
 .week-appointment.status--cancelled,
 .month-event.status--cancelled,
 .slot-appointment.status--cancelled {
-  background: var(--color-bg-secondary, #f8fafc);
+  background: var(--color-bg-secondary, var(--color-slate-50));
   color: var(--color-muted);
   opacity: 0.75;
   text-decoration: line-through;
@@ -268,12 +268,12 @@
 .week-appointment.status--completed,
 .month-event.status--completed,
 .slot-appointment.status--completed {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--color-green-100);
+  color: var(--color-green-800);
 }
 
 .month-header {
-  background: var(--color-bg-secondary, #f8fafc);
+  background: var(--color-bg-secondary, var(--color-slate-50));
 }
 
 .month-cell {
@@ -334,13 +334,13 @@
 }
 
 .button--danger {
-  background: var(--color-danger, #dc2626);
-  border: 1px solid var(--color-danger-dark, #b91c1c);
-  color: #fff;
+  background: var(--color-danger, var(--color-red-600));
+  border: 1px solid var(--color-danger-dark, var(--color-red-700));
+  color: var(--color-white);
 }
 
 .button--danger:hover {
-  background: var(--color-danger-dark, #b91c1c);
+  background: var(--color-danger-dark, var(--color-red-700));
 }
 
 .loading-overlay {

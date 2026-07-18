@@ -2,20 +2,49 @@
   <!-- HEADER -->
   <header class="agenda-header">
     <div>
+      <p class="agenda-eyebrow">Agenda clínica</p>
       <h1>Agenda Clínica</h1>
       <p class="agenda-subtitle">{{ dateLabel() }}</p>
     </div>
     <div class="agenda-header-actions">
-      <button type="button" class="btn btn--secondary" (click)="goToToday()">Hoy</button>
+      <button type="button" class="btn btn--secondary" (click)="goToToday()">
+        <ng-icon name="heroClock" aria-hidden="true" />
+        Hoy
+      </button>
       <button type="button" class="btn btn--primary btn--lg" (click)="navigate(0)">
-        + Crear Cita
+        <ng-icon name="heroPlus" aria-hidden="true" />
+        Crear Cita
       </button>
     </div>
   </header>
 
+  <div class="agenda-summary-grid">
+    <article class="agenda-summary-card agenda-summary-card--blue">
+      <span class="agenda-summary-icon"><ng-icon name="heroCalendarDays" aria-hidden="true" /></span>
+      <span>
+        <strong>{{ agendaDay().appointments.length }}</strong>
+        <small>Citas del día</small>
+      </span>
+    </article>
+    <article class="agenda-summary-card agenda-summary-card--green">
+      <span class="agenda-summary-icon"><ng-icon name="heroUserGroup" aria-hidden="true" /></span>
+      <span>
+        <strong>{{ agendaDay().dentists.length }}</strong>
+        <small>Profesionales en agenda</small>
+      </span>
+    </article>
+    <article class="agenda-summary-card agenda-summary-card--amber">
+      <span class="agenda-summary-icon"><ng-icon name="heroClock" aria-hidden="true" /></span>
+      <span>
+        <strong>08:00 - 20:00</strong>
+        <small>Horario operativo</small>
+      </span>
+    </article>
+  </div>
+
   <!-- WEEK NAVIGATION -->
   <nav class="agenda-nav">
-    <button type="button" class="btn btn--secondary" (click)="navigate(-7)">← Anterior</button>
+    <button type="button" class="btn btn--secondary agenda-nav-button" (click)="navigate(-7)"><ng-icon name="heroArrowLeftCircle" /> Anterior</button>
     <div class="agenda-week">
       @for (wd of weekDates(); track wd.key) {
         <button
@@ -32,7 +61,7 @@
         </button>
       }
     </div>
-    <button type="button" class="btn btn--secondary" (click)="navigate(7)">Siguiente →</button>
+    <button type="button" class="btn btn--secondary agenda-nav-button" (click)="navigate(7)">Siguiente <ng-icon name="heroArrowRightCircle" /></button>
   </nav>
 
   <!-- LOADING -->
@@ -43,14 +72,13 @@
     </div>
   } @else if (agendaDay().dentists.length === 0) {
     <div class="agenda-empty">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
+      <span class="agenda-empty-icon"><ng-icon name="heroCalendarDays" aria-hidden="true" /></span>
       <h3>Sin citas este día</h3>
-      <p class="muted">{{ agendaDay().date }}</p>
+      <p class="muted">No hay atenciones programadas para {{ agendaDay().date }}.</p>
+      <button type="button" class="btn btn--primary" (click)="navigate(0)">
+        <ng-icon name="heroPlus" aria-hidden="true" />
+        Crear Cita
+      </button>
     </div>
   } @else {
     <!-- TIMELINE GRID -->

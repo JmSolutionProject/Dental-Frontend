@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
@@ -10,11 +10,11 @@ import { BirthDateField } from '../../../../shared/components/birth-date-field/b
   styleUrl: './personal-data-form.css',
 })
 export class PersonalDataForm {
-  @Input({ required: true }) form!: FormGroup;
-  @Input() editing = false;
-  @Input() consultingDni = false;
+  readonly form = input.required<FormGroup>();
+  readonly editing = input(false);
+  readonly consultingDni = input(false);
 
-  @Output() readonly lookupDni = new EventEmitter<void>();
+  readonly lookupDni = output<void>();
 
   onLookupDni(): void {
     this.lookupDni.emit();

@@ -17,6 +17,7 @@ export type CreateAppointmentRequest = Omit<
   'id' | 'status' | 'cancelReason'
 > & {
   status?: AppointmentStatus;
+  observations?: string;
 };
 
 export type UpdateAppointmentRequest = Partial<

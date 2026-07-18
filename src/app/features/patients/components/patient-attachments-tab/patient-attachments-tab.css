@@ -2,8 +2,8 @@
 
 /* DROP ZONE */
 .drop-zone {
-  border: 2px dashed #0284c7;
-  background: #f0f9ff;
+  border: 2px dashed var(--color-sky-600);
+  background: var(--color-sky-50);
   border-radius: 10px;
   padding: 2rem 1.5rem;
   text-align: center;
@@ -12,13 +12,13 @@
 }
 
 .drop-zone:hover {
-  background: #e0f2fe;
-  border-color: #0369a1;
+  background: var(--color-sky-100);
+  border-color: var(--color-sky-700);
 }
 
 .drop-zone--dragging {
-  background: #bae6fd;
-  border-color: #0369a1;
+  background: var(--color-sky-200);
+  border-color: var(--color-sky-700);
 }
 
 .drop-zone-content {
@@ -31,13 +31,13 @@
 .drop-zone-text {
   margin: 0;
   font-size: 0.95rem;
-  color: #0f172a;
+  color: var(--color-slate-900);
 }
 
 .drop-zone-sub {
   margin: 0 0 0.85rem 0;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-slate-500);
 }
 
 .upload-btn-label {
@@ -52,8 +52,8 @@
 }
 
 .attachment-card {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-300);
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
@@ -62,8 +62,8 @@
 
 .attachment-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #0284c7;
+  box-shadow: 0 4px 12px var(--color-black-a08);
+  border-color: var(--color-sky-600);
 }
 
 .attachment-card:hover .att-hover-view {
@@ -73,7 +73,7 @@
 .att-media-preview {
   position: relative;
   height: 140px;
-  background: #0f172a;
+  background: var(--color-slate-900);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,15 +89,15 @@
 .att-document-icon {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--color-slate-400);
   letter-spacing: 0.1em;
 }
 
 .att-hover-view {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  color: #ffffff;
+  background: var(--color-slate-900-a70);
+  color: var(--color-white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,7 +114,7 @@
 .att-card-name {
   display: block;
   font-size: 0.85rem;
-  color: #0f172a;
+  color: var(--color-slate-900);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -126,7 +126,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--color-slate-500);
   margin-bottom: 0.5rem;
 }
 
@@ -134,8 +134,8 @@
 .empty-attachments {
   text-align: center;
   padding: 2.5rem 1rem;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  background: var(--color-slate-50);
+  border: 1px dashed var(--color-slate-300);
   border-radius: 8px;
 }
 
@@ -143,7 +143,7 @@
   margin: 0 0 0.4rem 0;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--color-slate-600);
 }
 
 /* PREVIEW MODAL */
@@ -165,6 +165,6 @@
 
 .pdf-preview p {
   margin: 0 0 0.85rem 0;
-  color: #334155;
+  color: var(--color-slate-700);
   font-size: 0.95rem;
 }

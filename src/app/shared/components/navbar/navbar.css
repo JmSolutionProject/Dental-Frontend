@@ -1,6 +1,6 @@
 .topbar {
   align-items: center;
-  background: #ffffff;
+  background: var(--color-white);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -18,7 +18,7 @@
 }
 
 .topbar h2 {
-  color: #1c75b9;
+  color: var(--color-brand-600);
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 800;
@@ -27,14 +27,14 @@
 }
 
 .topbar-tagline {
-  color: #64748b;
+  color: var(--color-slate-500);
   font-size: var(--text-xs);
   font-weight: 600;
   font-style: italic;
 }
 
 .logout {
-  background: #fff;
+  background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   color: var(--color-text);
@@ -47,6 +47,6 @@
 }
 
 .logout:hover {
-  background: #e0f2fe;
-  color: #0284c7;
+  background: var(--color-sky-100);
+  color: var(--color-sky-600);
 }

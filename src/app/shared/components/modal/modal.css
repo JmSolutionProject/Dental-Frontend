@@ -1,7 +1,7 @@
 .modal-backdrop {
   align-items: center;
   animation: fade-in 0.15s ease;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--color-slate-900-a40);
   display: flex;
   inset: 0;
   justify-content: center;
