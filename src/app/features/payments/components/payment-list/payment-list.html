@@ -1,29 +1,226 @@
 <section class="page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Payments</p>
-      <h1>Payment records</h1>
-      <p class="muted">Payments loaded from the backend payment endpoint.</p>
+      <p class="eyebrow">Pagos y Caja</p>
+      <h1>Control de pagos</h1>
+      <p class="muted">Registra pagos de citas usando la API de pagos del backend.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="button button--ghost" type="button" (click)="loadPayments()">
+        Actualizar
+      </button>
+      <button class="button" type="button" (click)="openForm()">
+        Agregar pago
+      </button>
     </div>
   </header>
 
-  @if (payments$ | async; as result) {
-    <div class="payment-grid">
-      @for (payment of result.data; track payment.id) {
-        <article class="card payment-card">
-          <div>
-            <strong>{{ payment.amount | currency }}</strong>
-            <span>{{ payment.methodName }} · {{ payment.status }}</span>
+  <div class="summary-grid">
+    <article class="summary-card summary-card--blue">
+      <span>Total cobrado</span>
+      <strong>{{ summary().totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <small>{{ total() }} pagos registrados</small>
+    </article>
+    <article class="summary-card summary-card--green">
+      <span>Efectivo</span>
+      <strong>{{ summary().cashAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <small>Según methodCode = cash</small>
+    </article>
+    <article class="summary-card summary-card--amber">
+      <span>Tarjeta / transferencia</span>
+      <strong>
+        {{ summary().cardAmount + summary().transferAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}
+      </strong>
+      <small>Pagos bancarios</small>
+    </article>
+    <article class="summary-card summary-card--red">
+      <span>Anulados</span>
+      <strong>{{ summary().voidedAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <small>No suman al total</small>
+    </article>
+  </div>
+
+  <div class="search-bar">
+    <input
+      class="search-input"
+      type="search"
+      placeholder="Buscar por pago, cita, cobrador, método u operación..."
+      [value]="searchText()"
+      (input)="onSearchInput($event)"
+    />
+  </div>
+
+  <article class="card">
+    @if (loading()) {
+      <p class="muted">Cargando pagos...</p>
+    } @else if (payments().length === 0 && !searchText()) {
+      <div class="empty-state">
+        <strong>No hay pagos registrados.</strong>
+        <p class="muted">Agrega el primer pago desde el botón superior.</p>
+      </div>
+    } @else if (payments().length === 0) {
+      <div class="empty-state">
+        <strong>No se encontraron pagos.</strong>
+        <p class="muted">No hay coincidencias para "{{ searchText() }}".</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Pago</th>
+              <th>Cita</th>
+              <th>Cobrador</th>
+              <th>Método</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of payments(); track payment.id) {
+              <tr>
+                <td>
+                  <strong>#{{ payment.id }}</strong>
+                  <small>{{ payment.reference || 'Sin operación' }}</small>
+                </td>
+                <td>#{{ payment.appointmentId || '-' }}</td>
+                <td>{{ payment.cashierName || ('Usuario #' + payment.cashierId) }}</td>
+                <td>{{ payment.methodName || ('Método #' + payment.methodId) }}</td>
+                <td class="amount">{{ payment.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ payment.paidAt | date: 'short' }}</td>
+                <td>
+                  <span class="badge" [class]="statusClass(payment.status)">
+                    {{ statusLabel(payment.status) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <p class="pagination-summary">
+          Mostrando <strong>{{ firstItem() }}</strong>-<strong>{{ lastItem() }}</strong>
+          de <strong>{{ total() }}</strong> pagos
+        </p>
+
+        <label class="page-size-control">
+          <span>Filas</span>
+          <select [value]="pageSize()" (change)="changePageSize($event)">
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
+        </label>
+
+        @if (total() > pageSize()) {
+          <div class="pagination">
+            <button
+              class="page-btn page-btn--wide"
+              type="button"
+              [disabled]="currentPage() <= 1"
+              (click)="goToPage(currentPage() - 1)"
+            >
+              Anterior
+            </button>
+
+            @for (page of pageNumbers(); track page) {
+              <button
+                class="page-btn"
+                type="button"
+                [class.active]="page === currentPage()"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            }
+
+            <button
+              class="page-btn page-btn--wide"
+              type="button"
+              [disabled]="currentPage() >= totalPages()"
+              (click)="goToPage(currentPage() + 1)"
+            >
+              Siguiente
+            </button>
           </div>
-          <p>{{ payment.cashierName }}</p>
-          <small>{{ payment.paidAt | date: 'medium' }} · {{ payment.reference || 'No reference' }}</small>
-        </article>
-      } @empty {
-        <article class="card payment-card">
-          <strong>No payments returned by the backend yet.</strong>
-          <span>Register payments from the backend once persistence is complete.</span>
-        </article>
-      }
-    </div>
-  }
+        }
+      </div>
+    }
+  </article>
+
+  <app-modal
+    title="Agregar pago"
+    size="lg"
+    [visible]="showForm()"
+    (close)="closeForm()"
+  >
+    <p class="modal-intro muted">
+      Registra el pago de una cita. Se enviará al backend como citaId,
+      usuarioCobradorId, metodoPagoId y montoPagado.
+    </p>
+
+    <form class="payment-form" [formGroup]="form" (ngSubmit)="savePayment()">
+      <label class="field">
+        <span>Cita</span>
+        <select formControlName="appointmentId">
+          <option value="">Selecciona una cita</option>
+          @for (appointment of appointments(); track appointment.id) {
+            <option [value]="appointment.id">{{ appointmentLabel(appointment) }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Cobrador</span>
+        <input formControlName="cashierId" type="number" readonly />
+        <small>{{ cashierName() }}</small>
+      </label>
+
+      <label class="field">
+        <span>Método de pago</span>
+        <select formControlName="methodId">
+          <option value="">Selecciona un método</option>
+          @for (method of paymentMethods(); track method.id) {
+            <option [value]="method.id">{{ method.name }}</option>
+          }
+        </select>
+        @if (paymentMethods().length === 0) {
+          <small>No hay métodos activos registrados en el backend.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Monto pagado</span>
+        <input formControlName="amount" min="0.01" step="0.01" type="number" />
+      </label>
+
+      <label class="field">
+        <span>Número de operación</span>
+        <input formControlName="reference" maxlength="100" placeholder="YAPE-00012345" />
+      </label>
+
+      <label class="field">
+        <span>Fecha de pago</span>
+        <input formControlName="paidAt" type="datetime-local" />
+      </label>
+
+      <label class="field field--wide">
+        <span>Observación</span>
+        <textarea formControlName="notes" rows="3" placeholder="Pago parcial de la cita"></textarea>
+      </label>
+
+      <div class="form-actions">
+        <button class="button button--ghost" type="button" (click)="closeForm()">
+          Cancelar
+        </button>
+        <button class="button" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Registrar pago' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
 </section>
