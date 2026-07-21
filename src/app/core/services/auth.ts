@@ -23,6 +23,15 @@ export class AuthService {
   private readonly apiUrl = inject(API_URL);
   private readonly tokenState = signal<string | null>(this.readToken());
 
+  constructor() {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      if (storedToken && storedToken !== this.tokenState()) {
+        this.tokenState.set(storedToken);
+      }
+    }
+  }
+
   readonly token = this.tokenState.asReadonly();
   readonly user = computed<JwtPayload | null>(() => {
     const t = this.tokenState();
@@ -48,7 +57,7 @@ export class AuthService {
   private setToken(token: string | null) {
     this.tokenState.set(token);
 
-    if (!this.isBrowser) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return;
     }
 
@@ -61,10 +70,14 @@ export class AuthService {
   }
 
   private readToken() {
-    if (!this.isBrowser) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return null;
     }
 
-    return localStorage.getItem(TOKEN_KEY);
+    try {
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
   }
 }

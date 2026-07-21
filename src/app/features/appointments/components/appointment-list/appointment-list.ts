@@ -1,8 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { take, catchError, of, finalize } from 'rxjs';
 import { Appointment, AppointmentStatus } from '../../domain/appointment';
 import { GetAppointmentsUseCase } from '../../application/get-appointments.usecase';
 import { AppointmentFormModal } from '../appointment-form-modal/appointment-form-modal';
+import { API_URL } from '../../../../core/config/api.config';
 
 type StatusFilter = 'all' | AppointmentStatus;
 type DateRange = 'all' | 'today' | 'tomorrow' | 'week' | 'month';
@@ -41,6 +43,8 @@ const DATE_RANGES: { id: DateRange; label: string }[] = [
   styleUrl: './appointment-list.css',
 })
 export class AppointmentList {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
 
   readonly appointments = signal<Appointment[]>([]);
@@ -54,10 +58,9 @@ export class AppointmentList {
   readonly statusOptions: StatusOption[] = STATUS_OPTIONS;
   readonly dateRanges = DATE_RANGES;
 
-  readonly dentistOptions = [
+  readonly dentistOptions = signal<{ id: string; name: string }[]>([
     { id: 'all', name: 'Todos los especialistas' },
-    { id: '1', name: 'Dr. Juan Perez' },
-  ];
+  ]);
 
   readonly showCreateModal = signal(false);
 
@@ -102,6 +105,7 @@ export class AppointmentList {
 
   constructor() {
     this.loadAppointments();
+    this.loadDoctors();
   }
 
   setStatusFilter(filter: StatusFilter): void {
@@ -166,6 +170,17 @@ export class AppointmentList {
         finalize(() => this.loading.set(false)),
       )
       .subscribe((list) => this.appointments.set(list));
+  }
+
+  loadDoctors(): void {
+    this.http.get<{ id: number; nombreCompleto: string }[]>(`${this.apiUrl}/users?role=MEDICO`)
+      .pipe(take(1), catchError(() => of([])))
+      .subscribe((users) => {
+        this.dentistOptions.set([
+          { id: 'all', name: 'Todos los especialistas' },
+          ...users.map((u) => ({ id: String(u.id), name: u.nombreCompleto })),
+        ]);
+      });
   }
 
   private matchesDateRange(iso: string, range: DateRange): boolean {

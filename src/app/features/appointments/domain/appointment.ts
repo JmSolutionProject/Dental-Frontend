@@ -8,6 +8,7 @@ export interface Appointment {
   reason: string;
   status: AppointmentStatus;
   cancelReason?: string;
+  planServicioId?: string;
 }
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled';
@@ -18,6 +19,7 @@ export type CreateAppointmentRequest = Omit<
 > & {
   status?: AppointmentStatus;
   observations?: string;
+  serviceId?: string;
 };
 
 export type UpdateAppointmentRequest = Partial<

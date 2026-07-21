@@ -1,6 +1,8 @@
 export interface MedicalHistory {
   allergies: string[];
   conditions: string[];
+  specialConditions?: string[];
+  dentalHistory?: string[];
   medications: string[];
 }
 
@@ -71,8 +73,11 @@ export interface InstallmentRecord {
 
 export interface TreatmentPlanItem {
   id: string;
+  serviceId?: string;
   serviceName: string;
   price: number;
+  ejecutado?: boolean;
+  odontogramaDetalleId?: string | number;
 }
 
 export interface TreatmentPlan {
@@ -82,6 +87,8 @@ export interface TreatmentPlan {
   items: TreatmentPlanItem[];
   totalCost: number;
   paymentType: 'Al Contado' | 'A Cuotas';
+  estado?: string;
+  observaciones?: string;
   installments?: InstallmentRecord[];
 }
 

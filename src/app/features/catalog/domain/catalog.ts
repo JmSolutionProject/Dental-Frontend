@@ -1,3 +1,8 @@
+export interface CatalogCategory {
+  id: string;
+  name: string;
+}
+
 export interface CatalogService {
   id: string;
   name: string;

@@ -16,6 +16,7 @@
   border: 1px solid var(--color-border);
   border-radius: 1.25rem;
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: 0;
   max-height: 90dvh;
   max-width: 560px;

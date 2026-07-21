@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { take, catchError, of, finalize } from 'rxjs';
 import {
   FormBuilder,
@@ -11,6 +12,7 @@ import {
 import { ReniecService } from '../../../../core/services/reniec.service';
 import { MedicalAlertService } from '../../../../core/services/medical-alert.service';
 import { AuthService } from '../../../../core/services/auth';
+import { API_URL } from '../../../../core/config/api.config';
 
 import { GetPatientUseCase } from '../../application/get-patient.usecase';
 import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
@@ -63,6 +65,8 @@ export class PatientDetail {
   private readonly reniec = inject(ReniecService);
   private readonly medicalAlert = inject(MedicalAlertService);
   private readonly auth = inject(AuthService);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
 
   readonly role = this.auth.role;
   readonly patient = signal<Patient | null>(null);
@@ -78,11 +82,11 @@ export class PatientDetail {
 
   // Medical History Data (Maintained by PatientMedicalHistoryTab)
   readonly medicalHistoryData = signal<MedicalHistoryData>({
-    allergies: ['Penicilina', 'Látex'],
-    diseases: ['Diabetes', 'Hipertensión arterial'],
+    allergies: [],
+    diseases: [],
     specialConditions: [],
-    dentalHistory: ['Bruxismo'],
-    takesMedication: true,
+    dentalHistory: [],
+    takesMedication: false,
   });
 
   // STATICS FOR PATIENT DOSSIER
@@ -98,19 +102,7 @@ export class PatientDetail {
   ]);
 
   // Unified Treatment Plans
-  readonly treatmentPlans = signal<TreatmentPlan[]>([
-    {
-      id: 'tp-1',
-      name: 'Tratamiento Integral Inicial',
-      date: '10/06/2026',
-      items: [
-        { id: 'i1', serviceName: 'Limpieza e Higiene Profunda Ultrasónica', price: 120 },
-        { id: 'i2', serviceName: 'Curación con Resina Simple', price: 80 }
-      ],
-      totalCost: 200,
-      paymentType: 'Al Contado'
-    }
-  ]);
+  readonly treatmentPlans = signal<TreatmentPlan[]>([]);
 
   readonly budgetTotal = computed(() =>
     this.treatmentPlans().reduce((acc, p) => acc + p.totalCost, 0)
@@ -187,12 +179,72 @@ export class PatientDetail {
           if (p) {
             this.patient.set(p);
             this.populateForm(p);
+            this.loadTreatmentPlans(p.id);
           }
         });
     });
   }
 
+  private loadTreatmentPlans(patientId: string) {
+    if (!patientId || patientId === 'undefined' || patientId === 'null') {
+      this.treatmentPlans.set([]);
+      return;
+    }
+    this.http.get<any[]>(`${this.apiUrl}/treatment-plans?patientId=${patientId}`)
+      .pipe(
+        take(1),
+        catchError(() => of([]))
+      )
+      .subscribe((plans) => {
+        const mappedPlans = plans.map(p => {
+          const totalCost = p.servicios.reduce((sum: number, s: any) => {
+            const precio = Number(s.servicio?.precioActual || s.servicio?.precio || 0);
+            return sum + (precio * (s.cantidad || 1));
+          }, 0);
+
+          return {
+            id: String(p.id),
+            name: p.observaciones || 'Plan de Tratamiento',
+            date: new Date(p.fechaCreacion).toLocaleDateString('es-PE'),
+            items: p.servicios.map((s: any) => ({
+              id: String(s.id),
+              serviceName: s.servicio?.nombreServicio || 'Servicio',
+              price: Number(s.servicio?.precioActual || s.servicio?.precio || 0),
+              ejecutado: s.ejecutado,
+              odontogramaDetalleId: s.odontogramaDetalleId ? String(s.odontogramaDetalleId) : undefined
+            })),
+            totalCost: totalCost,
+            paymentType: 'Al Contado',
+            estado: p.estado || 'Activo',
+            observaciones: p.observaciones || ''
+          } as TreatmentPlan;
+        });
+        this.treatmentPlans.set(mappedPlans);
+      });
+  }
+
+  onPlanAdded(newPlan: TreatmentPlan) {
+    this.treatmentPlans.update((plans) => [newPlan, ...plans]);
+    this.reloadTreatmentPlans();
+  }
+
+  reloadTreatmentPlans() {
+    const p = this.patient();
+    if (p) {
+      this.loadTreatmentPlans(p.id);
+    }
+  }
+
   private populateForm(p: Patient) {
+    const mh = p.medicalHistory || { allergies: [], conditions: [], specialConditions: [], dentalHistory: [], medications: [] };
+    this.medicalHistoryData.set({
+      allergies: mh.allergies || [],
+      diseases: mh.conditions || [],
+      specialConditions: mh.specialConditions || [],
+      dentalHistory: mh.dentalHistory || [],
+      takesMedication: (mh.medications || []).length > 0,
+    });
+
     this.form.patchValue({
       firstName: p.firstName,
       lastName: p.lastName,
@@ -201,12 +253,12 @@ export class PatientDetail {
       email: p.email ?? '',
       birthDate: p.birthDate ?? '',
       gender: 'Masculino',
-      emergencyRelationship: 'Madre',
-      emergencyPhone: '+51 988 123 456',
+      emergencyRelationship: '',
+      emergencyPhone: '',
       customAllergy: '',
       customDisease: '',
-      medicationDetails: 'Metformina 850mg diario, Losartán 50mg',
-      observations: 'Paciente refiere leve ansiedad en consulta. Solicita anestesia tópica previa a infiltración.',
+      medicationDetails: (mh.medications || []).join(', '),
+      observations: '',
       notes: p.notes,
     });
   }
@@ -293,6 +345,7 @@ export class PatientDetail {
       .subscribe((updated) => {
         if (updated) {
           this.patient.set(updated);
+          this.populateForm(updated);
           this.editing.set(false);
           this.toast.success('Expediente del paciente actualizado correctamente.');
         }
@@ -304,6 +357,7 @@ export class PatientDetail {
     const emergencyRelationship = (raw.emergencyRelationship || '').trim();
     const emergencyPhone = (raw.emergencyPhone || '').trim();
     const emergencyContact = [emergencyRelationship, emergencyPhone].filter(Boolean).join(' ');
+    const mhData = this.medicalHistoryData();
 
     return {
       firstName: raw.firstName,
@@ -313,9 +367,11 @@ export class PatientDetail {
       email: raw.email || undefined,
       birthDate: raw.birthDate || undefined,
       medicalHistory: {
-        allergies: this.medicalHistoryData().allergies,
-        conditions: this.medicalHistoryData().diseases,
-        medications: this.medicalHistoryData().takesMedication ? this.parseList(raw.medicationDetails) : [],
+        allergies: (mhData.allergies || []).filter((a) => a && a !== 'Ninguna' && a !== 'Ninguno'),
+        conditions: (mhData.diseases || []).filter((c) => c && c !== 'Ninguna' && c !== 'Ninguno'),
+        specialConditions: (mhData.specialConditions || []).filter((s) => s && s !== 'Ninguna' && s !== 'Ninguno'),
+        dentalHistory: (mhData.dentalHistory || []).filter((d) => d && d !== 'Ninguno'),
+        medications: mhData.takesMedication ? this.parseList(raw.medicationDetails) : [],
       },
       notes: [emergencyContact, raw.notes].filter(Boolean).join('\n'),
     };

@@ -50,14 +50,15 @@ export function jwtDecode(token: string): JwtPayload | null {
 }
 
 function normalizeRole(role: string): string {
+  if (!role) return '';
+  const normalized = role.toUpperCase();
   const map: Record<string, string> = {
     MEDICO: 'dentist',
-    medico: 'dentist',
     SECRETARIA: 'receptionist',
-    secretaria: 'receptionist',
+    ADMIN: 'ADMIN',
   };
 
-  return map[role] ?? role;
+  return map[normalized] ?? normalized;
 }
 
 function base64UrlDecode(input: string): string | null {

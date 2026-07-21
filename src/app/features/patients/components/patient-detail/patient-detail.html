@@ -116,6 +116,7 @@
     @if (activeTab() === 'medical-history') {
       <app-patient-medical-history-tab
         [parentForm]="form"
+        [medicalHistory]="p.medicalHistory"
         [saving]="saving()"
         (dataChanged)="onMedicalHistoryChanged($event)"
         (saveRequested)="save()"
@@ -167,7 +168,12 @@
     }
 
     @if (role() !== 'dentist' && activeTab() === 'budget-plan') {
-      <app-patient-treatment-plan-tab [treatmentPlans]="treatmentPlans()" />
+      <app-patient-treatment-plan-tab 
+        [treatmentPlans]="treatmentPlans()" 
+        [patientId]="patient()?.id ?? ''" 
+        (planAdded)="onPlanAdded($event)" 
+        (reloadPlans)="reloadTreatmentPlans()"
+      />
     }
 
     @if (role() !== 'dentist' && activeTab() === 'payments') {

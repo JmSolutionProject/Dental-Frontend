@@ -134,32 +134,38 @@
 
 /* PLAN BUILDER MODAL */
 .plan-builder-body {
-  padding: 1.25rem 0;
+  padding: 0.75rem 0;
+}
+
+.plan-builder-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .plan-builder-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: stretch;
+  gap: 1.25rem;
+  align-items: start;
 }
 
 @media (max-width: 768px) {
   .plan-builder-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 }
 
 .builder-col {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .builder-col-left {
-  border-right: 1px solid var(--color-slate-200);
-  padding-right: 2rem;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 1.25rem;
 }
 
 .builder-col-right {
@@ -170,18 +176,18 @@
   .builder-col-left {
     border-right: none;
     padding-right: 0;
-    border-bottom: 1px solid var(--color-slate-200);
-    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
   }
 }
 
 .builder-section-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.95rem;
+  margin: 0 0 0.35rem 0;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--color-slate-900);
-  border-bottom: 2px solid var(--color-slate-100);
-  padding-bottom: 0.4rem;
+  color: #0f172a;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 0.25rem;
 }
 
 .builder-add-service,
@@ -189,7 +195,7 @@
 .live-schedule-preview {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .empty-items-box {
@@ -197,9 +203,9 @@
   border: 1px dashed var(--color-slate-300);
   color: var(--color-slate-500);
   text-align: center;
-  padding: 1.25rem;
+  padding: 0.75rem;
   border-radius: 6px;
-  font-size: 0.83rem;
+  font-size: 0.8rem;
 }
 
 .items-ul {
@@ -208,19 +214,21 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
+  max-height: 95px;
+  overflow-y: auto;
 }
 
 .item-li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.65rem 0.85rem;
-  background: var(--color-white);
-  border: 1px solid var(--color-slate-200);
+  padding: 0.4rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  box-shadow: 0 1px 2px var(--color-black-a02);
-  font-size: 0.85rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  font-size: 0.8rem;
 }
 
 .item-name {
@@ -231,7 +239,7 @@
 .item-actions {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.65rem;
 }
 
 .item-price {
@@ -239,41 +247,64 @@
   font-weight: 700;
 }
 
+.totals-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.totals-grid.two-cols {
+  grid-template-columns: 1fr 1fr;
+}
+
 .builder-total-box {
-  background: var(--color-white);
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid var(--color-slate-200);
-  box-shadow: 0 4px 6px var(--color-black-a02);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+}
+
+.totals-grid.two-cols .builder-total-box {
+  padding: 0.5rem 0.75rem;
 }
 
 .total-label {
-  font-size: 0.78rem;
-  color: var(--color-slate-500);
+  font-size: 0.7rem;
+  color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .total-val {
-  font-size: 2.1rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  color: var(--color-slate-900);
-  margin-top: 0.2rem;
+  color: #0f172a;
+  margin-top: 0.1rem;
+}
+
+.highlight-box {
+  background: #f0fdf4 !important;
+  border-color: #10b981 !important;
+}
+
+.highlight-box .total-val {
+  color: #10b981 !important;
 }
 
 .financing-config-box {
-  background: var(--color-slate-50);
-  padding: 1rem;
+  background: #f8fafc;
+  padding: 0.75rem;
   border-radius: 6px;
   border: 1px solid var(--color-slate-200);
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .financing-grid {
@@ -293,18 +324,18 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  background: var(--color-white);
-  padding: 0.65rem;
+  background: #ffffff;
+  padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid var(--color-slate-200);
-  max-height: 180px;
+  border: 1px solid #e2e8f0;
+  max-height: 95px;
   overflow-y: auto;
 }
 
 .schedule-mini-item {
   display: flex;
   justify-content: space-between;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   padding-bottom: 0.2rem;
   border-bottom: 1px dotted var(--color-slate-200);
 }
@@ -318,7 +349,39 @@
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--color-slate-200);
-  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 1rem;
+}
+
+.modal-sticky-footer {
+  position: sticky;
+  bottom: -1.5rem;
+  margin-bottom: -1.5rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 0.75rem 0;
+  margin-top: 0.75rem;
+  border-top: 2px solid #0284c7;
+  background: var(--color-surface, #ffffff);
+}
+
+/* Custom styling for child components inside patient-treatment-plan-tab */
+:host ::ng-deep .modal-body {
+  padding: 1rem 1.25rem !important;
+}
+
+:host ::ng-deep .form-field {
+  gap: 0.2rem !important;
+}
+
+:host ::ng-deep .form-field-label {
+  font-size: 0.78rem !important;
+}
+
+:host ::ng-deep .form-field-input-wrapper :is(input, textarea, select) {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.825rem !important;
 }

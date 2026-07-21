@@ -33,16 +33,10 @@ export class UserList implements OnInit {
   readonly showModal = signal(false);
   readonly editingUser = signal<User | null>(null);
   readonly selectedRoleId = signal<number | null>(null);
+  readonly activeTab = signal<'all' | 'medico' | 'secretaria' | 'admin'>('all');
+
   readonly dropdownOpen = signal(false);
   readonly dropdownPos = signal<DropdownPos>({ top: 0, left: 0, width: 0 });
-
-  readonly columns: TableColumn[] = [
-    { key: 'nombreCompleto', label: 'Nombre' },
-    { key: 'email', label: 'Email' },
-    { key: 'roles', label: 'Roles' },
-    { key: 'estado', label: 'Estado' },
-    { key: 'actions', label: 'Acciones', align: 'right' },
-  ];
 
   readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('triggerRef');
 
@@ -50,12 +44,40 @@ export class UserList implements OnInit {
     nombreCompleto: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.minLength(6)]],
+    porcentajeComision: [0, [Validators.min(0), Validators.max(100)]],
+  });
+
+  readonly isMedicoSelected = computed(() => {
+    const id = this.selectedRoleId();
+    if (id === null) return false;
+    const roleName = this.roles().find((r) => r.id === id)?.nombreRol?.toUpperCase();
+    return roleName === 'MEDICO' || roleName === 'DENTIST' || roleName === 'DOCTOR';
   });
 
   readonly selectedRoleLabel = computed(() => {
     const id = this.selectedRoleId();
     if (id === null) return 'Seleccionar rol';
     return this.roles().find((r) => r.id === id)?.nombreRol ?? 'Seleccionar rol';
+  });
+
+  readonly filteredUsers = computed(() => {
+    const tab = this.activeTab();
+    const list = this.users();
+    if (tab === 'all') return list;
+
+    return list.filter((u) => {
+      const userRolesUpper = u.roles.map((r) => r.nombreRol.toUpperCase());
+      if (tab === 'medico') {
+        return userRolesUpper.includes('MEDICO') || userRolesUpper.includes('DENTIST') || userRolesUpper.includes('DOCTOR');
+      }
+      if (tab === 'secretaria') {
+        return userRolesUpper.includes('SECRETARIA') || userRolesUpper.includes('RECEPTIONIST');
+      }
+      if (tab === 'admin') {
+        return userRolesUpper.includes('ADMIN');
+      }
+      return true;
+    });
   });
 
   ngOnInit() {
@@ -74,7 +96,6 @@ export class UserList implements OnInit {
     this.http.get<{ data: Role[] }>(`${this.apiUrl}/roles?limit=50`)
       .pipe(take(1), catchError(() => of({ data: [] })))
       .subscribe((res) => {
-        // Filtrar roles inactivos y eliminar duplicados por nombre (case-insensitive)
         const activeRoles = res.data.filter(r => r.estado !== false);
         const uniqueRoles = activeRoles.filter((role, index, self) =>
           index === self.findIndex((r) => r.nombreRol.toLowerCase() === role.nombreRol.toLowerCase())
@@ -83,11 +104,28 @@ export class UserList implements OnInit {
       });
   }
 
-  openCreate() {
+  setTab(tab: 'all' | 'medico' | 'secretaria' | 'admin') {
+    this.activeTab.set(tab);
+  }
+
+  openCreate(roleType?: 'medico' | 'secretaria' | 'admin') {
     this.editingUser.set(null);
-    this.selectedRoleId.set(null);
     this.dropdownOpen.set(false);
-    this.form.reset({});
+
+    let defaultRoleId: number | null = null;
+    if (roleType) {
+      const found = this.roles().find((r) => {
+        const name = r.nombreRol.toUpperCase();
+        if (roleType === 'medico') return name === 'MEDICO' || name === 'DENTIST';
+        if (roleType === 'secretaria') return name === 'SECRETARIA' || name === 'RECEPTIONIST';
+        if (roleType === 'admin') return name === 'ADMIN';
+        return false;
+      });
+      if (found) defaultRoleId = found.id;
+    }
+
+    this.selectedRoleId.set(defaultRoleId);
+    this.form.reset({ porcentajeComision: 0 });
     this.form.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.form.get('password')?.updateValueAndValidity();
     this.showModal.set(true);
@@ -97,7 +135,12 @@ export class UserList implements OnInit {
     this.editingUser.set(user);
     this.selectedRoleId.set(user.roles[0]?.id ?? null);
     this.dropdownOpen.set(false);
-    this.form.patchValue({ nombreCompleto: user.nombreCompleto, email: user.email, password: '' });
+    this.form.patchValue({
+      nombreCompleto: user.nombreCompleto,
+      email: user.email,
+      password: '',
+      porcentajeComision: user.porcentajeComision ?? 0,
+    });
     this.form.get('password')?.clearValidators();
     this.form.get('password')?.updateValueAndValidity();
     this.showModal.set(true);
@@ -147,16 +190,27 @@ export class UserList implements OnInit {
       email: raw.email,
       password: raw.password || undefined,
       roleIds: [this.selectedRoleId()!],
+      porcentajeComision: this.isMedicoSelected() ? Number(raw.porcentajeComision) || 0 : 0,
     };
     const call = this.editingUser() ? this.repo.update(this.editingUser()!.id, request) : this.repo.save(request);
-    call.pipe(take(1), catchError(() => { this.toast.error('Error al guardar usuario'); return of(null); }), finalize(() => this.saving.set(false)))
+    call.pipe(
+      take(1),
+      catchError((err) => {
+        console.error('Error al guardar usuario:', err);
+        const msg = err?.error?.message;
+        const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || 'Error al guardar usuario');
+        this.toast.error(displayMsg);
+        return of(null);
+      }),
+      finalize(() => this.saving.set(false))
+    )
       .subscribe((result) => {
-        if (result) { this.toast.success('Usuario guardado'); this.loadUsers(); this.closeModal(); }
+        if (result) { this.toast.success('Usuario guardado exitosamente'); this.loadUsers(); this.closeModal(); }
       });
   }
 
   disableUser(id: number) {
-    if (!confirm('Desactivar este usuario?')) return;
+    if (!confirm('¿Está seguro de desactivar este usuario?')) return;
     this.repo.disable(id)
       .pipe(take(1), catchError(() => { this.toast.error('Error al desactivar'); return of(null); }))
       .subscribe(() => { this.toast.success('Usuario desactivado'); this.loadUsers(); });

@@ -4,34 +4,12 @@
   </a>
 
   <nav class="nav" aria-label="Navegación principal">
-    <a routerLink="/dashboard" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroHome" aria-hidden="true" />
-      <span>Panel Principal</span>
-    </a>
-    <a routerLink="/patients" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroUsers" aria-hidden="true" />
-      <span>Pacientes</span>
-    </a>
-    <a routerLink="/appointments" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroCalendarDays" aria-hidden="true" />
-      <span>Citas Médicas</span>
-    </a>
-    <a routerLink="/agenda" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroClipboardDocumentList" aria-hidden="true" />
-      <span>Agenda</span>
-    </a>
-    <a routerLink="/messages" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroChatBubbleBottomCenterText" aria-hidden="true" />
-      <span>Mensajes</span>
-    </a>
-    <a routerLink="/payments" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroCreditCard" aria-hidden="true" />
-      <span>Pagos y Caja</span>
-    </a>
-    <a routerLink="/reports" routerLinkActive="active">
-      <ng-icon class="nav-icon" name="heroChartBarSquare" aria-hidden="true" />
-      <span>Reportes</span>
-    </a>
+    @for (item of menuService.items; track item.label) {
+      <a [routerLink]="item.route" routerLinkActive="active">
+        <ng-icon class="nav-icon" [name]="item.iconName" aria-hidden="true" />
+        <span>{{ item.label }}</span>
+      </a>
+    }
   </nav>
 
   <div class="user-settings">

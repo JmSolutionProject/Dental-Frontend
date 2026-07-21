@@ -60,6 +60,26 @@ export class CatalogApiRepository implements CatalogRepository {
       .pipe(map(() => true));
   }
 
+  getCategories() {
+    return this.http.get<{ id: string; name: string }[]>(`${this.apiUrl}/catalog/categories`);
+  }
+
+  createCategory(name: string) {
+    return this.http.post<{ id: string; name: string }>(`${this.apiUrl}/catalog/categories`, {
+      nombreCategoria: name,
+    });
+  }
+
+  updateCategory(id: string, name: string) {
+    return this.http.put<{ id: string; name: string }>(`${this.apiUrl}/catalog/categories/${id}`, {
+      nombreCategoria: name,
+    });
+  }
+
+  deleteCategory(id: string) {
+    return this.http.delete<unknown>(`${this.apiUrl}/catalog/categories/${id}`).pipe(map(() => true));
+  }
+
   private toDomain(s: BackendService): CatalogService {
     return {
       id: s.id,

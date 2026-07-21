@@ -1,98 +1,160 @@
 <div class="tab-wrapper">
   <div class="card-title-bar mt-2 mb-2">
     <div>
-      <h2>Planes de Tratamiento Activos</h2>
-      <p class="subtitle">Gestiona los tratamientos integrales cotizados y financiados del paciente.</p>
+      <h2>Planes de Tratamiento</h2>
+      <p class="subtitle">Gestiona los presupuestos y planes de financiamiento del paciente.</p>
     </div>
     <div class="hero-actions">
       <button class="btn btn--primary btn--lg" (click)="openPlanBuilder()">
-        + Crear Nuevo Plan de Tratamiento
+        + Crear Nuevo Plan
       </button>
     </div>
   </div>
 
   @if (treatmentPlans().length === 0) {
     <div class="dossier-card text-center py-5 muted">
-      <p>No hay planes de tratamiento creados para este paciente.</p>
+      <p>No hay planes de tratamiento para este paciente.</p>
     </div>
   }
 
   <div class="treatment-plans-grid">
     @for (plan of treatmentPlans(); track plan.id) {
       <article class="dossier-card plan-card">
-        <div class="plan-card-header">
-          <h3>{{ plan.name }}</h3>
-          <span class="plan-date">{{ plan.date }}</span>
+        <div class="plan-card-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem; font-weight: 600;">{{ plan.name }}</h3>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="plan-date" style="font-size: 0.75rem;">{{ plan.date }}</span>
+              <span class="badge" 
+                    [style.background]="plan.estado === 'Activo' ? '#d1fae5' : plan.estado === 'Completado' ? '#dbeafe' : '#f3f4f6'"
+                    [style.color]="plan.estado === 'Activo' ? '#065f46' : plan.estado === 'Completado' ? '#1e40af' : '#374151'"
+                    style="font-size: 0.7rem; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 500; text-transform: uppercase;">
+                {{ plan.estado || 'Activo' }}
+              </span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.35rem; flex-shrink: 0;">
+            <button type="button" (click)="editPlan(plan)" style="font-size: 0.75rem; padding: 0.2rem 0.4rem; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 500;" title="Editar plan">
+              Editar
+            </button>
+            <button type="button" (click)="deletePlan(plan.id)" style="font-size: 0.75rem; padding: 0.2rem 0.4rem; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-weight: 500;" title="Eliminar plan">
+              Eliminar
+            </button>
+          </div>
         </div>
-        
         <div class="plan-card-body">
           <div class="plan-section">
-            <span class="plan-label">Servicios Incluidos:</span>
+            <span class="plan-label">Servicios:</span>
             <ul class="plan-services-list">
               @for (item of plan.items; track item.id) {
-                <li>{{ item.serviceName }} <span class="muted">(S/ {{ item.price }})</span></li>
+                <li style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.35rem 0;">
+                  <div (click)="toggleServiceExecution(plan, item)" style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; flex: 1;" title="Alternar estado de realización">
+                    <span class="checkbox-indicator" style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.7rem; background: #ffffff; flex-shrink: 0;">
+                      @if (item.ejecutado) {
+                        <span style="color: #10b981; font-weight: bold;">✔</span>
+                      }
+                    </span>
+                    <span [style.text-decoration]="item.ejecutado ? 'line-through' : 'none'" [style.color]="item.ejecutado ? '#94a3b8' : 'inherit'">
+                      {{ item.serviceName }} <span class="muted">S/ {{ item.price }}</span>
+                    </span>
+                  </div>
+                  @if (!item.ejecutado) {
+                    <button type="button" (click)="scheduleAppointment(plan, item)" style="font-size: 0.7rem; padding: 0.15rem 0.4rem; background: #3b82f6; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; flex-shrink: 0;" title="Agendar cita para este servicio">
+                      Agendar Cita
+                    </button>
+                  }
+                </li>
               }
             </ul>
           </div>
-          
           <div class="plan-section">
-            <span class="plan-label">Financiamiento:</span>
-            <div class="plan-finance-summary">
-              <div class="fin-stat">
-                <span class="fin-stat-title">Costo Total</span>
-                <strong class="text-accent">S/ {{ plan.totalCost }}</strong>
-              </div>
-              <div class="fin-stat">
-                <span class="fin-stat-title">Modalidad</span>
-                <strong>{{ plan.paymentType }}</strong>
-              </div>
-              @if (plan.paymentType === 'A Cuotas' && plan.installments) {
-                <div class="fin-stat">
-                  <span class="fin-stat-title">Cuotas Programadas</span>
-                  <strong class="text-warning">{{ plan.installments.length - 1 }} cuotas</strong>
-                </div>
-              }
-            </div>
+            <span class="plan-label">Total: <strong>S/ {{ plan.totalCost }}</strong></span>
+            <span class="plan-label">Modalidad: {{ plan.paymentType }}</span>
+            @if (plan.paymentType === 'A Cuotas' && plan.installments) {
+              <span class="plan-label">Cuotas: {{ plan.installments.length - 1 }}</span>
+            }
           </div>
-        </div>
-        
-        <div class="plan-card-footer">
-          <button class="btn btn--secondary btn--sm">Ver Detalle / Imprimir</button>
         </div>
       </article>
     }
   </div>
 </div>
 
-<!-- MODAL CREADOR DE PLAN UNIFICADO -->
-<app-modal title="Creador de Plan de Tratamiento" [visible]="showPlanBuilderModal()" (close)="closePlanBuilder()" size="lg">
-  <div class="plan-builder-body">
-    <form [formGroup]="planBuilderForm" class="plan-builder-grid">
-      
-      <!-- COLUMNA IZQUIERDA: SERVICIOS -->
-      <div class="builder-col builder-col-left">
-        <h3 class="builder-section-title">1. Detalles y Servicios</h3>
-        
-        <app-form-field label="Nombre del Plan" [control]="planBuilderForm.get('planName')!">
-          <input type="text" formControlName="planName" class="form-input form-input-lg" placeholder="Ej. Rehabilitación Estética" />
-        </app-form-field>
+<app-modal title="Nuevo Plan de Tratamiento" [visible]="showPlanBuilderModal()" (close)="closePlanBuilder()" size="lg">
+  <form [formGroup]="planBuilderForm" (ngSubmit)="saveTreatmentPlan()" class="plan-builder-form">
+    <div class="plan-builder-grid">
+      <div class="builder-col">
+        <h3 class="builder-section-title">1. Servicios</h3>
 
-        <div class="builder-add-service mt-4">
-          <label class="detail-label">Agregar Servicio / Procedimiento</label>
-          <div class="input-with-action mt-2">
-            <select class="form-input" (change)="addServiceToBuilder($event)" [value]="builderServiceId()">
-              <option value="" disabled>Seleccione un servicio para agregarlo...</option>
-              @for (srv of availableServices; track srv.id) {
-                <option [value]="srv.id">{{ srv.name }} - S/{{ srv.basePrice }}</option>
+        @if (odontogramSuggestions().length > 0) {
+          <div class="odontogram-suggestions-box mb-3" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+            <h4 style="font-size: 0.85rem; color: #065f46; margin: 0; font-weight: 600;">Diagnósticos sugeridos del Odontograma</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              @for (sug of odontogramSuggestions(); track sug.id) {
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; background: #ffffff; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #e2e8f0; gap: 0.5rem;">
+                  <span style="color: #1e293b;">Pieza <strong>{{ sug.fdiNumber }}</strong> ({{ conditionLabel(sug.condition) }}) {{ sug.surface ? '- ' + sug.surface : '' }}</span>
+                  <button type="button" (click)="importOdontogramSuggestion(sug)" style="padding: 0.15rem 0.35rem; font-size: 0.75rem; flex-shrink: 0; background: #10b981; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                    + Importar
+                  </button>
+                </div>
+              }
+            </div>
+            @if (activeImportingSuggestionId(); as activeId) {
+              <div style="font-size: 0.75rem; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 0.35rem 0.5rem;">
+                ⚠ Enlace activo: El siguiente servicio que agregues se vinculará a la sugerencia seleccionada.
+              </div>
+            }
+          </div>
+        } @else {
+          <div style="font-size: 0.8rem; padding: 0.5rem 0.75rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: #64748b;">No hay diagnósticos del odontograma disponibles.</span>
+            <button type="button" (click)="createTestDiagnostic()" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+              🔧 Simular Caries en Pieza 36
+            </button>
+          </div>
+        }
+
+        <div class="financing-grid">
+          <app-form-field label="Nombre del Plan" [control]="planBuilderForm.get('planName')!">
+            <input type="text" formControlName="planName" class="form-input" placeholder="Ej. Rehabilitación Estética" />
+          </app-form-field>
+
+          <app-form-field label="Doctor Asignado" [control]="planBuilderForm.get('doctorId')!">
+            <select formControlName="doctorId" class="form-input">
+              <option [ngValue]="0" disabled>Seleccionar doctor...</option>
+              @for (doc of doctors(); track doc.id) {
+                <option [ngValue]="doc.id">{{ doc.nombreCompleto }}</option>
+              }
+            </select>
+          </app-form-field>
+        </div>
+
+        <div class="financing-grid mt-2">
+          <div>
+            <label class="detail-label">Categoría de Servicio</label>
+            <select class="form-input mt-1" (change)="onCategoryChange($event, serviceSelect)">
+              <option value="">Todas las categorías</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="detail-label">Servicio</label>
+            <select #serviceSelect class="form-input mt-1" (change)="addServiceToBuilder($event, serviceSelect)">
+              <option value="" disabled selected>Seleccionar...</option>
+              @for (srv of availableServices(); track srv.id) {
+                <option [value]="srv.id">{{ srv.name }} — S/ {{ srv.basePrice }}</option>
               }
             </select>
           </div>
         </div>
 
-        <div class="builder-items-list mt-4">
-          <h4 class="detail-label mb-2">Servicios Agregados</h4>
+        <div class="mt-2">
+          <label class="detail-label">Servicios agregados ({{ builderItems().length }})</label>
           @if (builderItems().length === 0) {
-            <div class="empty-items-box">No se han agregado servicios al plan.</div>
+            <div class="empty-items-box">No hay servicios agregados.</div>
           }
           <ul class="items-ul">
             @for (item of builderItems(); track item.id) {
@@ -108,60 +170,104 @@
         </div>
       </div>
 
-      <!-- COLUMNA DERECHA: FINANCIAMIENTO -->
-      <div class="builder-col builder-col-right">
-        <h3 class="builder-section-title">2. Costos y Financiamiento</h3>
-        
-        <div class="builder-total-box">
-          <span class="total-label">Costo Total del Plan</span>
-          <span class="total-val">S/ {{ builderTotalCost() }}</span>
+      <div class="builder-col">
+        <h3 class="builder-section-title">2. Financiamiento</h3>
+
+        <div class="totals-grid" [class.two-cols]="isAQuotas()">
+          <div class="builder-total-box">
+            <span class="total-label">Subtotal</span>
+            <span class="total-val">S/ {{ builderSubtotal() }}</span>
+          </div>
+
+          @if (isAQuotas()) {
+            <div class="builder-total-box highlight-box">
+              <span class="total-label">Saldo a Financiar</span>
+              <span class="total-val">S/ {{ remainingAfterAdvance() }}</span>
+            </div>
+          }
         </div>
 
-        <app-form-field label="Modalidad de Pago" [control]="planBuilderForm.get('paymentType')!" class="mt-4">
-          <select formControlName="paymentType" class="form-input">
-            <option value="Al Contado">Al Contado (Pago Único)</option>
-            <option value="A Cuotas">Financiado a Cuotas</option>
-          </select>
-        </app-form-field>
+        <div class="financing-grid mt-2" [style.grid-template-columns]="isAQuotas() ? '1fr 1fr' : '1fr'">
+          <app-form-field label="Modalidad de Pago" [control]="planBuilderForm.get('paymentType')!">
+            <select formControlName="paymentType" class="form-input">
+              <option value="Al Contado">Al Contado</option>
+              <option value="A Cuotas">A Cuotas</option>
+            </select>
+          </app-form-field>
 
-        @if (planBuilderForm.get('paymentType')?.value === 'A Cuotas') {
-          <div class="financing-config-box mt-3">
-            <div class="financing-grid">
-              <app-form-field label="Adelanto Inicial (S/)" [control]="planBuilderForm.get('initialPayment')!">
-                <input type="number" formControlName="initialPayment" class="form-input" min="0" />
-              </app-form-field>
-              
-              <app-form-field label="N° de Cuotas" [control]="planBuilderForm.get('installmentsCount')!">
-                <input type="number" formControlName="installmentsCount" class="form-input" min="1" max="24" />
-              </app-form-field>
+          @if (isAQuotas()) {
+            <app-form-field label="Adelanto (S/)" [control]="planBuilderForm.get('advancePayment')!">
+              <input type="number" formControlName="advancePayment" class="form-input" min="0" />
+            </app-form-field>
+          }
+        </div>
 
-              <app-form-field label="Frecuencia" [control]="planBuilderForm.get('frequency')!" class="grid-full-row">
-                <select formControlName="frequency" class="form-input">
-                  <option value="Quincenal">Quincenal (cada 15 días)</option>
-                  <option value="Mensual">Mensual (cada 30 días)</option>
-                </select>
-              </app-form-field>
-            </div>
+        @if (isAQuotas()) {
+          <div class="financing-grid mt-2">
+            <app-form-field label="N° de Cuotas" [control]="planBuilderForm.get('installmentsCount')!">
+              <input type="number" formControlName="installmentsCount" class="form-input" min="1" max="24" />
+            </app-form-field>
+            <app-form-field label="Frecuencia" [control]="planBuilderForm.get('frequency')!">
+              <select formControlName="frequency" class="form-input">
+                <option value="Quincenal">Quincenal</option>
+                <option value="Mensual">Mensual</option>
+              </select>
+            </app-form-field>
+          </div>
 
-            <div class="live-schedule-preview mt-4">
-              <span class="detail-label">Previsualización del Cronograma</span>
-              <div class="schedule-mini-list mt-2">
+          @if (generatedInstallments().length > 0) {
+            <div class="mt-2">
+              <label class="detail-label">Cronograma</label>
+              <div class="schedule-mini-list mt-1">
                 @for (inst of generatedInstallments(); track inst.id) {
                   <div class="schedule-mini-item">
-                    <span>{{ inst.id === 'initial' ? 'Adelanto' : 'Cuota' }}</span>
+                    <span>{{ inst.id === 'advance' ? 'Adelanto' : 'Cuota ' + inst.id.replace('inst-', '') }}</span>
+                    <span class="muted">{{ inst.date }}</span>
                     <strong>S/ {{ inst.amount }}</strong>
                   </div>
                 }
               </div>
             </div>
-          </div>
+          }
         }
       </div>
-    </form>
-    
-    <div class="modal-footer mt-5" style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
-      <button class="btn btn--secondary" type="button" (click)="closePlanBuilder()">Cancelar</button>
-      <button class="btn btn--primary btn--lg" type="button" (click)="saveTreatmentPlan()">Guardar Plan de Tratamiento</button>
     </div>
-  </div>
+
+    <div class="modal-sticky-footer">
+      <button class="btn btn--secondary" type="button" (click)="closePlanBuilder()">Cancelar</button>
+      <button class="btn btn--primary btn--lg" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar Plan' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
+
+<app-appointment-form-modal
+  [visible]="showAppointmentModal()"
+  [prefill]="appointmentPrefill()"
+  (closed)="closeAppointmentModal()"
+  (saved)="onAppointmentSaved()"
+></app-appointment-form-modal>
+
+<app-modal title="Editar Plan de Tratamiento" [visible]="showEditModal()" (close)="closeEditModal()" size="md">
+  <form [formGroup]="editPlanForm" (ngSubmit)="updatePlan()">
+    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0;">
+      <app-form-field label="Nombre del Plan" [control]="editPlanForm.get('planName')!">
+        <input type="text" formControlName="planName" class="form-input" />
+      </app-form-field>
+
+      <app-form-field label="Estado del Plan" [control]="editPlanForm.get('estado')!">
+        <select formControlName="estado" class="form-input">
+          <option value="Activo">Activo</option>
+          <option value="Completado">Completado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </app-form-field>
+    </div>
+
+    <div class="modal-sticky-footer" style="margin-top: 1.5rem;">
+      <button class="btn btn--secondary" type="button" (click)="closeEditModal()">Cancelar</button>
+      <button class="btn btn--primary" type="submit">Actualizar Plan</button>
+    </div>
+  </form>
 </app-modal>

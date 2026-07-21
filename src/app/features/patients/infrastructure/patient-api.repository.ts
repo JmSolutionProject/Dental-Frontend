@@ -90,9 +90,23 @@ export class PatientApiRepository implements PatientRepository {
   }
 
   private toBackendPatientDto(data: CreatePatientRequest | UpdatePatientRequest) {
-    const allergies = 'medicalHistory' in data
-      ? data.medicalHistory?.allergies?.join(', ')
-      : undefined;
+    let alergiasCriticas: string | undefined = undefined;
+    if ('medicalHistory' in data && data.medicalHistory) {
+      const mh = data.medicalHistory;
+      const cleanAllergies = (mh.allergies || []).filter((a) => a && a !== 'Ninguna' && a !== 'Ninguno' && typeof a === 'string' && !a.startsWith('{'));
+      const cleanConditions = (mh.conditions || []).filter((c) => c && c !== 'Ninguna' && c !== 'Ninguno' && typeof c === 'string');
+      const cleanSpecialConditions = (mh.specialConditions || []).filter((s) => s && s !== 'Ninguna' && s !== 'Ninguno' && typeof s === 'string');
+      const cleanDentalHistory = (mh.dentalHistory || []).filter((d) => d && d !== 'Ninguno' && typeof d === 'string');
+      const cleanMedications = (mh.medications || []).filter((m) => m && m !== 'Ninguna' && m !== 'Ninguno' && typeof m === 'string');
+
+      alergiasCriticas = JSON.stringify({
+        allergies: cleanAllergies,
+        conditions: cleanConditions,
+        specialConditions: cleanSpecialConditions,
+        dentalHistory: cleanDentalHistory,
+        medications: cleanMedications,
+      });
+    }
 
     const documentNumber = this.pickString(data.documentNumber);
     const address = 'address' in data ? this.pickString(data.address) : undefined;
@@ -103,9 +117,26 @@ export class PatientApiRepository implements PatientRepository {
       apellidos: this.pickString(data.lastName),
       fechaNacimiento: this.pickString(data.birthDate),
       telefonoWhatsapp: this.pickString(data.phone),
-      alergiasCriticas: allergies,
+      alergiasCriticas,
       numeroDocumento: documentNumber,
     };
+  }
+
+  private flattenList(items: unknown[] | undefined | null): string[] {
+    if (!items || !Array.isArray(items)) return [];
+    const result: string[] = [];
+    for (const item of items) {
+      if (typeof item === 'string' && item.trim()) {
+        if (item.startsWith('{')) continue;
+        const parts = item.split(',').map((s) => s.trim()).filter(Boolean);
+        for (const p of parts) {
+          if (!result.includes(p)) {
+            result.push(p);
+          }
+        }
+      }
+    }
+    return result;
   }
 
   private fromBackendPatient(data: BackendPatient): Patient {
@@ -116,6 +147,71 @@ export class PatientApiRepository implements PatientRepository {
       '';
 
     const status = this.normalizeStatus(data.status ?? data.estado);
+
+    let medicalHistory = {
+      allergies: [] as string[],
+      conditions: [] as string[],
+      specialConditions: [] as string[],
+      dentalHistory: [] as string[],
+      medications: [] as string[],
+    };
+
+    const rawAlergias = this.pickString(data.alergiasCriticas);
+    if (rawAlergias) {
+      if (rawAlergias.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(rawAlergias);
+          medicalHistory = {
+            allergies: this.flattenList(parsed.allergies),
+            conditions: this.flattenList(parsed.conditions),
+            specialConditions: this.flattenList(parsed.specialConditions),
+            dentalHistory: this.flattenList(parsed.dentalHistory),
+            medications: this.flattenList(parsed.medications),
+          };
+        } catch {
+          medicalHistory.allergies = this.parseCsv(rawAlergias);
+        }
+      } else {
+        medicalHistory.allergies = this.parseCsv(rawAlergias);
+      }
+    } else if (data.medicalHistory && typeof data.medicalHistory === 'object') {
+      const mh = data.medicalHistory as {
+        allergies?: unknown[];
+        conditions?: unknown[];
+        specialConditions?: unknown[];
+        dentalHistory?: unknown[];
+        medications?: unknown[];
+      };
+
+      const allergiesRaw = mh.allergies ?? [];
+      let allergies = this.flattenList(allergiesRaw);
+      let conditions = this.flattenList(mh.conditions ?? []);
+      let specialConditions = this.flattenList(mh.specialConditions ?? []);
+      let dentalHistory = this.flattenList(mh.dentalHistory ?? []);
+      let medications = this.flattenList(mh.medications ?? []);
+
+      const firstAllergy = allergiesRaw[0];
+      if (typeof firstAllergy === 'string' && firstAllergy.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(firstAllergy);
+          allergies = this.flattenList(parsed.allergies);
+          conditions = this.flattenList(parsed.conditions);
+          specialConditions = this.flattenList(parsed.specialConditions);
+          dentalHistory = this.flattenList(parsed.dentalHistory);
+          medications = this.flattenList(parsed.medications);
+        } catch {
+          // Keep the flattened values
+        }
+      }
+
+      medicalHistory = {
+        allergies,
+        conditions,
+        specialConditions,
+        dentalHistory,
+        medications,
+      };
+    }
 
     return {
       id: String(data.id ?? ''),
@@ -135,11 +231,7 @@ export class PatientApiRepository implements PatientRepository {
         undefined,
       birthDate: this.pickString(data.birthDate) ?? this.pickString(data.fechaNacimiento) ?? undefined,
       status,
-      medicalHistory: data.medicalHistory ?? {
-        allergies: this.parseCsv(data.alergiasCriticas),
-        conditions: [],
-        medications: [],
-      },
+      medicalHistory,
       notes: this.pickString(data.notes) ?? this.pickString(data.observaciones) ?? '',
     };
   }

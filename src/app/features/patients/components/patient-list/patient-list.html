@@ -8,6 +8,19 @@
     <button class="button" type="button" (click)="openCreateModal()"> <ng-icon name="heroPlus" /> Registrar Paciente</button>
   </header>
 
+  <!-- Status filter tabs -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 0.5rem;">
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'active'" [class.btn--secondary]="activeTab() !== 'active'" (click)="setTab('active')">
+      Pacientes Activos
+    </button>
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'inactive'" [class.btn--secondary]="activeTab() !== 'inactive'" (click)="setTab('inactive')">
+      Dados de Baja / Inactivos
+    </button>
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'all'" [class.btn--secondary]="activeTab() !== 'all'" (click)="setTab('all')">
+      Todos
+    </button>
+  </div>
+
   <!-- Search bar -->
   <div class="search-bar">
     <input
@@ -23,40 +36,51 @@
     @if (loading()) {
       <p class="muted loading-text">Cargando expediente de pacientes…</p>
     } @else if (result(); as res) {
-      @if (res.data.length === 0) {
+      @if (displayData().length === 0) {
         <div class="empty-state">
           @if (searchText()) {
             <p class="muted">No se encontraron pacientes que coincidan con "<strong>{{ searchText() }}</strong>".</p>
             <p class="muted">Intenta con otro término de búsqueda o limpia el filtro.</p>
           } @else {
-            <p class="muted">No hay pacientes registrados aún.</p>
-            <p class="muted">Haz clic en "+ Registrar Paciente" para crear el primer registro.</p>
+            <p class="muted">No hay pacientes en este estado.</p>
           }
         </div>
       } @else {
-        <app-table
-          [columns]="columns"
-          [data]="displayData()"
-          [currentPage]="currentPage()"
-          [pageSize]="pageSize()"
-          [totalItems]="totalItems()"
-          [sortKey]="sortKey()"
-          [sortDir]="sortDir()"
-          [rowClickable]="true"
-          emptyMessage="No hay pacientes registrados."
-          (sortChange)="onSortChange($event)"
-          (pageChange)="onPageChange($event)"
-          (pageSizeChange)="onPageSizeChange($event)"
-          (rowClick)="onRowClick($event)"
-        >
-          <ng-template appTableCell="firstName" let-row>
-            <strong class="patient-name">{{ row.firstName }}</strong>
-          </ng-template>
-
-          <ng-template appTableCell="status" let-row>
-            <span class="badge badge--success">{{ statusLabel(row.status) }}</span>
-          </ng-template>
-        </app-table>
+        <table class="clinical-table">
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>DNI / Documento</th>
+              <th>Teléfono WhatsApp</th>
+              <th>Estado</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of displayData(); track p.id) {
+              <tr class="data-row" style="cursor: pointer;" (click)="onRowClick(p)">
+                <td><strong>{{ p.firstName }}</strong></td>
+                <td>{{ p.documentNumber || '—' }}</td>
+                <td>{{ p.phone || '—' }}</td>
+                <td>
+                  <span class="table-pill" [class.table-pill--success]="p.status === 'active'" [class.table-pill--danger]="p.status !== 'active'">
+                    {{ p.status === 'active' ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td style="text-align: right;" (click)="$event.stopPropagation()">
+                  <div style="display: flex; justify-content: flex-end; gap: 0.35rem;">
+                    <button type="button" class="btn btn--outline btn--xs" (click)="onRowClick(p)">Ver Expediente</button>
+                    @if (p.status === 'active') {
+                      <button type="button" class="btn btn--danger-outline btn--xs" (click)="openDeleteConfirm(p, $event)">Inactivar</button>
+                    } @else {
+                      <button type="button" class="btn btn--success-outline btn--xs" (click)="reactivatePatient(p, $event)">Activar</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       }
     }
   </article>
@@ -142,5 +166,23 @@
         </button>
       </div>
     </form>
+  </app-modal>
+
+  <!-- Confirm Delete / Inactivate Modal -->
+  <app-modal title="Dar de baja al paciente" [visible]="showDeleteConfirmModal()" (close)="closeDeleteConfirmModal()">
+    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0;">
+      <p style="margin: 0; font-size: 0.95rem; color: var(--text-primary);">
+        ¿Está seguro de que desea dar de baja al paciente <strong>{{ patientToDelete()?.firstName }} {{ patientToDelete()?.lastName }}</strong>?
+      </p>
+      <p class="muted" style="margin: 0; font-size: 0.85rem;">
+        Esta acción cambiará su estado a inactivo y lo ocultará del directorio activo, conservando intacto su historial médico y contable.
+      </p>
+      <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button class="btn btn--secondary" type="button" (click)="closeDeleteConfirmModal()">Cancelar</button>
+        <button class="btn btn--danger" type="button" [disabled]="deletingState()" (click)="executeDelete()">
+          {{ deletingState() ? 'Procesando…' : 'Sí, Dar de Baja' }}
+        </button>
+      </div>
+    </div>
   </app-modal>
 </section>

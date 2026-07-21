@@ -2,46 +2,82 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Administración</p>
-      <h1>Usuarios</h1>
-      <p class="muted">Crear y gestionar usuarios del sistema con sus roles.</p>
+      <h1>Usuarios y Personal</h1>
+      <p class="muted">Gestión de Doctores, Secretarias y Administradores del sistema.</p>
     </div>
-    <button class="btn btn--primary" (click)="openCreate()">+ Nuevo Usuario</button>
+    <div style="display: flex; gap: 0.5rem;">
+      <button class="btn btn--outline" (click)="openCreate('medico')">+ Nuevo Doctor</button>
+      <button class="btn btn--primary" (click)="openCreate()">+ Nuevo Usuario</button>
+    </div>
   </header>
 
+  <!-- PESTAÑAS DE FILTRADO -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 0.5rem;">
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'all'" [class.btn--secondary]="activeTab() !== 'all'" (click)="setTab('all')">
+      Todos los Usuarios ({{ users().length }})
+    </button>
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'medico'" [class.btn--secondary]="activeTab() !== 'medico'" (click)="setTab('medico')">
+      👨‍⚕️ Doctores / Médicos
+    </button>
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'secretaria'" [class.btn--secondary]="activeTab() !== 'secretaria'" (click)="setTab('secretaria')">
+      👩‍💼 Secretarias / Recepción
+    </button>
+    <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'admin'" [class.btn--secondary]="activeTab() !== 'admin'" (click)="setTab('admin')">
+      👑 Administradores
+    </button>
+  </div>
+
   @if (loading()) {
-    <p class="muted" style="text-align:center; padding:2rem">Cargando...</p>
+    <p class="muted" style="text-align:center; padding:2rem">Cargando usuarios...</p>
   } @else {
     <article class="card">
-      <app-table
-        [columns]="columns"
-        [data]="users()"
-        [totalItems]="users().length"
-        [showPagination]="false"
-        emptyMessage="No hay usuarios registrados"
-      >
-        <ng-template appTableCell="nombreCompleto" let-user>
-          <strong>{{ user.nombreCompleto }}</strong>
-        </ng-template>
-
-        <ng-template appTableCell="roles" let-user>
-          @for (r of user.roles; track r.id) {
-            <span class="table-pill" style="margin-right: 0.35rem">{{ r.nombreRol }}</span>
+      <table class="clinical-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Comisión</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of filteredUsers(); track u.id) {
+            <tr>
+              <td><strong>{{ u.nombreCompleto }}</strong></td>
+              <td>{{ u.email }}</td>
+              <td>
+                @for (r of u.roles; track r.id) {
+                  <span class="table-pill" style="margin-right: 0.35rem">{{ r.nombreRol }}</span>
+                }
+              </td>
+              <td>
+                @if (u.roles[0]?.nombreRol?.toUpperCase() === 'MEDICO' || u.roles[0]?.nombreRol?.toUpperCase() === 'DENTIST') {
+                  <span class="table-pill table-pill--success" style="font-weight: 600;">
+                    {{ u.porcentajeComision || 0 }}% comisión
+                  </span>
+                } @else {
+                  <span class="muted" style="font-size: 0.8rem;">—</span>
+                }
+              </td>
+              <td>
+                <span class="table-pill" [class.table-pill--success]="u.estado" [class.table-pill--danger]="!u.estado">
+                  {{ u.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem">
+                  <button class="btn btn--outline btn--sm" (click)="openEdit(u)">Editar</button>
+                  <button class="btn btn--danger-outline btn--sm" (click)="disableUser(u.id)">Desactivar</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">No hay usuarios registrados en esta categoría</td></tr>
           }
-        </ng-template>
-
-        <ng-template appTableCell="estado" let-user>
-          <span class="table-pill" [class.table-pill--success]="user.estado" [class.table-pill--danger]="!user.estado">
-            {{ user.estado ? 'Activo' : 'Inactivo' }}
-          </span>
-        </ng-template>
-
-        <ng-template appTableCell="actions" let-user>
-          <div class="table-actions">
-            <button class="btn btn--outline btn--sm" (click)="openEdit(user)">Editar</button>
-            <button class="btn btn--danger-outline btn--sm" (click)="disableUser(user.id)">Desactivar</button>
-          </div>
-        </ng-template>
-      </app-table>
+        </tbody>
+      </table>
     </article>
   }
 </section>
@@ -49,19 +85,19 @@
 <app-modal [title]="editingUser() ? 'Editar Usuario' : 'Nuevo Usuario'" [visible]="showModal()" (close)="closeModal()">
   <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
     <div class="form-group">
-      <label class="form-label">Nombre Completo</label>
-      <input class="form-input" formControlName="nombreCompleto" placeholder="Ej: Juan Pérez" />
+      <label class="form-label">Nombre Completo *</label>
+      <input class="form-input" formControlName="nombreCompleto" placeholder="Ej: Dr. Carlos Mendoza" />
     </div>
     <div class="form-group">
-      <label class="form-label">Email</label>
-      <input class="form-input" type="email" formControlName="email" placeholder="juan@clinica.com" />
+      <label class="form-label">Email *</label>
+      <input class="form-input" type="email" formControlName="email" placeholder="carlos@clinica.com" />
     </div>
     <div class="form-group">
-      <label class="form-label">Contraseña {{ editingUser() ? '(dejar vacía para no cambiar)' : '' }}</label>
+      <label class="form-label">Contraseña {{ editingUser() ? '(dejar vacía para mantener actual)' : '*' }}</label>
       <input class="form-input" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
     </div>
     <div class="form-group">
-      <label class="form-label">Rol</label>
+      <label class="form-label">Rol del Sistema *</label>
       <button #triggerRef type="button" class="dropdown-trigger" (click)="toggleDropdown()">
         <span [class.placeholder]="selectedRoleId() === null">{{ selectedRoleLabel() }}</span>
         <span class="dropdown-arrow">&#9662;</span>
@@ -70,6 +106,17 @@
         <small style="color: #ef4444; display: block; margin-top: 0.25rem">Selecciona un rol</small>
       }
     </div>
+
+    @if (isMedicoSelected()) {
+      <div class="form-group" style="grid-column: span 2; background: rgba(37, 99, 235, 0.05); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(37, 99, 235, 0.2);">
+        <label class="form-label" style="color: #1e40af; font-weight: 600;">Porcentaje de Comisión por Tratamiento (%) *</label>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input class="form-input" type="number" formControlName="porcentajeComision" min="0" max="100" step="0.5" placeholder="Ej. 30" style="max-width: 140px;" />
+          <span style="font-weight: 600; color: #1e40af;">% de ganancia por servicio atendido</span>
+        </div>
+      </div>
+    }
+
     <div class="modal-actions">
       <button type="button" class="btn btn--secondary" (click)="closeModal()">Cancelar</button>
       <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Guardando...' : 'Guardar' }}</button>

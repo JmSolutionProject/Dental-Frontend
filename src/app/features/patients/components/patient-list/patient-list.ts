@@ -22,9 +22,11 @@ import { ReniecService } from '../../../../core/services/reniec.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPlus } from '@ng-icons/heroicons/outline';
 
+import { PatientRepository } from '../../domain/patient.repository';
+
 @Component({
   selector: 'app-patient-list',
-  imports: [ReactiveFormsModule, Table, TableCell, Modal, FormField, BirthDateField, NgIcon],
+  imports: [ReactiveFormsModule, Modal, FormField, BirthDateField, NgIcon],
   providers: [provideIcons({ heroPlus })],
   templateUrl: './patient-list.html',
   styleUrl: './patient-list.css',
@@ -33,6 +35,7 @@ export class PatientList {
   private readonly router = inject(Router);
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly createPatient = inject(CreatePatientUseCase);
+  private readonly patientRepo = inject(PatientRepository);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
   private readonly reniec = inject(ReniecService);
@@ -45,6 +48,11 @@ export class PatientList {
   readonly showCreateModal = signal(false);
   readonly creating = signal(false);
   readonly consultingDni = signal(false);
+  readonly activeTab = signal<'active' | 'inactive' | 'all'>('active');
+
+  readonly patientToDelete = signal<Patient | null>(null);
+  readonly showDeleteConfirmModal = signal(false);
+  readonly deletingState = signal(false);
 
   readonly columns: TableColumn[] = [
     { key: 'firstName', label: 'Nombre Completo', sortable: true },
@@ -148,16 +156,91 @@ export class PatientList {
     return status?.toLowerCase() === 'active' ? 'Activo' : status || '—';
   }
 
+  setTab(tab: 'active' | 'inactive' | 'all') {
+    this.activeTab.set(tab);
+  }
+  }
+
   readonly displayData = computed(() => {
     const res = this.result();
     if (!res) return [];
-    return res.data.map((p) => ({
+    const tab = this.activeTab();
+
+    const filtered = res.data.filter((p) => {
+      if (tab === 'active') return p.status === 'active';
+      if (tab === 'inactive') return p.status === 'inactive' || p.status === 'deleted';
+      return true;
+    });
+
+    return filtered.map((p) => ({
       ...p,
       firstName: `${p.firstName} ${p.lastName}`,
     }));
   });
 
-  readonly totalItems = computed(() => this.result()?.total ?? 0);
+  readonly totalItems = computed(() => this.displayData().length);
+
+  openDeleteConfirm(patient: Patient, event?: Event) {
+    if (event) event.stopPropagation();
+    this.patientToDelete.set(patient);
+    this.showDeleteConfirmModal.set(true);
+  }
+
+  closeDeleteConfirmModal() {
+    this.showDeleteConfirmModal.set(false);
+    this.patientToDelete.set(null);
+  }
+
+  executeDelete() {
+    const p = this.patientToDelete();
+    if (!p) return;
+
+    this.deletingState.set(true);
+    this.patientRepo
+      .softDelete(p.id)
+      .pipe(
+        take(1),
+        catchError((err) => {
+          console.error('Error al dar de baja al paciente:', err);
+          this.toast.error('Error al dar de baja al paciente');
+          return of(null);
+        }),
+        finalize(() => this.deletingState.set(false)),
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.toast.success(`Paciente ${p.firstName} ${p.lastName} dado de baja exitosamente.`);
+          this.closeDeleteConfirmModal();
+          this.loadPatients();
+        }
+      });
+  }
+
+  reactivatePatient(p: Patient, event?: Event) {
+    if (event) event.stopPropagation();
+    this.patientRepo
+      .update(p.id, {
+        firstName: p.firstName,
+        lastName: p.lastName,
+        phone: p.phone,
+        documentNumber: p.documentNumber,
+        estado: true,
+      } as any)
+      .pipe(
+        take(1),
+        catchError((err) => {
+          console.error('Error al reactivar al paciente:', err);
+          this.toast.error('Error al reactivar al paciente');
+          return of(null);
+        }),
+      )
+      .subscribe((result) => {
+        if (result) {
+          this.toast.success(`Paciente ${p.firstName} ${p.lastName} reactivado exitosamente.`);
+          this.loadPatients();
+        }
+      });
+  }
 
   openCreateModal() {
     this.createForm.reset();

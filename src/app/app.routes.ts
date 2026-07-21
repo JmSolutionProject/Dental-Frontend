@@ -31,7 +31,7 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import('./features/dashboard/dashboard/dashboard').then(
             (m) => m.Dashboard,
@@ -39,7 +39,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import('./features/patients/components/patient-list/patient-list').then(
             (m) => m.PatientList,
@@ -47,7 +47,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import('./features/patients/components/patient-detail/patient-detail').then(
             (m) => m.PatientDetail,
@@ -63,7 +63,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/treatment-plans',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/treatment-plan/components/plan-editor/plan-editor'
@@ -71,7 +71,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/treatment-plans/:planId',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/treatment-plan/components/plan-editor/plan-editor'
@@ -79,7 +79,7 @@ export const routes: Routes = [
       },
       {
         path: 'appointments',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/appointments/components/appointment-list/appointment-list'
@@ -87,7 +87,7 @@ export const routes: Routes = [
       },
       {
         path: 'appointments/calendar',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/appointments/components/calendar/calendar'
@@ -95,7 +95,7 @@ export const routes: Routes = [
       },
       {
         path: 'agenda',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import('./features/appointments/components/calendar/calendar').then(
             (m) => m.Calendar,
@@ -103,7 +103,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/billing',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/billing/components/billing-list/billing-list'
@@ -111,7 +111,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/billing/new',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/billing/components/quote-form/quote-form'
@@ -119,7 +119,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/attachments',
-        canActivate: [roleGuard(['admin', 'dentist', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/attachments/components/attachment-list/attachment-list'
@@ -127,7 +127,7 @@ export const routes: Routes = [
       },
       {
         path: 'messages',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/messages/components/message-list/message-list'
@@ -135,7 +135,7 @@ export const routes: Routes = [
       },
       {
         path: 'payments',
-        canActivate: [roleGuard(['admin', 'receptionist'])],
+        canActivate: [roleGuard(['ADMIN', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/payments/components/payment-list/payment-list'
@@ -143,7 +143,7 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        canActivate: [roleGuard(['admin'])],
+        canActivate: [roleGuard(['ADMIN'])],
         loadComponent: () =>
           import(
             './features/reports/components/report-overview/report-overview'
@@ -151,7 +151,7 @@ export const routes: Routes = [
       },
       {
         path: 'catalog',
-        canActivate: [roleGuard(['admin'])],
+        canActivate: [roleGuard(['ADMIN'])],
         loadComponent: () =>
           import(
             './features/catalog/components/catalog-list/catalog-list'
@@ -159,7 +159,7 @@ export const routes: Routes = [
       },
       {
         path: 'roles',
-        canActivate: [roleGuard(['admin'])],
+        canActivate: [roleGuard(['ADMIN'])],
         loadComponent: () =>
           import(
             './features/roles/components/roles-list/roles-list'
@@ -167,7 +167,7 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        canActivate: [roleGuard(['admin'])],
+        canActivate: [roleGuard(['ADMIN'])],
         loadComponent: () =>
           import(
             './features/users/components/user-list/user-list'

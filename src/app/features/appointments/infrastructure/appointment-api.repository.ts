@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { map, take, catchError, of } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import {
@@ -23,6 +23,12 @@ interface PaginatedAppointmentsResponse {
 export class AppointmentApiRepository implements AppointmentRepository {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
+
+  private defaultStatusId = 1;
+
+  constructor() {
+    this.loadStatuses();
+  }
 
   findAll() {
     return this.http
@@ -69,20 +75,33 @@ export class AppointmentApiRepository implements AppointmentRepository {
     );
   }
 
+  private loadStatuses(): void {
+    this.http.get<{ id: number; nombre: string }[]>(`${this.apiUrl}/appointments/statuses`)
+      .pipe(take(1), catchError(() => of([])))
+      .subscribe((statuses) => {
+        if (statuses.length > 0) {
+          this.defaultStatusId = statuses[0].id;
+        }
+      });
+  }
+
   private toBackendAppointmentDto(data: CreateAppointmentRequest | UpdateAppointmentRequest) {
     const start = data.scheduledAt;
     const cancelReason = 'cancelReason' in data ? data.cancelReason : undefined;
     const medicoId = data.dentistId ? Number(data.dentistId) : undefined;
     const observations = 'observations' in data ? data.observations : undefined;
-
+    const serviceId =
+      'serviceId' in data && data.serviceId ? Number(data.serviceId) : undefined;
     return {
       pacienteId: data.patientId ? Number(data.patientId) : undefined,
-      ...(Number.isFinite(medicoId) ? { medicoId } : {}),
-      estadoCitaId: 1,
+      medicoId,
+      estadoCitaId: this.defaultStatusId,
       fechaHoraInicio: start,
       fechaHoraFin: start ? this.addMinutes(start, 60) : undefined,
       motivoPrincipal: data.reason,
       observaciones: observations ?? cancelReason,
+      planServicioId: data.planServicioId ? Number(data.planServicioId) : undefined,
+      servicios: serviceId ? [{ servicioId: serviceId, cantidad: 1, descuento: 0 }] : undefined,
     };
   }
 

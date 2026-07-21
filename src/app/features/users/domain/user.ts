@@ -8,6 +8,7 @@ export interface User {
   nombreCompleto: string;
   email: string;
   estado: boolean;
+  porcentajeComision?: number;
   roles: UserRole[];
   fechaRegistro: string;
 }
@@ -17,4 +18,5 @@ export interface SaveUserRequest {
   email: string;
   password?: string;
   roleIds: number[];
+  porcentajeComision?: number;
 }
