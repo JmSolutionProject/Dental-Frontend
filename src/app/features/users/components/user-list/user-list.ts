@@ -38,6 +38,15 @@ export class UserList implements OnInit {
   readonly dropdownOpen = signal(false);
   readonly dropdownPos = signal<DropdownPos>({ top: 0, left: 0, width: 0 });
 
+  readonly columns: TableColumn[] = [
+    { key: 'nombreCompleto', label: 'Nombre' },
+    { key: 'email', label: 'Email' },
+    { key: 'roles', label: 'Rol' },
+    { key: 'comision', label: 'Comisión' },
+    { key: 'estado', label: 'Estado' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+  ];
+
   readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('triggerRef');
 
   readonly form: FormGroup = this.fb.group({

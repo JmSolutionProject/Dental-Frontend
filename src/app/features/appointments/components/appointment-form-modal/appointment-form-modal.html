@@ -1,4 +1,4 @@
-<app-modal title="Nueva Cita" [visible]="visible()" (close)="close()">
+<app-modal title="Nueva Cita" [visible]="visible" (close)="close()">
   <form [formGroup]="form" class="appt-form" (ngSubmit)="submit()">
     <app-form-field label="Paciente" [control]="form.get('patientId')!" [required]="true">
       <select formControlName="patientId" class="appt-form-select">

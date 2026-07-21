@@ -46,41 +46,50 @@
           }
         </div>
       } @else {
-        <table class="clinical-table">
-          <thead>
-            <tr>
-              <th>Nombre Completo</th>
-              <th>DNI / Documento</th>
-              <th>Teléfono WhatsApp</th>
-              <th>Estado</th>
-              <th style="text-align: right;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of displayData(); track p.id) {
-              <tr class="data-row" style="cursor: pointer;" (click)="onRowClick(p)">
-                <td><strong>{{ p.firstName }}</strong></td>
-                <td>{{ p.documentNumber || '—' }}</td>
-                <td>{{ p.phone || '—' }}</td>
-                <td>
-                  <span class="table-pill" [class.table-pill--success]="p.status === 'active'" [class.table-pill--danger]="p.status !== 'active'">
-                    {{ p.status === 'active' ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </td>
-                <td style="text-align: right;" (click)="$event.stopPropagation()">
-                  <div style="display: flex; justify-content: flex-end; gap: 0.35rem;">
-                    <button type="button" class="btn btn--outline btn--xs" (click)="onRowClick(p)">Ver Expediente</button>
-                    @if (p.status === 'active') {
-                      <button type="button" class="btn btn--danger-outline btn--xs" (click)="openDeleteConfirm(p, $event)">Inactivar</button>
-                    } @else {
-                      <button type="button" class="btn btn--success-outline btn--xs" (click)="reactivatePatient(p, $event)">Activar</button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <app-table
+          [columns]="columns"
+          [data]="displayData()"
+          [currentPage]="currentPage()"
+          [pageSize]="pageSize()"
+          [totalItems]="totalItems()"
+          [sortKey]="sortKey()"
+          [sortDir]="sortDir()"
+          [rowClickable]="true"
+          emptyMessage="No hay pacientes registrados."
+          (sortChange)="onSortChange($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          (rowClick)="onRowClick($event)"
+        >
+          <ng-template appTableCell="firstName" let-p>
+            <strong class="patient-name">{{ p.firstName }}</strong>
+          </ng-template>
+
+          <ng-template appTableCell="documentNumber" let-p>
+            {{ p.documentNumber || '—' }}
+          </ng-template>
+
+          <ng-template appTableCell="phone" let-p>
+            {{ p.phone || '—' }}
+          </ng-template>
+
+          <ng-template appTableCell="status" let-p>
+            <span class="table-pill" [class.table-pill--success]="p.status === 'active'" [class.table-pill--danger]="p.status !== 'active'">
+              {{ p.status === 'active' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </ng-template>
+
+          <ng-template appTableCell="actions" let-p>
+            <div style="display: flex; justify-content: flex-end; gap: 0.35rem;" (click)="$event.stopPropagation()">
+              <button type="button" class="btn btn--outline btn--xs" (click)="onRowClick(p)">Ver Expediente</button>
+              @if (p.status === 'active') {
+                <button type="button" class="btn btn--danger-outline btn--xs" (click)="openDeleteConfirm(p, $event)">Inactivar</button>
+              } @else {
+                <button type="button" class="btn btn--success-outline btn--xs" (click)="reactivatePatient(p, $event)">Activar</button>
+              }
+            </div>
+          </ng-template>
+        </app-table>
       }
     }
   </article>
