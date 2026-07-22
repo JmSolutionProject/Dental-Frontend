@@ -26,7 +26,7 @@ import { PatientRepository } from '../../domain/patient.repository';
 
 @Component({
   selector: 'app-patient-list',
-  imports: [ReactiveFormsModule, Modal, FormField, BirthDateField, NgIcon],
+  imports: [ReactiveFormsModule, Table, TableCell, Modal, FormField, BirthDateField, NgIcon],
   providers: [provideIcons({ heroPlus })],
   templateUrl: './patient-list.html',
   styleUrl: './patient-list.css',
@@ -59,6 +59,7 @@ export class PatientList {
     { key: 'documentNumber', label: 'DNI / Documento' },
     { key: 'phone', label: 'Teléfono WhatsApp' },
     { key: 'status', label: 'Estado' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
   ];
 
   readonly sortKey = signal<string | null>(null);
@@ -158,7 +159,6 @@ export class PatientList {
 
   setTab(tab: 'active' | 'inactive' | 'all') {
     this.activeTab.set(tab);
-  }
   }
 
   readonly displayData = computed(() => {

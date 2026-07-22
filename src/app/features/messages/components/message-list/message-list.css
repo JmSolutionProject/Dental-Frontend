@@ -5,7 +5,6 @@
 .whatsapp-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
 }
 
 .whatsapp-card,
@@ -53,8 +52,8 @@
   border-radius: 1rem;
   display: grid;
   justify-items: center;
-  min-height: 18rem;
-  padding: 1rem;
+  min-height: 13rem;
+  padding: 0.85rem;
   text-align: center;
 }
 
@@ -63,8 +62,8 @@
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   height: auto;
-  max-width: 16rem;
-  padding: 0.75rem;
+  max-width: 10.5rem;
+  padding: 0.5rem;
   width: 100%;
 }
 
@@ -74,12 +73,102 @@
 }
 
 .send-form select,
+.send-form input,
 .send-form textarea {
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   color: var(--color-text);
   padding: 0.75rem;
   width: 100%;
+}
+
+.send-form select:focus,
+.send-form input:focus,
+.send-form textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.selection-actions,
+.template-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.selected-patients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.patient-chip {
+  align-items: center;
+  background: var(--color-sky-50);
+  border: 1px solid var(--color-sky-200);
+  border-radius: 999px;
+  color: var(--color-sky-800);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  gap: 0.45rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.patient-chip span {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.template-panel,
+.preview-panel,
+.schedule-status {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.template-panel strong,
+.preview-panel strong,
+.schedule-status strong {
+  color: var(--color-text);
+}
+
+.template-panel p,
+.preview-panel p,
+.schedule-status p {
+  margin: 0;
+}
+
+.preview-panel {
+  background: linear-gradient(135deg, var(--color-slate-50), var(--color-sky-50));
+}
+
+.preview-panel p {
+  color: var(--color-text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.schedule-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.55fr);
+}
+
+.schedule-help {
+  margin: -0.35rem 0 0;
+}
+
+.schedule-status {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
 }
 
 .send-form textarea {
@@ -120,6 +209,15 @@
   }
 
   .card-heading {
+    display: grid;
+  }
+
+  .schedule-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-status {
+    align-items: stretch;
     display: grid;
   }
 }
