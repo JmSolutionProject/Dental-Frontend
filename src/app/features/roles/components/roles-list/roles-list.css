@@ -3,10 +3,22 @@
   overflow: hidden;
 }
 
+
+.clinical-table th:last-child,
+.clinical-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+
 .clinical-table {
   width: 100%;
   border-collapse: collapse;
 }
+
+
+
 
 .clinical-table th {
   background: var(--color-surface-hover);
@@ -26,6 +38,12 @@
 
 .clinical-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .clinical-table tbody tr:hover {

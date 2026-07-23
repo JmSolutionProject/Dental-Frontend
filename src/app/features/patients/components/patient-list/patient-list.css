@@ -35,6 +35,23 @@
   margin-bottom: 0.5rem;
 }
 
+.table-actions {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  padding: 0.35rem 0;
+}
+
+.table-actions .btn--xs {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-height: 2rem;
+  padding: 0.4rem 0.8rem;
+}
+
 .patient-name {
   color: var(--color-text);
   font-weight: 700;

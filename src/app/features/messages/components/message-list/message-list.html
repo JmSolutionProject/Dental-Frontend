@@ -42,8 +42,8 @@
       </div>
 
       <form class="send-form" [formGroup]="sendForm" (ngSubmit)="submit()">
-        <app-form-field label="Paciente" [control]="sendForm.controls.patientId">
-          <select [formControl]="sendForm.controls.patientId">
+        <app-form-field label="Paciente" [control]="sendForm.controls.patientIds">
+          <select [formControl]="sendForm.controls.patientPicker" (change)="addSelectedPatient()">
             <option value="">Seleccionar paciente</option>
             @for (patient of patients(); track patient.id) {
               <option [value]="patient.id">
@@ -53,47 +53,107 @@
           </select>
         </app-form-field>
 
-        <app-form-field label="Contenido" [control]="sendForm.controls.content">
+        @if (selectedPatients().length > 0) {
+          <div class="selected-patients">
+            @for (patient of selectedPatients(); track patient.id) {
+              <button class="patient-chip" type="button" (click)="removeSelectedPatient(patient.id)">
+                {{ patientName(patient) }}
+                <span>×</span>
+              </button>
+            }
+          </div>
+        }
+
+        <div class="selection-actions">
+          <button class="button button--ghost button--sm" type="button" (click)="selectAllPatients()">
+            Seleccionar todos
+          </button>
+          <button class="button button--ghost button--sm" type="button" (click)="clearPatientSelection()">
+            Limpiar
+          </button>
+        </div>
+
+        <app-form-field label="Servicio" [control]="sendForm.controls.service">
+          <input
+            type="text"
+            [formControl]="sendForm.controls.service"
+            placeholder="Ej. Limpieza dental, ortodoncia, control" />
+        </app-form-field>
+
+        <div class="template-panel">
+          <div>
+            <strong>Plantillas rápidas</strong>
+            <p class="muted">Variables disponibles: {{ templateHelp() }}</p>
+          </div>
+          <div class="template-actions">
+            <button
+              class="button button--ghost button--sm"
+              type="button"
+              (click)="selectTemplate('Hola {{ nombre }}, te recordamos tu servicio de {{ servicio }}. Si necesitás reprogramar, respondé este mensaje.')">
+              Recordatorio
+            </button>
+            <button
+              class="button button--ghost button--sm"
+              type="button"
+              (click)="selectTemplate('Hola {{ nombre }}, tenemos una indicación sobre tu servicio de {{ servicio }}. Por favor comunicate con la clínica para coordinar los detalles.')">
+              Seguimiento
+            </button>
+          </div>
+        </div>
+
+        <app-form-field label="Plantilla del mensaje" [control]="sendForm.controls.content">
           <textarea
             rows="6"
             [formControl]="sendForm.controls.content"
-            placeholder="Escribí el mensaje para el paciente"></textarea>
+            [placeholder]="'Ej. Hola {{ nombre }}, tu servicio de {{ servicio }} está confirmado.'"></textarea>
         </app-form-field>
 
+        <div class="preview-panel">
+          <strong>Vista previa</strong>
+          <p>{{ messagePreview() || 'La vista previa aparecerá cuando escribas una plantilla.' }}</p>
+        </div>
+
+        <div class="schedule-grid">
+          <app-form-field label="Modo de envío" [control]="sendForm.controls.mode">
+            <select [formControl]="sendForm.controls.mode">
+              <option value="now">Enviar inmediato</option>
+              <option value="scheduled">Enviar programado</option>
+            </select>
+          </app-form-field>
+
+          <app-form-field label="Intervalo entre mensajes" [control]="sendForm.controls.intervalSeconds">
+            <input
+              type="number"
+              min="40"
+              max="180"
+              step="5"
+              [formControl]="sendForm.controls.intervalSeconds" />
+          </app-form-field>
+        </div>
+
+        <p class="muted schedule-help">El intervalo mínimo es 40 segundos y el máximo 3 minutos.</p>
+
+        @if (scheduledRunning()) {
+          <div class="schedule-status">
+            <div>
+              <strong>Programación activa</strong>
+              <p class="muted">
+                Enviados: {{ scheduledSentCount() }} · Fallidos: {{ scheduledFailedCount() }} · Pendientes: {{ scheduledPendingCount() }}
+              </p>
+              @if (nextScheduledPatient()) {
+                <p class="muted">Próximo paciente: {{ nextScheduledPatient() }}</p>
+              }
+            </div>
+            <button class="button button--ghost" type="button" (click)="stopScheduledSend()">
+              Detener
+            </button>
+          </div>
+        }
+
         <button class="button button--primary" type="submit" [disabled]="sending()">
-          {{ sending() ? 'Enviando...' : 'Enviar WhatsApp' }}
+          {{ sending() ? 'Enviando...' : sendForm.controls.mode.value === 'scheduled' ? 'Programar envío' : 'Enviar WhatsApp' }}
         </button>
       </form>
     </article>
-  </section>
-
-  <section class="card history-card">
-    <div class="card-heading">
-      <div>
-        <p class="eyebrow">Historial</p>
-        <h2>Últimos mensajes</h2>
-      </div>
-      @if (loadingMessages()) {
-        <span class="muted">Cargando...</span>
-      }
-    </div>
-
-    <div class="message-grid">
-      @for (message of messages(); track message.id) {
-        <article class="message">
-          <div>
-            <strong>{{ message.subject }}</strong>
-            <span>{{ message.patientName || 'Sin paciente' }} · {{ message.channel }}</span>
-          </div>
-          <p>{{ message.body }}</p>
-          <small>{{ message.status }} · {{ message.createdAt | date: 'medium' }}</small>
-        </article>
-      } @empty {
-        <article class="message empty-message">
-          <strong>No hay mensajes registrados todavía.</strong>
-          <p class="muted">Los envíos aparecerán acá cuando el backend los registre.</p>
-        </article>
-      }
-    </div>
   </section>
 </section>
