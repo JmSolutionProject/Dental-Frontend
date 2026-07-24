@@ -24,4 +24,8 @@ export abstract class MessageRepository {
     patientId: string,
     data: SendWhatsAppMessageRequest,
   ): Observable<SendWhatsAppMessageResponse>;
+  abstract sendWhatsAppDirect(
+    phone: string,
+    data: SendWhatsAppMessageRequest,
+  ): Observable<SendWhatsAppMessageResponse>;
 }

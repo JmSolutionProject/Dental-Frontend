@@ -1,0 +1,97 @@
+<section class="single-panel-layout">
+  <article class="card templates-card">
+    <div class="card-heading">
+      <div>
+        <p class="eyebrow">Message Templates</p>
+        <h2>Plantillas guardadas</h2>
+        <p class="muted">Elegí una plantilla o abrí el editor en modal para crear una nueva.</p>
+      </div>
+      <button class="button button--primary" type="button" (click)="openTemplateModal()">
+        + Crear nueva plantilla
+      </button>
+    </div>
+
+    <div class="template-grid">
+      @for (template of store.templates(); track template.id) {
+        <article class="template-card">
+          <div>
+            <span class="template-category">{{ template.category }}</span>
+            <h3>{{ template.name }}</h3>
+            <p>{{ excerpt(template.content, 120) }}</p>
+          </div>
+          <div class="template-card__actions">
+            <button class="button button--ghost button--sm" type="button" (click)="useTemplate(template, 'scheduled')">Usar programado</button>
+            <button class="button button--primary button--sm" type="button" (click)="useTemplate(template, 'direct')">Usar plantilla</button>
+          </div>
+        </article>
+      }
+    </div>
+  </article>
+</section>
+
+<app-modal title="Crear nueva plantilla" size="lg" [visible]="showTemplateModal()" (close)="closeTemplateModal()">
+  <form class="template-form" [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+    <div class="template-form__intro">
+      <strong>Diseñá un mensaje reutilizable</strong>
+      <p class="muted">Usá variables para personalizar automáticamente cada mensaje antes de enviarlo.</p>
+    </div>
+
+    <div class="template-form__grid">
+      <label class="template-field">
+        <span>Nombre de la plantilla</span>
+        <input type="text" [formControl]="templateForm.controls.name" placeholder="Ej. Confirmación de cita" />
+      </label>
+
+      <label class="template-field">
+        <span>Categoría</span>
+        <select [formControl]="templateForm.controls.category">
+          <option value="Bienvenida">Bienvenida</option>
+          <option value="Recordatorio de pago">Recordatorio de pago</option>
+          <option value="Soporte">Soporte</option>
+          <option value="Recordatorio">Recordatorio</option>
+          <option value="Post atención">Post atención</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="template-field template-field--editor">
+      <span>Editor con variables dinámicas</span>
+      <textarea rows="9" [formControl]="templateForm.controls.content" [placeholder]="'Hola {{nombre}}, tu cita es el {{fecha}}.'"></textarea>
+      <small>Ejemplo: Hola {{ '{' }}{{ '{' }}nombre{{ '}' }}{{ '}' }}, tu cita es el {{ '{' }}{{ '{' }}fecha{{ '}' }}{{ '}' }}.</small>
+    </label>
+
+    <section class="variables-panel">
+      <div class="variables-panel__header">
+        <div>
+          <strong>Variables rápidas</strong>
+          <p class="muted">Insertalas con un clic en el texto de la plantilla.</p>
+        </div>
+        <span class="character-count">{{ templateCharacterCount() }} caracteres</span>
+      </div>
+
+      <div class="variable-grid">
+        <button type="button" class="variable-chip" (click)="insertVariable(templateForm.controls.content, 'nombre')">
+          <strong>{{ '{' }}{{ '{' }}nombre{{ '}' }}{{ '}' }}</strong>
+          <span>Nombre del paciente</span>
+        </button>
+        <button type="button" class="variable-chip" (click)="insertVariable(templateForm.controls.content, 'fecha')">
+          <strong>{{ '{' }}{{ '{' }}fecha{{ '}' }}{{ '}' }}</strong>
+          <span>Fecha de referencia</span>
+        </button>
+        <button type="button" class="variable-chip" (click)="insertVariable(templateForm.controls.content, 'servicio')">
+          <strong>{{ '{' }}{{ '{' }}servicio{{ '}' }}{{ '}' }}</strong>
+          <span>Tratamiento o servicio</span>
+        </button>
+        <button type="button" class="variable-chip" (click)="insertVariable(templateForm.controls.content, 'telefono')">
+          <strong>{{ '{' }}{{ '{' }}telefono{{ '}' }}{{ '}' }}</strong>
+          <span>WhatsApp del contacto</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="modal-actions-row">
+      <button class="button button--ghost" type="button" (click)="closeTemplateModal()">Cancelar</button>
+      <button class="button button--primary" type="submit">Guardar plantilla</button>
+    </div>
+  </form>
+</app-modal>

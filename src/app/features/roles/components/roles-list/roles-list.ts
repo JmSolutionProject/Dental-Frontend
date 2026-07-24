@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
 import { Modal } from '../../../../shared/components/modal/modal';
@@ -28,6 +28,8 @@ export class RolesList implements OnInit {
   readonly saving = signal(false);
   readonly showModal = signal(false);
   readonly editingRole = signal<Role | null>(null);
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
 
   readonly columns: TableColumn[] = [
     { key: 'nombreRol', label: 'Nombre del Rol' },
@@ -38,6 +40,11 @@ export class RolesList implements OnInit {
   readonly form: FormGroup = this.fb.group({
     nombreRol: ['', [Validators.required]],
     estado: ['Activo', [Validators.required]],
+  });
+
+  readonly pagedRoles = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.roles().slice(start, start + this.pageSize());
   });
 
   ngOnInit() {
@@ -58,7 +65,17 @@ export class RolesList implements OnInit {
       )
       .subscribe((data) => {
         this.roles.set(data);
+        this.ensureValidPage();
       });
+  }
+
+  goToPage(page: number) {
+    this.currentPage.set(page);
+  }
+
+  changePageSizeValue(size: number) {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
   }
 
   openCreateModal() {
@@ -127,5 +144,12 @@ export class RolesList implements OnInit {
           this.loadRoles();
         }
       });
+  }
+
+  private ensureValidPage() {
+    const totalPages = Math.max(1, Math.ceil(this.roles().length / this.pageSize()));
+    if (this.currentPage() > totalPages) {
+      this.currentPage.set(totalPages);
+    }
   }
 }

@@ -16,10 +16,13 @@
     <article class="card list-card">
       <app-table
         [columns]="columns"
-        [data]="roles()"
+        [data]="pagedRoles()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
         [totalItems]="roles().length"
-        [showPagination]="false"
         emptyMessage="No hay roles registrados."
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="changePageSizeValue($event)"
       >
         <ng-template appTableCell="nombreRol" let-role>
           <strong>{{ role.nombreRol }}</strong>
