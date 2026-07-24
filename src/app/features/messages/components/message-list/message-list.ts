@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import {
   FormControl,
@@ -28,7 +27,7 @@ interface ScheduledRecipient {
 
 @Component({
   selector: 'app-message-list',
-  imports: [DatePipe, FormField, ReactiveFormsModule],
+  imports: [FormField, ReactiveFormsModule],
   templateUrl: './message-list.html',
   styleUrl: './message-list.css',
 })

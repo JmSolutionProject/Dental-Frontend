@@ -9,8 +9,11 @@ import { jwtDecode, JwtPayload } from './jwt-decode';
 const TOKEN_KEY = 'dental_clinic_token';
 
 interface LoginResponse {
-  accessToken: string;
-  tokenType: string;
+  accessToken?: string;
+  access_token?: string;
+  token?: string;
+  tokenType?: string;
+  data?: LoginResponse;
 }
 
 @Injectable({
@@ -37,7 +40,7 @@ export class AuthService {
     const t = this.tokenState();
     return t ? jwtDecode(t) : null;
   });
-  readonly isAuthenticated = computed(() => this.user() !== null);
+  readonly isAuthenticated = computed(() => this.tokenState() !== null);
   readonly role = computed(() => this.user()?.role?.toLowerCase() ?? null);
   readonly roles = computed(() => this.user()?.roles?.map(r => r.toLowerCase()) ?? []);
   readonly clinicId = computed(() => this.user()?.clinicId ?? null);
@@ -45,7 +48,7 @@ export class AuthService {
   login(email: string, password: string): Observable<void> {
     const url = `${this.apiUrl}/auth/login`;
     return this.http.post<LoginResponse>(url, { email, password }).pipe(
-      tap((response) => this.setToken(response.accessToken)),
+      tap((response) => this.setToken(this.extractToken(response))),
       map(() => undefined),
     );
   }
@@ -55,6 +58,7 @@ export class AuthService {
   }
 
   private setToken(token: string | null) {
+    token = token?.replace(/^Bearer\s+/i, '').trim() || null;
     this.tokenState.set(token);
 
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
@@ -67,6 +71,18 @@ export class AuthService {
     }
 
     localStorage.removeItem(TOKEN_KEY);
+  }
+
+  private extractToken(response: LoginResponse): string | null {
+    return (
+      response.accessToken ??
+      response.access_token ??
+      response.token ??
+      response.data?.accessToken ??
+      response.data?.access_token ??
+      response.data?.token ??
+      null
+    );
   }
 
   private readToken() {
