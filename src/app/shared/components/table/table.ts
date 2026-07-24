@@ -79,6 +79,14 @@ export class Table {
     return Math.min(this.currentPage() * this.pageSize(), this.totalItems());
   }
 
+  get hasPreviousPage(): boolean {
+    return this.currentPage() > 1;
+  }
+
+  get hasNextPage(): boolean {
+    return this.currentPage() < this.totalPages;
+  }
+
   toggleSort(col: TableColumn) {
     if (!col.sortable) return;
 
@@ -91,6 +99,22 @@ export class Table {
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
     this.pageChange.emit(page);
+  }
+
+  goToFirstPage() {
+    this.goToPage(1);
+  }
+
+  goToPreviousPage() {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  goToNextPage() {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  goToLastPage() {
+    this.goToPage(this.totalPages);
   }
 
   changePageSize(event: Event) {

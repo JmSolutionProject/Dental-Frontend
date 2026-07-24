@@ -1,0 +1,36 @@
+<section class="whatsapp-status-strip">
+  <div>
+    <strong>WhatsApp Web</strong>
+    <p class="muted">Conectá la sesión para habilitar el envío desde la clínica.</p>
+  </div>
+
+  @if (store.qrImage(); as qrSrc) {
+    <button class="button button--primary" type="button" (click)="openQrModal()">Ver QR</button>
+  } @else {
+    <button class="button button--ghost" type="button" (click)="openQrModal()" [disabled]="store.loadingQr()">
+      {{ store.loadingQr() ? 'Cargando QR...' : 'Ver QR' }}
+    </button>
+  }
+
+  <span class="status-pill" [class]="statusClass()">{{ statusLabel() }}</span>
+  <button class="button button--ghost" type="button" (click)="refreshWhatsApp()">
+    {{ store.loadingStatus() ? 'Consultando...' : 'Actualizar estado' }}
+  </button>
+</section>
+
+<app-modal title="Ver QR" size="md" [visible]="showQrModal()" (close)="closeQrModal()">
+  <div class="qr-modal-content">
+    @if (store.qrImage(); as qrSrc) {
+      <img [src]="qrSrc" alt="Código QR para conectar WhatsApp" />
+      <p class="muted">Escaneá este código desde WhatsApp para vincular la sesión de la clínica.</p>
+    } @else {
+      <div class="qr-empty-state">
+        <strong>{{ store.loadingQr() ? 'Cargando QR...' : 'QR no disponible' }}</strong>
+        <p class="muted">Actualizá el estado de WhatsApp o intentá cargar el QR nuevamente.</p>
+        <button class="button button--primary" type="button" (click)="loadQr()" [disabled]="store.loadingQr()">
+          {{ store.loadingQr() ? 'Cargando...' : 'Cargar QR' }}
+        </button>
+      </div>
+    }
+  </div>
+</app-modal>

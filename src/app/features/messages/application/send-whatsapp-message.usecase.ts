@@ -10,4 +10,8 @@ export class SendWhatsAppMessageUseCase {
   execute(patientId: string, request: SendWhatsAppMessageRequest) {
     return this.repository.sendWhatsAppMessage(patientId, request);
   }
+
+  executeDirect(phone: string, request: SendWhatsAppMessageRequest) {
+    return this.repository.sendWhatsAppDirect(phone, request);
+  }
 }

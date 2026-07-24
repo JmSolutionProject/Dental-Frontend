@@ -178,7 +178,7 @@ export class PatientList {
     }));
   });
 
-  readonly totalItems = computed(() => this.displayData().length);
+  readonly totalItems = computed(() => this.result()?.total ?? this.displayData().length);
 
   openDeleteConfirm(patient: Patient, event?: Event) {
     if (event) event.stopPropagation();

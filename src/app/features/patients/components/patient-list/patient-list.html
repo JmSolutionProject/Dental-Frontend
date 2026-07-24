@@ -49,13 +49,16 @@
         <app-table
           [columns]="columns"
           [data]="displayData()"
+          [currentPage]="currentPage()"
+          [pageSize]="pageSize()"
           [totalItems]="totalItems()"
           [sortKey]="sortKey()"
           [sortDir]="sortDir()"
           [rowClickable]="true"
-          [showPagination]="false"
           emptyMessage="No hay pacientes en este estado."
           (sortChange)="onSortChange($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
         >
           <ng-template appTableCell="firstName" let-p>

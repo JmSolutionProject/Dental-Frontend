@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { take, catchError, of, finalize } from 'rxjs';
 import { API_URL } from '../../../../core/config/api.config';
 import { Modal } from '../../../../shared/components/modal/modal';
+import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { User, SaveUserRequest } from '../../domain/user';
 import { UserRepository } from '../../infrastructure/user-api.repository';
@@ -14,7 +15,7 @@ interface DropdownPos { top: number; left: number; width: number; }
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [ReactiveFormsModule, Modal],
+  imports: [ReactiveFormsModule, Modal, Table, TableCell],
   templateUrl: './user-list.html',
   styleUrl: './user-list.css',
 })
@@ -33,11 +34,22 @@ export class UserList implements OnInit {
   readonly editingUser = signal<User | null>(null);
   readonly selectedRoleId = signal<number | null>(null);
   readonly activeTab = signal<'all' | 'medico' | 'secretaria' | 'admin'>('all');
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
 
   readonly dropdownOpen = signal(false);
   readonly dropdownPos = signal<DropdownPos>({ top: 0, left: 0, width: 0 });
 
   readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('triggerRef');
+
+  readonly columns: TableColumn[] = [
+    { key: 'nombreCompleto', label: 'Nombre' },
+    { key: 'email', label: 'Email' },
+    { key: 'roles', label: 'Rol' },
+    { key: 'porcentajeComision', label: 'Comisión' },
+    { key: 'estado', label: 'Estado' },
+    { key: 'actions', label: 'Acciones', align: 'right' },
+  ];
 
   readonly form: FormGroup = this.fb.group({
     nombreCompleto: ['', [Validators.required]],
@@ -79,6 +91,11 @@ export class UserList implements OnInit {
     });
   });
 
+  readonly pagedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredUsers().slice(start, start + this.pageSize());
+  });
+
   ngOnInit() {
     this.loadUsers();
     this.loadRoles();
@@ -88,7 +105,10 @@ export class UserList implements OnInit {
     this.loading.set(true);
     this.repo.findAll()
       .pipe(take(1), catchError(() => { this.toast.error('Error al cargar usuarios'); return of([]); }), finalize(() => this.loading.set(false)))
-      .subscribe((data) => this.users.set(data));
+      .subscribe((data) => {
+        this.users.set(data);
+        this.ensureValidPage();
+      });
   }
 
   loadRoles() {
@@ -105,6 +125,16 @@ export class UserList implements OnInit {
 
   setTab(tab: 'all' | 'medico' | 'secretaria' | 'admin') {
     this.activeTab.set(tab);
+    this.currentPage.set(1);
+  }
+
+  goToPage(page: number) {
+    this.currentPage.set(page);
+  }
+
+  changePageSizeValue(size: number) {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
   }
 
   openCreate(roleType?: 'medico' | 'secretaria' | 'admin') {
@@ -213,5 +243,12 @@ export class UserList implements OnInit {
     this.repo.disable(id)
       .pipe(take(1), catchError(() => { this.toast.error('Error al desactivar'); return of(null); }))
       .subscribe(() => { this.toast.success('Usuario desactivado'); this.loadUsers(); });
+  }
+
+  private ensureValidPage() {
+    const totalPages = Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize()));
+    if (this.currentPage() > totalPages) {
+      this.currentPage.set(totalPages);
+    }
   }
 }
