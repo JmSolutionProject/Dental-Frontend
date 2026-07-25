@@ -12,7 +12,8 @@ export interface JwtPayload {
  */
 export function jwtDecode(token: string): JwtPayload | null {
   try {
-    const parts = token.split('.');
+    const normalizedToken = token.replace(/^Bearer\s+/i, '').trim();
+    const parts = normalizedToken.split('.');
     if (parts.length !== 3) {
       return null;
     }
@@ -24,29 +25,68 @@ export function jwtDecode(token: string): JwtPayload | null {
 
     const parsed = JSON.parse(payload);
 
-    const roles = Array.isArray(parsed.roles)
-      ? parsed.roles.filter((role: unknown): role is string => typeof role === 'string')
-      : [];
-    const normalizedRoles = roles.map(normalizeRole);
-    const role =
-      typeof parsed.role === 'string'
-        ? normalizeRole(parsed.role)
-        : normalizedRoles[0];
+    const rawRoles = readRoles(parsed);
+    const rawRole = readFirstString(parsed, ['role', 'rol', 'roleName', 'nombreRol']);
+    const role = rawRole ? normalizeRole(rawRole) : normalizeRole(rawRoles[0] ?? '');
+    const normalizedRoles = Array.from(
+      new Set([role, ...rawRoles.map(normalizeRole)].filter(Boolean)),
+    );
 
-    if ((typeof parsed.sub !== 'string' && typeof parsed.sub !== 'number') || !role) {
+    const sub = readFirstString(parsed, ['sub', 'id', 'userId', 'usuarioId', 'usuario_id']);
+
+    if (!sub || !role) {
       return null;
     }
 
     return {
-      sub: String(parsed.sub),
+      sub,
       role,
       roles: normalizedRoles,
-      name: parsed.name ?? parsed.nombreCompleto ?? '',
-      clinicId: parsed.clinicId ?? '',
+      name: readFirstString(parsed, ['name', 'nombreCompleto', 'nombre', 'email']) ?? '',
+      clinicId: readFirstString(parsed, ['clinicId', 'clinicaId', 'clinic_id', 'tenantId']) ?? '',
     };
   } catch {
     return null;
   }
+}
+
+function readRoles(payload: Record<string, unknown>): string[] {
+  const value = readFirstValue(payload, ['roles', 'authorities']);
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          return readFirstString(item as Record<string, unknown>, ['role', 'rol', 'name', 'authority']);
+        }
+        return null;
+      })
+      .filter((role): role is string => Boolean(role));
+  }
+
+  if (typeof value === 'string') {
+    return value.split(',').map((role) => role.trim()).filter(Boolean);
+  }
+
+  return [];
+}
+
+function readFirstString(payload: Record<string, unknown>, keys: string[]): string | null {
+  const value = readFirstValue(payload, keys);
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (typeof value === 'number') return String(value);
+
+  return null;
+}
+
+function readFirstValue(payload: Record<string, unknown>, keys: string[]): unknown {
+  const entries = Object.entries(payload);
+  for (const key of keys) {
+    const match = entries.find(([entryKey]) => entryKey.toLowerCase() === key.toLowerCase());
+    if (match) return match[1];
+  }
+
+  return null;
 }
 
 function normalizeRole(role: string): string {

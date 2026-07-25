@@ -1,5 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { inject } from '@angular/core';
+import { PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
@@ -16,6 +18,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const toast = inject(ToastService);
+  const platformId = inject(PLATFORM_ID);
+  const isBrowser = isPlatformBrowser(platformId);
 
   return next(req).pipe(
     catchError((error: unknown) => {
@@ -24,18 +28,27 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           if (isServiceEndpoint(req.url)) {
             return throwError(() => error);
           }
+
+          if (!isBrowser) {
+            return throwError(() => error);
+          }
+
           auth.logout();
           void router.navigate(['/login']);
         } else if (error.status === 403) {
-          void router.navigate(['/forbidden']);
+          if (isBrowser) {
+            void router.navigate(['/forbidden']);
+          }
         } else {
           const message =
             error.status >= 500
               ? 'A server error occurred. Please try again later.'
               : 'An unexpected error occurred. Please try again.';
-          toast.error(message);
+          if (isBrowser) {
+            toast.error(message);
+          }
         }
-      } else {
+      } else if (isBrowser) {
         toast.error('A network error occurred.');
       }
 

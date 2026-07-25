@@ -33,17 +33,16 @@
     <article class="card">
       <app-table
         [columns]="columns"
-        [data]="filteredUsers()"
+        [data]="pagedUsers()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
         [totalItems]="filteredUsers().length"
-        [showPagination]="false"
         emptyMessage="No hay usuarios registrados en esta categoría."
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="changePageSizeValue($event)"
       >
         <ng-template appTableCell="nombreCompleto" let-u>
           <strong>{{ u.nombreCompleto }}</strong>
-        </ng-template>
-
-        <ng-template appTableCell="email" let-u>
-          {{ u.email }}
         </ng-template>
 
         <ng-template appTableCell="roles" let-u>
@@ -52,7 +51,7 @@
           }
         </ng-template>
 
-        <ng-template appTableCell="comision" let-u>
+        <ng-template appTableCell="porcentajeComision" let-u>
           @if (u.roles[0]?.nombreRol?.toUpperCase() === 'MEDICO' || u.roles[0]?.nombreRol?.toUpperCase() === 'DENTIST') {
             <span class="table-pill table-pill--success" style="font-weight: 600;">
               {{ u.porcentajeComision || 0 }}% comisión
@@ -69,9 +68,9 @@
         </ng-template>
 
         <ng-template appTableCell="actions" let-u>
-          <div style="display: flex; justify-content: flex-end; gap: 0.35rem">
-            <button class="btn btn--outline btn--sm" (click)="openEdit(u)">Editar</button>
-            <button class="btn btn--danger-outline btn--sm" (click)="disableUser(u.id)">Desactivar</button>
+          <div style="display: flex; gap: 0.35rem; justify-content: flex-end">
+            <button class="btn btn--outline btn--sm" type="button" (click)="openEdit(u)">Editar</button>
+            <button class="btn btn--danger-outline btn--sm" type="button" (click)="disableUser(u.id)">Desactivar</button>
           </div>
         </ng-template>
       </app-table>

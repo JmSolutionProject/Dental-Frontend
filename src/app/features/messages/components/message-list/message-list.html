@@ -1,99 +1,29 @@
 <section class="page messages-page">
-  <header class="page-header">
+  <header class="page-header messages-hero">
     <div>
       <p class="eyebrow">Mensajes</p>
-      <h1>Comunicación por WhatsApp</h1>
-      <p class="muted">Conecta WhatsApp Web y envía mensajes directos a pacientes.</p>
+      <h1>Centro de WhatsApp</h1>
+      <p class="muted">Envía mensajes directos, programa campañas y reutiliza plantillas con variables dinámicas.</p>
     </div>
-    <button class="button" type="button" (click)="refreshWhatsApp()">
-      {{ loadingStatus() ? 'Consultando...' : 'Actualizar estado' }}
-    </button>
   </header>
 
-  <section class="whatsapp-grid">
-    <article class="card whatsapp-card">
-      <div class="card-heading">
-        <div>
-          <p class="eyebrow">Estado</p>
-          <h2>WhatsApp Web</h2>
-        </div>
-        <span class="status-pill" [class]="statusClass()">{{ statusLabel() }}</span>
-      </div>
+  <app-messages-status-bar />
 
-      @if (qrImageSrc(); as qrSrc) {
-        <div class="qr-panel">
-          <img [src]="qrSrc" alt="Código QR para conectar WhatsApp" />
-          <p class="muted">Escaneá este código desde WhatsApp para vincular la sesión.</p>
-        </div>
-      } @else {
-        <div class="empty-panel">
-          <strong>{{ loadingQr() ? 'Cargando QR...' : 'QR no disponible' }}</strong>
-          <p class="muted">Si WhatsApp no está conectado, actualizá el estado para solicitar un nuevo QR.</p>
-        </div>
-      }
-    </article>
+  <nav class="message-tabs" aria-label="Secciones de mensajería WhatsApp">
+    <button type="button" [class.active]="activeSection() === 'direct'" (click)="setSection('direct')">
+      <span>01</span> Envío Directo
+    </button>
+    <button type="button" [class.active]="activeSection() === 'scheduled'" (click)="setSection('scheduled')">
+      <span>02</span> Mensajes Programados
+    </button>
+    <button type="button" [class.active]="activeSection() === 'templates'" (click)="setSection('templates')">
+      <span>03</span> Plantillas
+    </button>
+  </nav>
 
-    <article class="card send-card">
-      <div class="card-heading">
-        <div>
-          <p class="eyebrow">Enviar</p>
-          <h2>Mensaje a paciente</h2>
-        </div>
-      </div>
-
-      <form class="send-form" [formGroup]="sendForm" (ngSubmit)="submit()">
-        <app-form-field label="Paciente" [control]="sendForm.controls.patientId">
-          <select [formControl]="sendForm.controls.patientId">
-            <option value="">Seleccionar paciente</option>
-            @for (patient of patients(); track patient.id) {
-              <option [value]="patient.id">
-                {{ patientName(patient) }} - {{ patient.phone || 'Sin WhatsApp' }}
-              </option>
-            }
-          </select>
-        </app-form-field>
-
-        <app-form-field label="Contenido" [control]="sendForm.controls.content">
-          <textarea
-            rows="6"
-            [formControl]="sendForm.controls.content"
-            placeholder="Escribí el mensaje para el paciente"></textarea>
-        </app-form-field>
-
-        <button class="button button--primary" type="submit" [disabled]="sending()">
-          {{ sending() ? 'Enviando...' : 'Enviar WhatsApp' }}
-        </button>
-      </form>
-    </article>
-  </section>
-
-  <section class="card history-card">
-    <div class="card-heading">
-      <div>
-        <p class="eyebrow">Historial</p>
-        <h2>Últimos mensajes</h2>
-      </div>
-      @if (loadingMessages()) {
-        <span class="muted">Cargando...</span>
-      }
-    </div>
-
-    <div class="message-grid">
-      @for (message of messages(); track message.id) {
-        <article class="message">
-          <div>
-            <strong>{{ message.subject }}</strong>
-            <span>{{ message.patientName || 'Sin paciente' }} · {{ message.channel }}</span>
-          </div>
-          <p>{{ message.body }}</p>
-          <small>{{ message.status }} · {{ message.createdAt | date: 'medium' }}</small>
-        </article>
-      } @empty {
-        <article class="message empty-message">
-          <strong>No hay mensajes registrados todavía.</strong>
-          <p class="muted">Los envíos aparecerán acá cuando el backend los registre.</p>
-        </article>
-      }
-    </div>
-  </section>
+  @switch (activeSection()) {
+    @case ('direct') { <app-direct-message-form /> }
+    @case ('scheduled') { <app-scheduled-messages-panel /> }
+    @case ('templates') { <app-templates-panel /> }
+  }
 </section>

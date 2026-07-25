@@ -9,7 +9,7 @@
   </header>
 
   <!-- Status filter tabs -->
-  <div style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 0.5rem;">
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border-color, #e2e8f0); padding-bottom: 0.5rem;">
     <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'active'" [class.btn--secondary]="activeTab() !== 'active'" (click)="setTab('active')">
       Pacientes Activos
     </button>
@@ -55,22 +55,14 @@
           [sortKey]="sortKey()"
           [sortDir]="sortDir()"
           [rowClickable]="true"
-          emptyMessage="No hay pacientes registrados."
+          emptyMessage="No hay pacientes en este estado."
           (sortChange)="onSortChange($event)"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
         >
           <ng-template appTableCell="firstName" let-p>
-            <strong class="patient-name">{{ p.firstName }}</strong>
-          </ng-template>
-
-          <ng-template appTableCell="documentNumber" let-p>
-            {{ p.documentNumber || '—' }}
-          </ng-template>
-
-          <ng-template appTableCell="phone" let-p>
-            {{ p.phone || '—' }}
+            <strong>{{ p.firstName }}</strong>
           </ng-template>
 
           <ng-template appTableCell="status" let-p>
@@ -80,7 +72,7 @@
           </ng-template>
 
           <ng-template appTableCell="actions" let-p>
-            <div style="display: flex; justify-content: flex-end; gap: 0.35rem;" (click)="$event.stopPropagation()">
+            <div class="table-actions" (click)="$event.stopPropagation()">
               <button type="button" class="btn btn--outline btn--xs" (click)="onRowClick(p)">Ver Expediente</button>
               @if (p.status === 'active') {
                 <button type="button" class="btn btn--danger-outline btn--xs" (click)="openDeleteConfirm(p, $event)">Inactivar</button>
