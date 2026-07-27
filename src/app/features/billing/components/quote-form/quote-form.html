@@ -61,7 +61,7 @@
                 </td>
                 <td class="cell-narrow">
                   <div class="input-wrapper">
-                    <span class="currency-prefix">$</span>
+                    <span class="currency-prefix">S/</span>
                     <input
                       type="number"
                       formControlName="unitPrice"
@@ -71,7 +71,7 @@
                   </div>
                 </td>
                 <td class="cell-narrow cell-total">
-                  {{ itemTotal(i) | currency }}
+                  {{ itemTotal(i) | currency:'PEN':'S/ ':'1.2-2' }}
                 </td>
                 <td class="cell-action">
                   @if (items.length > 1) {
@@ -90,7 +90,7 @@
           <tfoot>
             <tr>
               <td colspan="4" class="text-right"><strong>Grand Total</strong></td>
-              <td colspan="2"><strong>{{ grandTotal() | currency }}</strong></td>
+              <td colspan="2"><strong>{{ grandTotal() | currency:'PEN':'S/ ':'1.2-2' }}</strong></td>
             </tr>
           </tfoot>
         </table>

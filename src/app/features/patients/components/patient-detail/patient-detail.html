@@ -54,6 +54,10 @@
         [nextAppointmentDate]="nextAppointmentDate()"
         [assignedDoctor]="assignedDoctor()"
         [lastVisitDate]="lastVisitDate()"
+        [observations]="form.get('observations')?.value"
+        [totalAppointments]="totalAppointments()"
+        [completedAppointments]="completedAppointments()"
+        (viewAllObservations)="setTab('observations')"
       />
     }
 
@@ -67,10 +71,7 @@
           <div class="card-title-actions">
             @if (!editing()) {
               <button type="button" class="btn btn--primary" (click)="startEdit()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
+                <ng-icon name="heroPencilSquare" size="14" />
                 Editar
               </button>
             }
@@ -88,24 +89,16 @@
           <div class="tab-actions-footer">
             <div class="footer-left-actions">
               <button type="button" class="btn btn--success" [disabled]="saving()" (click)="save()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
+                <ng-icon name="heroCheck" size="14" />
                 {{ saving() ? 'Guardando…' : 'Guardar Cambios' }}
               </button>
               <button type="button" class="btn btn--secondary ml-2" (click)="cancelEdit()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+                <ng-icon name="heroXMark" size="14" />
                 Cancelar
               </button>
             </div>
             <button type="button" class="btn btn--danger-outline" (click)="openDeleteModal()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
-              </svg>
+              <ng-icon name="heroTrash" size="14" />
               Dar de Baja
             </button>
           </div>
@@ -180,6 +173,8 @@
       <app-patient-payments-tab 
         [budgetPaid]="budgetPaid()" 
         [budgetPending]="budgetPending()" 
+        [appointments]="patientAppointments()"
+        [patientId]="p.id"
       />
     }
 

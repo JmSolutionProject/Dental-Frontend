@@ -103,18 +103,10 @@
               <div
                 class="slot-appointment"
                 [class]="getStatusClass(apt.status)"
-                (click)="$event.stopPropagation(); openEditModal(apt)">
+                (click)="$event.stopPropagation(); openDetailModal(apt)">
                 <strong>{{ apt.patientName }}</strong>
                 <span>{{ apt.reason }}</span>
                 <small>{{ apt.dentistName ?? 'Sin asignar' }}</small>
-                @if (apt.status !== 'cancelled') {
-                  <button
-                    class="btn-cancel"
-                    type="button"
-                    (click)="$event.stopPropagation(); openCancelModal(apt)">
-                    Cancelar
-                  </button>
-                }
               </div>
             }
           </div>
@@ -147,7 +139,7 @@
                 <div
                   class="week-appointment"
                   [class]="getStatusClass(apt.status)"
-                  (click)="$event.stopPropagation(); openEditModal(apt)">
+                  (click)="$event.stopPropagation(); openDetailModal(apt)">
                   {{ apt.patientName.split(' ')[0] }}
                 </div>
               }
@@ -182,7 +174,7 @@
                       class="month-event"
                       [class]="getStatusClass(apt.status)"
                       type="button"
-                      (click)="$event.stopPropagation(); openEditModal(apt)">
+                      (click)="$event.stopPropagation(); openDetailModal(apt)">
                       {{ apt.scheduledAt.slice(11, 16) }} {{ apt.patientName }}
                     </button>
                   }
@@ -209,64 +201,140 @@
   [title]="modalTitle()"
   [visible]="modalVisible()"
   (close)="closeModal()">
-  <form class="modal-form" (submit)="$event.preventDefault(); submitForm()">
-    <app-form-field label="Paciente" [control]="form.controls.patientName">
-      <input type="text" [formControl]="form.controls.patientName" />
-    </app-form-field>
+  <form class="appt-form" (submit)="$event.preventDefault(); submitForm()">
+    @if (editingAppointment()) {
+      <div class="appt-form-field">
+        <label class="appt-form-label">Paciente</label>
+        <div class="appt-readonly-box">
+          <ng-icon name="heroHeart" size="16" class="appt-readonly-icon" />
+          {{ form.get('patientName')?.value }}
+        </div>
+      </div>
+    } @else {
+      <div class="appt-form-row">
+        <div class="appt-form-field">
+          <label class="appt-form-label">Paciente</label>
+          <input type="text" class="appt-form-input" [formControl]="form.controls.patientName" placeholder="Nombre completo" />
+        </div>
 
-    <app-form-field label="ID del paciente" [control]="form.controls.patientId">
-      <input type="text" [formControl]="form.controls.patientId" />
-    </app-form-field>
+        <div class="appt-form-field">
+          <label class="appt-form-label">ID del paciente</label>
+          <input type="text" class="appt-form-input" [formControl]="form.controls.patientId" placeholder="DNI / ID" />
+        </div>
+      </div>
+    }
 
-    <app-form-field label="ID del odontólogo" [control]="form.controls.dentistId">
-      <input type="text" [formControl]="form.controls.dentistId" />
-    </app-form-field>
+    <div class="appt-form-row">
+      <div class="appt-form-field">
+        <label class="appt-form-label">Odontólogo</label>
+        <select class="appt-form-select" [formControl]="form.controls.dentistId">
+          <option value="">Seleccione uno...</option>
+          @for (d of dentists(); track d.id) {
+            @if (d.id !== 'all') {
+              <option [value]="d.id">{{ d.name }}</option>
+            }
+          }
+        </select>
+      </div>
 
-    <app-form-field label="Odontólogo" [control]="form.controls.dentistName">
-      <input type="text" [formControl]="form.controls.dentistName" />
-    </app-form-field>
+      @if (editingAppointment()) {
+        <div class="appt-form-field">
+          <label class="appt-form-label">Estado de la cita</label>
+          <select class="appt-form-select" [formControl]="form.controls.uiStatus">
+            <option value="scheduled">Pendiente (Sin cambios)</option>
+            <option value="completed">Atendida</option>
+            <option value="cancelled">Cancelada</option>
+            <option value="rescheduled">Reprogramar (Cambiar fecha)</option>
+          </select>
+        </div>
+      }
+    </div>
 
-    <app-form-field label="Fecha" [control]="form.controls.scheduledDate">
-      <input type="date" [formControl]="form.controls.scheduledDate" />
-    </app-form-field>
+    @if (!editingAppointment() || form.get('uiStatus')?.value === 'rescheduled') {
+      <div class="appt-form-row" [class.appt-reschedule-box]="editingAppointment()">
+        <div class="appt-form-field">
+          <label class="appt-form-label" [class.appt-reschedule-label]="editingAppointment()">Fecha</label>
+          <input type="date" class="appt-form-input" [formControl]="form.controls.scheduledDate" />
+        </div>
 
-    <app-form-field label="Hora" [control]="form.controls.scheduledTime">
-      <input type="time" [formControl]="form.controls.scheduledTime" />
-    </app-form-field>
+        <div class="appt-form-field">
+          <label class="appt-form-label" [class.appt-reschedule-label]="editingAppointment()">Hora</label>
+          <input type="time" class="appt-form-input" [formControl]="form.controls.scheduledTime" />
+        </div>
+      </div>
+    }
 
-    <app-form-field label="Motivo" [control]="form.controls.reason">
-      <input type="text" [formControl]="form.controls.reason" />
-    </app-form-field>
+    <div class="appt-form-field">
+      <label class="appt-form-label">Motivo de la consulta</label>
+      <textarea class="appt-form-input" [formControl]="form.controls.reason" rows="3" placeholder="Ingresa detalles u observaciones de la cita..."></textarea>
+    </div>
 
-    <div class="modal-actions">
-      <button class="button" type="button" (click)="closeModal()">Cancelar</button>
-      <button class="button button--primary" type="submit">
-        {{ editingAppointment() ? 'Actualizar' : 'Registrar' }}
+    <div class="appt-form-footer">
+      <button class="btn btn--secondary" type="button" (click)="closeModal()">Cerrar</button>
+      <button class="btn btn--primary btn--lg" type="submit">
+        {{ editingAppointment() ? 'Guardar Cambios' : 'Registrar Cita' }}
       </button>
     </div>
   </form>
 </app-modal>
 
-<!-- Cancel Confirmation Modal -->
-<app-modal
-  title="Cancelar cita"
-  [visible]="cancelModalVisible()"
-  (close)="closeCancelModal()">
-  <form class="cancel-modal" (submit)="$event.preventDefault(); confirmCancel()">
-    <p>
-      Vas a cancelar la cita de
-      <strong>{{ cancelTarget()?.patientName }}</strong> el
-      {{ cancelTarget()?.scheduledAt | date: 'medium' }}.
-    </p>
-    <app-form-field label="Motivo" [control]="cancelForm">
-      <input type="text" [formControl]="cancelForm" />
-    </app-form-field>
+<!-- Detail Modal (Read-Only) -->
+<app-modal title="Información de la Cita" [visible]="detailModalVisible()" (close)="closeDetailModal()">
+  @if (selectedAppointment(); as apt) {
+    <div class="appt-detail-card">
+      <!-- Header Banner -->
+      <div class="appt-detail-banner">
+        <div class="appt-detail-avatar">
+          {{ apt.patientName ? apt.patientName.slice(0, 2).toUpperCase() : '?' }}
+        </div>
+        <div class="appt-detail-header-info">
+          <h3 class="appt-detail-patient-name">{{ apt.patientName }}</h3>
+          <span class="appt-status-badge" [class]="statusClass(apt.status)">
+            {{ statusLabel(apt.status) }}
+          </span>
+        </div>
+      </div>
 
-    <div class="modal-actions">
-      <button class="button" type="button" (click)="closeCancelModal()">Mantener</button>
-      <button class="button button--danger" type="submit">
-        Cancelar cita
-      </button>
+      <!-- Info Grid -->
+      <div class="appt-detail-grid">
+        <div class="appt-detail-field">
+          <span class="appt-detail-field-label">
+            <ng-icon name="heroCalendarDays" size="15" /> Fecha y Hora
+          </span>
+          <strong class="appt-detail-field-value">{{ apt.scheduledAt | date: "dd/MM/yyyy 'a las' HH:mm" }}</strong>
+        </div>
+
+        <div class="appt-detail-field">
+          <span class="appt-detail-field-label">
+            <ng-icon name="heroUser" size="15" /> Especialista
+          </span>
+          <strong class="appt-detail-field-value">{{ apt.dentistName || 'Sin asignar' }}</strong>
+        </div>
+
+        <div class="appt-detail-field appt-detail-field--full">
+          <span class="appt-detail-field-label">
+            <ng-icon name="heroHeart" size="15" /> Motivo de la Consulta
+          </span>
+          <div class="appt-detail-reason-box">
+            {{ apt.reason || 'Consulta Odontológica General' }}
+          </div>
+        </div>
+
+        @if (apt.cancelReason) {
+          <div class="appt-detail-field appt-detail-field--full">
+            <span class="appt-detail-field-label">
+              <ng-icon name="heroExclamationTriangle" size="15" /> Motivo de Cancelación
+            </span>
+            <div class="appt-detail-reason-box appt-detail-reason-box--danger">
+              {{ apt.cancelReason }}
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="appt-detail-footer">
+        <button class="btn btn--primary btn--lg" type="button" (click)="closeDetailModal()">Cerrar</button>
+      </div>
     </div>
-  </form>
+  }
 </app-modal>

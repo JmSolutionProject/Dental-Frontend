@@ -147,34 +147,8 @@
         }
       </dl>
       <div class="agenda-modal-actions">
-        @if (apt.status !== 'cancelled') {
-          <button type="button" class="btn btn--danger-outline" (click)="closeDetail(); openCancel(apt)">Cancelar Cita</button>
-        }
         <button type="button" class="btn btn--secondary" (click)="closeDetail()">Cerrar</button>
       </div>
     </div>
   }
-</app-modal>
-
-<!-- CANCEL MODAL -->
-<app-modal title="Cancelar Cita" [visible]="cancelModalVisible()" (close)="closeCancel()">
-  <form class="agenda-cancel-form" (submit)="$event.preventDefault()">
-    <p>
-      ¿Cancelar la cita de <strong>{{ cancelTarget()?.patientName }}</strong>?
-    </p>
-    <app-form-field label="Motivo de Cancelación" [control]="cancelForm">
-      <input
-        type="text"
-        [formControl]="cancelForm"
-        class="form-input"
-        placeholder="Ej. Paciente canceló, reagendar..."
-      />
-    </app-form-field>
-    <div class="agenda-modal-actions">
-      <button type="button" class="btn btn--secondary" (click)="closeCancel()" [disabled]="canceling()">Mantener</button>
-      <button type="button" class="btn btn--danger" [disabled]="canceling()" (click)="confirmCancel()">
-        {{ canceling() ? 'Cancelando…' : 'Cancelar Cita' }}
-      </button>
-    </div>
-  </form>
 </app-modal>

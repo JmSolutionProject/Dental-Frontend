@@ -104,20 +104,19 @@ export function calculatePaymentSummary(payments: Payment[]): PaymentSummary {
 
     summary.totalAmount += payment.amount;
 
-    switch (payment.methodCode) {
-      case 'cash':
-        summary.cashAmount += payment.amount;
-        break;
-      case 'card':
-        summary.cardAmount += payment.amount;
-        break;
-      case 'transfer':
-        summary.transferAmount += payment.amount;
-        break;
-      case 'yape':
-      case 'plin':
-        summary.digitalWalletAmount += payment.amount;
-        break;
+    const code = (payment.methodCode || '').toLowerCase();
+    const name = (payment.methodName || '').toLowerCase();
+
+    if (code === 'cash' || name.includes('efectivo') || name.includes('cash')) {
+      summary.cashAmount += payment.amount;
+    } else if (code === 'card' || name.includes('tarjeta') || name.includes('card') || name.includes('pos') || name.includes('visa') || name.includes('mastercard')) {
+      summary.cardAmount += payment.amount;
+    } else if (code === 'transfer' || name.includes('transfer') || name.includes('banco') || name.includes('deposito')) {
+      summary.transferAmount += payment.amount;
+    } else if (code === 'yape' || code === 'plin' || name.includes('yape') || name.includes('plin') || name.includes('billetera') || name.includes('qr')) {
+      summary.digitalWalletAmount += payment.amount;
+    } else {
+      summary.cashAmount += payment.amount;
     }
 
     return summary;

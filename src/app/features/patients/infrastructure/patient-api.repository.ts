@@ -112,6 +112,13 @@ export class PatientApiRepository implements PatientRepository {
     const address = 'address' in data ? this.pickString(data.address) : undefined;
     const email = 'email' in data ? this.pickString(data.email) : undefined;
 
+    let estado: boolean | undefined = undefined;
+    if ('status' in data && data.status) {
+      estado = data.status === 'active';
+    } else if ('estado' in data) {
+      estado = (data as any).estado;
+    }
+
     return {
       nombres: this.pickString(data.firstName),
       apellidos: this.pickString(data.lastName),
@@ -119,6 +126,7 @@ export class PatientApiRepository implements PatientRepository {
       telefonoWhatsapp: this.pickString(data.phone),
       alergiasCriticas,
       numeroDocumento: documentNumber,
+      estado,
     };
   }
 

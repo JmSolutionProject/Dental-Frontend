@@ -6,10 +6,7 @@
       <p class="appt-subtitle">Administra el calendario y las atenciones programadas.</p>
     </div>
     <button type="button" class="btn btn--primary btn--lg" (click)="openCreateModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
+      <ng-icon name="heroPlus" size="16" strokeWidth="2.5" />
       Nueva Cita
     </button>
   </header>
@@ -19,37 +16,26 @@
     <div class="appt-filter">
       <span class="appt-filter-label">Rango de Fechas</span>
       <div class="appt-filter-control">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
+        <ng-icon name="heroCalendarDays" size="16" />
         <select class="appt-select" [value]="dateRange()" (change)="setDateRange($any($event.target).value)">
           @for (range of dateRanges; track range.id) {
             <option [value]="range.id">{{ range.label }}</option>
           }
         </select>
-        <svg class="appt-select-caret" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+        <ng-icon class="appt-select-caret" name="heroChevronDown" size="14" />
       </div>
     </div>
 
     <div class="appt-filter">
       <span class="appt-filter-label">Especialista</span>
       <div class="appt-filter-control">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
-        </svg>
+        <ng-icon name="heroHeart" size="16" />
         <select class="appt-select" [value]="dentistFilter()" (change)="setDentistFilter($any($event.target).value)">
           @for (doc of dentistOptions(); track doc.id) {
             <option [value]="doc.id">{{ doc.name }}</option>
           }
         </select>
-        <svg class="appt-select-caret" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+        <ng-icon class="appt-select-caret" name="heroChevronDown" size="14" />
       </div>
     </div>
 
@@ -88,12 +74,7 @@
   <!-- EMPTY STATE -->
   @if (!loadError() && hasNoResults()) {
     <div class="appt-empty">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
+      <ng-icon name="heroCalendarDays" size="48" />
       <h3>No hay citas para los filtros seleccionados</h3>
       <p class="muted">Cambia el rango de fechas, especialista o estado para ver más resultados.</p>
     </div>
@@ -104,12 +85,7 @@
     @for (group of groupedAppointments(); track group.key) {
       <section class="appt-group">
         <header class="appt-group-header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+          <ng-icon name="heroCalendarDays" size="18" />
           <h2>{{ group.label }}</h2>
           <span class="appt-group-count">({{ group.count }} {{ group.count === 1 ? 'cita' : 'citas' }})</span>
         </header>
@@ -154,12 +130,11 @@
                 >
                   {{ getStatusLabel(appt.status) }}
                 </span>
-                <button type="button" class="appt-more-btn" aria-label="Más opciones">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="5" r="1"/>
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="12" cy="19" r="1"/>
-                  </svg>
+                <button type="button" class="appt-more-btn" aria-label="Editar Cita" (click)="openEditModal(appt)">
+                  <ng-icon name="heroPencil" size="16" />
+                </button>
+                <button type="button" class="appt-more-btn appt-more-btn--danger" aria-label="Eliminar Definitivamente" (click)="openDeleteModal(appt)">
+                  <ng-icon name="heroTrash" size="16" />
                 </button>
               </div>
             </article>
@@ -174,4 +149,88 @@
     (closed)="closeCreateModal()"
     (saved)="onAppointmentCreated()"
   />
+
+  <app-modal
+    title="Eliminar Cita Definitivamente"
+    [visible]="deleteModalVisible()"
+    (close)="closeDeleteModal()"
+  >
+    <div class="delete-confirmation">
+      <p>
+        Estás a punto de <strong>eliminar permanentemente</strong> la cita de
+        <strong>{{ appointmentToDelete()?.patientName }}</strong>.
+      </p>
+      <p class="muted">
+        Esta acción no se puede deshacer y el registro desaparecerá de la base de datos por completo.
+        Si solo quieres cancelar la cita, ve a la agenda o calendario y presiona "Cancelar".
+      </p>
+      <div class="modal-actions" style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+        <button class="btn" type="button" (click)="closeDeleteModal()">Mantener Cita</button>
+        <button class="btn btn--danger" type="button" (click)="confirmDelete()">Eliminar Definitivamente</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <app-modal
+    title="Actualización de la cita"
+    [visible]="editModalVisible()"
+    (close)="closeEditModal()">
+    <form class="appt-form" [formGroup]="editForm" (submit)="$event.preventDefault(); submitEditForm()">
+      <div class="appt-form-field">
+        <label class="appt-form-label">Paciente</label>
+        <div class="appt-readonly-box">
+          <ng-icon name="heroHeart" size="16" class="appt-readonly-icon" />
+          {{ editForm.get('patientName')?.value }}
+        </div>
+      </div>
+
+      <div class="appt-form-row">
+        <div class="appt-form-field">
+          <label class="appt-form-label">Especialista</label>
+          <select class="appt-form-select" formControlName="dentistId">
+            <option value="">Seleccione uno...</option>
+            @for (d of dentistOptions(); track d.id) {
+              @if (d.id !== 'all') {
+                <option [value]="d.id">{{ d.name }}</option>
+              }
+            }
+          </select>
+        </div>
+
+        <div class="appt-form-field">
+          <label class="appt-form-label">Estado de la cita</label>
+          <select class="appt-form-select" formControlName="uiStatus">
+            <option value="scheduled">Pendiente (Sin cambios)</option>
+            <option value="completed">Atendida</option>
+            <option value="cancelled">Cancelada</option>
+            <option value="rescheduled">Reprogramar (Cambiar fecha)</option>
+          </select>
+        </div>
+      </div>
+
+      @if (editForm.get('uiStatus')?.value === 'rescheduled') {
+        <div class="appt-form-row appt-reschedule-box">
+          <div class="appt-form-field">
+            <label class="appt-form-label appt-reschedule-label">Nueva Fecha</label>
+            <input type="date" class="appt-form-input" formControlName="scheduledDate" />
+          </div>
+
+          <div class="appt-form-field">
+            <label class="appt-form-label appt-reschedule-label">Nueva Hora</label>
+            <input type="time" class="appt-form-input" formControlName="scheduledTime" />
+          </div>
+        </div>
+      }
+
+      <div class="appt-form-field">
+        <label class="appt-form-label">Motivo de la consulta</label>
+        <textarea class="appt-form-input" formControlName="reason" rows="3" placeholder="Ingresa detalles u observaciones de la cita..."></textarea>
+      </div>
+
+      <div class="appt-form-footer">
+        <button class="btn btn--secondary" type="button" (click)="closeEditModal()">Cancelar</button>
+        <button class="btn btn--primary btn--lg" type="submit">Guardar Cambios</button>
+      </div>
+    </form>
+  </app-modal>
 </section>

@@ -2,67 +2,205 @@
   display: block;
 }
 
-.observations-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-white);
-  padding: 1.5rem;
-  border-radius: 10px;
-  border: 1px solid var(--color-slate-300);
-  box-shadow: 0 1px 3px var(--color-black-a02);
+.obs-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-.observations-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+@media (max-width: 900px) {
+  .obs-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
-.observations-label {
-  font-size: 0.78rem;
+/* TIMELINE */
+.obs-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #94a3b8;
+}
+
+.obs-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.obs-timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.obs-timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.obs-entry {
+  display: flex;
+  gap: 1rem;
+  padding: 0.85rem 0 0.85rem 0;
+  position: relative;
+}
+
+.obs-entry-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #0284c7;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  z-index: 1;
+}
+
+.obs-entry-content {
+  flex: 1;
+  min-width: 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.obs-entry-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+
+.obs-entry-date {
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--color-slate-600);
+  color: #0284c7;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin: 0;
 }
 
-.observations-textarea {
+.obs-entry-doctor {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.obs-entry-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.obs-entry-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: all 0.1s ease;
+}
+
+.obs-entry-btn:hover {
+  background: #f1f5f9;
+  color: #0284c7;
+  border-color: #e2e8f0;
+}
+
+.obs-entry-btn--danger:hover {
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.obs-entry-text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+/* SIDEBAR */
+.obs-sidebar {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.obs-sidebar h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.obs-sidebar-hint {
+  margin: -0.5rem 0 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.obs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.obs-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  margin-bottom: -0.3rem;
+}
+
+.obs-input,
+.obs-textarea {
   width: 100%;
-  min-height: 11rem;
-  padding: 0.95rem 1.1rem;
-  border: 1px solid var(--color-slate-300);
-  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
   font-family: inherit;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-slate-900);
-  background: var(--color-white);
-  resize: vertical;
+  font-size: 0.85rem;
+  color: #0f172a;
+  background: #ffffff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   box-sizing: border-box;
 }
 
-.observations-textarea:hover {
-  border-color: var(--color-slate-400);
-}
-
-.observations-textarea:focus {
-  outline: none;
-  border-color: var(--color-sky-500);
-  box-shadow: 0 0 0 3px var(--color-primary-a18);
-}
-
-.observations-textarea::placeholder {
-  color: var(--color-slate-400);
-  font-size: 0.88rem;
-}
-
-.observations-actions {
+.obs-form-btns {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--color-slate-100);
-  margin-top: 0.25rem;
+  gap: 0.4rem;
+}
+
+.obs-input:focus,
+.obs-textarea:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.obs-textarea {
+  resize: vertical;
+  min-height: 5rem;
+  line-height: 1.45;
 }

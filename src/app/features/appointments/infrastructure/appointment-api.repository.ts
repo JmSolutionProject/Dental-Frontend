@@ -1,10 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, take, catchError, of } from 'rxjs';
+import { map, take, catchError, of, Observable } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import {
   Appointment,
+  AppointmentStatus,
   AvailabilityResult,
   CalendarSlot,
   CreateAppointmentRequest,
@@ -13,7 +14,7 @@ import {
 import { AppointmentRepository } from '../domain/appointment.repository';
 
 interface PaginatedAppointmentsResponse {
-  data: Appointment[];
+  data: any[];
   total: number;
   page: number;
   limit: number;
@@ -25,45 +26,58 @@ export class AppointmentApiRepository implements AppointmentRepository {
   private readonly apiUrl = inject(API_URL);
 
   private defaultStatusId = 1;
+  private statuses: { id: number; nombre: string }[] = [];
 
   constructor() {
     this.loadStatuses();
   }
 
-  findAll() {
+  findAll(): Observable<Appointment[]> {
     return this.http
       .get<PaginatedAppointmentsResponse>(`${this.apiUrl}/appointments`, {
         params: { page: 1, limit: 100 },
       })
-      .pipe(map((response) => response.data));
+      .pipe(
+        map((response) => (response.data || []).map((raw: any) => this.toDomainAppointment(raw))),
+      );
   }
 
-  findById(id: string) {
-    return this.http.get<Appointment>(`${this.apiUrl}/appointments/${id}`);
-  }
-
-  create(appointment: CreateAppointmentRequest) {
+  findById(id: string): Observable<Appointment> {
     return this.http
-      .post<Appointment | { count: number }>(
+      .get<any>(`${this.apiUrl}/appointments/${id}`)
+      .pipe(map((raw: any) => this.toDomainAppointment(raw)));
+  }
+
+  create(appointment: CreateAppointmentRequest): Observable<Appointment> {
+    return this.http
+      .post<any>(
         `${this.apiUrl}/appointments`,
         this.toBackendAppointmentDto(appointment),
       )
-      .pipe(map((response) => this.requireAppointmentResponse(response)));
+      .pipe(map((response: any) => this.toDomainAppointment(response)));
   }
 
-  update(id: string, data: UpdateAppointmentRequest) {
-    return this.http.put<Appointment>(
-      `${this.apiUrl}/appointments/${id}`,
-      this.toBackendAppointmentDto(data),
-    );
+  update(id: string, data: UpdateAppointmentRequest): Observable<Appointment> {
+    return this.http
+      .put<any>(
+        `${this.apiUrl}/appointments/${id}`,
+        this.toBackendAppointmentDto(data),
+      )
+      .pipe(map((response: any) => this.toDomainAppointment(response)));
   }
 
-  cancel(id: string, reason: string) {
+  cancel(id: string, reason: string): Observable<Appointment> {
     void reason;
-    return this.http.delete<Appointment>(`${this.apiUrl}/appointments/${id}`);
+    return this.http
+      .delete<any>(`${this.apiUrl}/appointments/${id}`)
+      .pipe(map((response: any) => this.toDomainAppointment(response)));
   }
 
-  getAvailability(dentistId: string, slot: CalendarSlot) {
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/appointments/${id}/permanent`);
+  }
+
+  getAvailability(dentistId: string, slot: CalendarSlot): Observable<AvailabilityResult> {
     const params = new HttpParams()
       .set('dentistId', dentistId)
       .set('start', slot.start)
@@ -78,11 +92,71 @@ export class AppointmentApiRepository implements AppointmentRepository {
   private loadStatuses(): void {
     this.http.get<{ id: number; nombre: string }[]>(`${this.apiUrl}/appointments/statuses`)
       .pipe(take(1), catchError(() => of([])))
-      .subscribe((statuses) => {
+      .subscribe((statuses: { id: number; nombre: string }[]) => {
+        this.statuses = statuses;
         if (statuses.length > 0) {
           this.defaultStatusId = statuses[0].id;
         }
       });
+  }
+
+  private toDomainAppointment(raw: any): Appointment {
+    if (!raw) {
+      return {
+        id: '',
+        patientId: '',
+        patientName: 'Paciente',
+        scheduledAt: new Date().toISOString(),
+        reason: 'Consulta Odontológica',
+        status: 'scheduled',
+      };
+    }
+
+    let status: AppointmentStatus = 'scheduled';
+    const statusName = (raw.estadoCita?.nombre || raw.status || raw.estado || '').toString().toLowerCase();
+    const statusId = Number(raw.estadoCitaId || raw.estadoId || raw.statusId);
+
+    if (
+      statusId === 2 ||
+      statusName.includes('atend') ||
+      statusName.includes('complet') ||
+      statusName.includes('pagad') ||
+      statusName.includes('finaliz')
+    ) {
+      status = 'completed';
+    } else if (statusId === 3 || statusName.includes('cancel')) {
+      status = 'cancelled';
+    } else {
+      status = 'scheduled';
+    }
+
+    const patientName =
+      raw.patientName ||
+      (raw.paciente
+        ? `${raw.paciente.nombres || raw.paciente.firstName || ''} ${raw.paciente.apellidos || raw.paciente.lastName || ''}`.trim()
+        : '') ||
+      'Paciente Odontológico';
+
+    const dentistName =
+      raw.dentistName ||
+      (raw.medico
+        ? `Dr(a). ${raw.medico.nombres || raw.medico.firstName || ''} ${raw.medico.apellidos || raw.medico.lastName || ''}`.trim()
+        : '') ||
+      'Odontólogo General';
+
+    return {
+      id: String(raw.id),
+      patientId: String(raw.patientId || raw.pacienteId || ''),
+      patientName,
+      dentistId: raw.dentistId || raw.medicoId ? String(raw.dentistId || raw.medicoId) : undefined,
+      dentistName,
+      scheduledAt: raw.scheduledAt || raw.fechaHoraInicio || raw.fechaHora || new Date().toISOString(),
+      reason: raw.reason || raw.motivoPrincipal || raw.motivo || 'Consulta Odontológica',
+      status,
+      cancelReason: raw.cancelReason || raw.observaciones,
+      planServicioId: raw.planServicioId ? String(raw.planServicioId) : undefined,
+      servicios: raw.servicios,
+    };
   }
 
   private toBackendAppointmentDto(data: CreateAppointmentRequest | UpdateAppointmentRequest) {
@@ -92,10 +166,24 @@ export class AppointmentApiRepository implements AppointmentRepository {
     const observations = 'observations' in data ? data.observations : undefined;
     const serviceId =
       'serviceId' in data && data.serviceId ? Number(data.serviceId) : undefined;
+    let estadoCitaId = this.defaultStatusId;
+    if ('status' in data && data.status) {
+      if (data.status === 'completed') {
+        const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('atend') || s.nombre.toLowerCase().includes('complet'));
+        estadoCitaId = found ? found.id : 2;
+      } else if (data.status === 'cancelled') {
+        const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('cancel'));
+        estadoCitaId = found ? found.id : 3;
+      } else {
+        const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('pendient') || s.nombre.toLowerCase().includes('program'));
+        estadoCitaId = found ? found.id : 1;
+      }
+    }
+
     return {
       pacienteId: data.patientId ? Number(data.patientId) : undefined,
       medicoId,
-      estadoCitaId: this.defaultStatusId,
+      estadoCitaId,
       fechaHoraInicio: start,
       fechaHoraFin: start ? this.addMinutes(start, 60) : undefined,
       motivoPrincipal: data.reason,
@@ -109,12 +197,5 @@ export class AppointmentApiRepository implements AppointmentRepository {
     const date = new Date(isoString);
     date.setMinutes(date.getMinutes() + minutes);
     return date.toISOString();
-  }
-
-  private requireAppointmentResponse(response: Appointment | { count: number }): Appointment {
-    if ('id' in response) {
-      return response;
-    }
-    throw new Error('Backend appointment creation is not implemented yet.');
   }
 }
