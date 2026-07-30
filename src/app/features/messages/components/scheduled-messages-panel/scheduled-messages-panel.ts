@@ -4,10 +4,15 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { Frequency, MessageCenterStore, ScheduledMessageItem } from '../messages-center.store';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroPlus } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-scheduled-messages-panel',
-  imports: [Modal, ReactiveFormsModule, Table, TableCell],
+  imports: [Modal, ReactiveFormsModule, Table, TableCell, NgIcon],
+  providers: [
+    provideIcons({heroPlus})
+  ],
   templateUrl: './scheduled-messages-panel.html',
   styleUrl: './scheduled-messages-panel.css',
 })

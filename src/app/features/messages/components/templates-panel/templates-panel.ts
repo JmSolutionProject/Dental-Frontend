@@ -3,10 +3,13 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 
 import { Modal } from '../../../../shared/components/modal/modal';
 import { MessageCenterStore, MessageTemplateItem } from '../messages-center.store';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroPlus } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-templates-panel',
-  imports: [Modal, ReactiveFormsModule],
+  imports: [Modal, ReactiveFormsModule, NgIcon],
+  providers: [provideIcons({ heroPlus })],
   templateUrl: './templates-panel.html',
   styleUrl: './templates-panel.css',
 })
