@@ -12,6 +12,64 @@
     </div>
   </div>
 
+  <article class="dossier-card">
+    <div class="card-title-bar">
+      <div>
+        <h2>Registrar Cobro</h2>
+        <p class="subtitle">Selecciona la cita y el método de pago.</p>
+      </div>
+      <button type="button" class="btn btn--primary" (click)="toggleForm()">
+        {{ showForm() ? 'Cancelar' : '+ Nuevo Cobro' }}
+      </button>
+    </div>
+
+    @if (showForm()) {
+      <form [formGroup]="paymentForm" class="pay-form" (submit)="$event.preventDefault()">
+        <div class="pay-form-grid">
+          <div class="pay-field">
+            <label>Seleccionar Cita</label>
+            <select class="pay-select" formControlName="appointmentId" (change)="onAppointmentSelected($event)">
+              <option value="" disabled>Selecciona una cita…</option>
+              @for (apt of appointments(); track apt.id) {
+                <option [value]="apt.id">
+                  {{ apt.scheduledAt.slice(0,10) }} — {{ apt.reason }} ({{ apt.dentistName ?? 'Sin asignar' }})
+                </option>
+              }
+            </select>
+          </div>
+          <div class="pay-field">
+            <label>Método de Pago</label>
+            <select class="pay-select" formControlName="methodId">
+              <option value="" disabled>Selecciona método…</option>
+              @for (m of paymentMethods(); track m.id) {
+                <option [value]="m.id">{{ m.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="pay-field">
+            <label>Monto S/</label>
+            <input type="number" class="pay-input" formControlName="amount" min="0" step="0.01" />
+          </div>
+          @if (isNotCash()) {
+            <div class="pay-field">
+              <label>Referencia</label>
+              <input type="text" class="pay-input" formControlName="reference" placeholder="N° operación, voucher…" />
+            </div>
+          }
+        </div>
+        <div class="pay-field pay-field--full">
+          <label>Notas</label>
+          <textarea class="pay-textarea" formControlName="notes" rows="2" placeholder="Se autocompleta al seleccionar cita"></textarea>
+        </div>
+        <div class="pay-actions">
+          <button type="button" class="btn btn--success" (click)="registerPayment()" [disabled]="savingPayment()">
+            {{ savingPayment() ? 'Registrando…' : 'Registrar Cobro' }}
+          </button>
+        </div>
+      </form>
+    }
+  </article>
+
   <article class="dossier-card payments-card">
     <div class="card-title-bar">
       <div>
@@ -20,32 +78,33 @@
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Pago</th>
-            <th>Concepto</th>
-            <th>Método</th>
-            <th>Monto</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (pay of paymentsHistory(); track pay.id) {
+    @if (history().length === 0) {
+      <div class="pay-empty">
+        <p>Sin pagos registrados para este paciente.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
             <tr>
-              <td>
-                <strong>{{ pay.date }}</strong>
-                <small>#{{ pay.id }}</small>
-              </td>
-              <td>{{ pay.concept }}</td>
-              <td>
-                <span class="badge badge--muted">{{ pay.method }}</span>
-              </td>
-              <td class="amount">{{ pay.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <th>Fecha</th>
+              <th>Concepto</th>
+              <th>Método</th>
+              <th>Monto</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (pay of history(); track pay.id) {
+              <tr>
+                <td><strong>{{ pay.date }}</strong></td>
+                <td>{{ pay.concept }}</td>
+                <td><span class="badge badge--muted">{{ pay.method }}</span></td>
+                <td class="amount">{{ pay.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </article>
 </div>

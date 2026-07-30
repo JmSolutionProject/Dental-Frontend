@@ -3,11 +3,9 @@ import { DatePipe } from '@angular/common';
 import { catchError, of, take, finalize } from 'rxjs';
 
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
-import { CancelAppointmentUseCase } from '../../../appointments/application/cancel-appointment.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { heroPlus } from '@ng-icons/heroicons/outline';
+import { heroChevronLeft, heroChevronRight, heroPlus, heroXMark } from '@ng-icons/heroicons/outline';
 
 const BLOCK_MIN_HEIGHT = 34;
 const PIXELS_PER_HOUR = 96;
@@ -38,7 +36,7 @@ interface CalendarDay {
 @Component({
   selector: 'app-agenda-page',
   imports: [DatePipe, NgIcon],
-  providers: [provideIcons({ heroPlus })],
+  providers: [provideIcons({ heroChevronLeft, heroChevronRight, heroPlus, heroXMark })],
   templateUrl: './agenda-page.html',
   styleUrl: './agenda-page.css',
   host: {
@@ -47,8 +45,6 @@ interface CalendarDay {
 })
 export class AgendaPage {
   private readonly getAppointments = inject(GetAppointmentsUseCase);
-  private readonly cancelAppointment = inject(CancelAppointmentUseCase);
-  private readonly toast = inject(ToastService);
 
   readonly loading = signal(true);
   readonly weekOffset = signal(0);
@@ -57,9 +53,6 @@ export class AgendaPage {
   readonly appointments = signal<Appointment[]>([]);
   readonly selectedAppointment = signal<Appointment | null>(null);
   readonly detailVisible = signal(false);
-  readonly cancelVisible = signal(false);
-  readonly cancelReason = signal('');
-  readonly canceling = signal(false);
 
   readonly hours = Array.from({ length: TOTAL_HOURS }, (_, i) =>
     `${String(START_HOUR + i).padStart(2, '0')}:00`,
@@ -118,8 +111,11 @@ export class AgendaPage {
     return this.weekDates().map((wd) => {
       const isToday = wd.date.getTime() === today.getTime();
       const apps = this.appointments()
-        .filter((a) => a.scheduledAt.startsWith(wd.key))
-        .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+        .filter((a) => {
+          const d = new Date(a.scheduledAt);
+          return d.getFullYear() === wd.date.getFullYear() && d.getMonth() === wd.date.getMonth() && d.getDate() === wd.date.getDate();
+        })
+        .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
       const dayIndex = wd.date.getDay();
       const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
       return {
@@ -211,7 +207,7 @@ export class AgendaPage {
   readonly appointmentKeys = computed<Set<string>>(() => {
     const keys = new Set<string>();
     for (const a of this.appointments()) {
-      keys.add(a.scheduledAt.slice(0, 10));
+      keys.add(this.dateKey(new Date(a.scheduledAt)));
     }
     return keys;
   });
@@ -259,8 +255,9 @@ export class AgendaPage {
   }
 
   blockStyle(apt: Appointment): Record<string, string> {
-    const time = apt.scheduledAt.slice(11, 16);
-    const [h, m] = time.split(':').map(Number);
+    const d = new Date(apt.scheduledAt);
+    const h = d.getHours();
+    const m = d.getMinutes();
     if (isNaN(h) || isNaN(m)) return { display: 'none' };
     const startMinutes = (h - START_HOUR) * 60 + m;
     if (startMinutes < 0) return { display: 'none' };
@@ -292,47 +289,6 @@ export class AgendaPage {
 
   closeDetail(): void {
     this.detailVisible.set(false);
-  }
-
-  openCancel(): void {
-    this.detailVisible.set(false);
-    const apt = this.selectedAppointment();
-    if (apt) {
-      this.cancelReason.set('');
-      this.cancelVisible.set(true);
-    }
-  }
-
-  closeCancel(): void {
-    this.cancelVisible.set(false);
-    this.cancelReason.set('');
-  }
-
-  confirmCancel(): void {
-    const apt = this.selectedAppointment();
-    const reason = this.cancelReason().trim();
-    if (!apt || !reason) {
-      this.toast.info('Escribe un motivo de cancelación.');
-      return;
-    }
-    this.canceling.set(true);
-    this.cancelAppointment
-      .execute(apt.id, reason)
-      .pipe(
-        take(1),
-        catchError(() => {
-          this.toast.error('Error al cancelar la cita.');
-          return of(null);
-        }),
-        finalize(() => this.canceling.set(false)),
-      )
-      .subscribe((appt) => {
-        if (appt) {
-          this.toast.success('Cita cancelada.');
-          this.closeCancel();
-          this.loadAppointments();
-        }
-      });
   }
 
   /* ---------- Navigation ---------- */

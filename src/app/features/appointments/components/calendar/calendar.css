@@ -350,6 +350,147 @@
   text-align: center;
 }
 
+/* ==========================================================================
+   APPOINTMENT DETAIL MODAL STYLES
+   ========================================================================== */
+.appt-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+  max-width: 480px;
+}
+
+.appt-detail-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 1.25rem;
+  border-radius: 12px;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.appt-detail-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+  flex-shrink: 0;
+}
+
+.appt-detail-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow: hidden;
+}
+
+.appt-detail-patient-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appt-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.appt-status-badge--completed {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.appt-status-badge--scheduled {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+
+.appt-status-badge--cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.appt-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.appt-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.appt-detail-field--full {
+  grid-column: 1 / -1;
+}
+
+.appt-detail-field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.appt-detail-field-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.appt-detail-reason-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  line-height: 1.5;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.appt-detail-reason-box--danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.appt-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
 @media (max-width: 760px) {
   .calendar-header,
   .calendar-toolbar,
@@ -384,5 +525,104 @@
   .modal-form,
   .cancel-modal {
     min-width: min(320px, 80vw);
+  }
+}
+
+/* ── MODAL FORM STYLES ──────────────────────────────── */
+.appt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 0.5rem 0;
+  min-width: 440px;
+}
+
+.appt-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.appt-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.appt-form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-slate-600, #475569);
+}
+
+.appt-readonly-box {
+  padding: 0.75rem 1rem;
+  background: var(--color-slate-50, #f8fafc);
+  border: 1px solid var(--color-slate-200, #e2e8f0);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--color-slate-900, #0f172a);
+  font-weight: 700;
+}
+
+.appt-readonly-icon {
+  margin-right: 6px;
+  vertical-align: -3px;
+  color: var(--color-primary, #0284c7);
+}
+
+.appt-reschedule-box {
+  background: var(--color-sky-50, #f0f9ff);
+  padding: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-sky-200, #bae6fd);
+}
+
+.appt-reschedule-label {
+  color: var(--color-sky-700, #0369a1);
+}
+
+.appt-form-select,
+.appt-form-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-slate-300, #cbd5e1);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--color-slate-900, #0f172a);
+  background: var(--color-white, #ffffff);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.appt-form-select:focus,
+.appt-form-input:focus {
+  outline: none;
+  border-color: var(--color-sky-500, #0ea5e9);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+}
+
+.appt-form-select {
+  cursor: pointer;
+}
+
+.appt-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .appt-form {
+    min-width: 100%;
+  }
+  .appt-form-row {
+    grid-template-columns: 1fr;
   }
 }

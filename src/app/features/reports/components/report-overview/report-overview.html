@@ -1,30 +1,470 @@
 <section class="page">
+  <!-- OFFICIAL PRINT HEADER (Only visible in PDF / Print) -->
+  <div class="print-official-header">
+    <div class="print-brand-row">
+      <div class="print-brand-info">
+        <img src="assets/images/logo.svg" alt="Logo Clínica OMAYA" class="print-logo-img" />
+        <div>
+          <h2>CLÍNICA DENTAL OMAYA</h2>
+          <p class="print-sub font-mono">RUC: 20601234567 &bull; Av. Javier Prado Este 1230, Lima</p>
+          <p class="print-sub">Teléfono: +51 987 654 321 &bull; Email: contabilidad&#64;clinicaomaya.com</p>
+        </div>
+      </div>
+      <div class="print-report-meta">
+        <div class="print-meta-box">
+          <span class="meta-title">REPORTE DE CIERRE DE CAJA DIARIO</span>
+          <span class="meta-date">Fecha: {{ todayDate | date: "dd/MM/yyyy" }}</span>
+          <span class="meta-period">Generado por: {{ cashierName() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen Page Header -->
   <header class="page-header">
     <div>
-      <p class="eyebrow">Reports</p>
-      <h1>Clinic summary</h1>
-      <p class="muted">Operational summary based on available backend endpoints.</p>
+      <p class="eyebrow">Centro de Inteligencia & Analytics</p>
+      <h1>Panel de Reportes y Estadísticas Financieras</h1>
+      <p class="muted">Análisis ejecutivo de toma de decisiones, tendencias históricas y cierre de caja.</p>
     </div>
+
+    @if (overview$ | async; as overview) {
+      @if (activeTab() === 'daily') {
+        <div class="header-actions">
+          <button
+            class="btn btn--primary"
+            type="button"
+            (click)="downloadPdfReport()">
+            <ng-icon name="heroDocumentText" /> 📄 EXPORTAR PARA CONTADOR (PDF)
+          </button>
+        </div>
+      }
+    }
   </header>
 
-  @if (report$ | async; as report) {
-    <div class="report-grid">
-      <article class="card report-card">
-        <span>Total patients</span>
-        <strong>{{ report.totalPatients }}</strong>
-      </article>
-      <article class="card report-card">
-        <span>Total appointments</span>
-        <strong>{{ report.totalAppointments }}</strong>
-      </article>
-      <article class="card report-card">
-        <span>Scheduled</span>
-        <strong>{{ report.scheduledAppointments }}</strong>
-      </article>
-      <article class="card report-card">
-        <span>Cancelled</span>
-        <strong>{{ report.cancelledAppointments }}</strong>
-      </article>
+  <!-- Filter Toolbar (Period Selection) -->
+  <div class="analytics-filter-toolbar">
+    <div class="filter-period-tabs">
+      <button
+        class="period-btn"
+        [class.period-btn--active]="selectedPeriod() === 'today'"
+        (click)="setPeriod('today')">
+        Hoy
+      </button>
+      <button
+        class="period-btn"
+        [class.period-btn--active]="selectedPeriod() === 'week'"
+        (click)="setPeriod('week')">
+        Esta Semana
+      </button>
+      <button
+        class="period-btn"
+        [class.period-btn--active]="selectedPeriod() === 'month'"
+        (click)="setPeriod('month')">
+        Este Mes
+      </button>
+      <button
+        class="period-btn"
+        [class.period-btn--active]="selectedPeriod() === 'history'"
+        (click)="setPeriod('history')">
+        Histórico Mensual
+      </button>
+      <button
+        class="period-btn"
+        [class.period-btn--active]="selectedPeriod() === 'custom'"
+        (click)="setPeriod('custom')">
+        Personalizado
+      </button>
     </div>
+
+    @if (selectedPeriod() === 'custom') {
+      <div class="custom-date-range">
+        <label>
+          Desde:
+          <input type="date" class="date-input" [value]="startDate()" (change)="startDate.set($any($event.target).value)" />
+        </label>
+        <label>
+          Hasta:
+          <input type="date" class="date-input" [value]="endDate()" (change)="endDate.set($any($event.target).value)" />
+        </label>
+      </div>
+    }
+  </div>
+
+  @if (overview$ | async; as overview) {
+    <!-- Navigation Tabs -->
+    <div class="report-tabs">
+      <button
+        class="report-tab-btn"
+        [class.report-tab-btn--active]="activeTab() === 'dashboard'"
+        (click)="setTab('dashboard')">
+        <ng-icon name="heroChartBarSquare" /> Dashboard Ejecutivo (Gráficos)
+      </button>
+      <button
+        class="report-tab-btn"
+        [class.report-tab-btn--active]="activeTab() === 'daily'"
+        (click)="setTab('daily')">
+        <ng-icon name="heroTableCells" /> Cierre Diario de Caja (Contador)
+      </button>
+      <button
+        class="report-tab-btn"
+        [class.report-tab-btn--active]="activeTab() === 'clinical'"
+        (click)="setTab('clinical')">
+        <ng-icon name="heroCalendarDays" /> Atenciones Clínicas
+      </button>
+      <button
+        class="report-tab-btn"
+        [class.report-tab-btn--active]="activeTab() === 'services'"
+        (click)="setTab('services')">
+        <ng-icon name="heroHeart" /> Servicios Más Solicitados
+      </button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD EJECUTIVO CON GRÁFICOS INTERACTIVOS (Chart.js) -->
+    @if (activeTab() === 'dashboard') {
+      <div class="screen-analytics-grid">
+        <!-- Top Executive KPI Grid -->
+        <div class="executive-kpi-row">
+          <article class="kpi-card kpi-card--emerald">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Ingresos Recaudados</span>
+              <div class="kpi-icon-wrap"><ng-icon name="heroCurrencyDollar" /></div>
+            </div>
+            <strong class="kpi-value">{{ overview.currentRevenue | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+            <div class="kpi-foot">
+              @if (overview.isGrowth) {
+                <span class="kpi-trend kpi-trend--up">
+                  <ng-icon name="heroArrowTrendingUp" /> +{{ overview.revenuePercent }}% vs mes anterior
+                </span>
+              } @else {
+                <span class="kpi-trend kpi-trend--down">
+                  <ng-icon name="heroArrowTrendingDown" /> {{ overview.revenuePercent }}% vs mes anterior
+                </span>
+              }
+            </div>
+          </article>
+
+          <article class="kpi-card kpi-card--sky">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Efectivo en Caja</span>
+              <div class="kpi-icon-wrap"><ng-icon name="heroCreditCard" /></div>
+            </div>
+            <strong class="kpi-value">{{ overview.paymentSummary.cashAmount | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+            <span class="kpi-badge kpi-badge--sky">Caja Chica</span>
+          </article>
+
+          <article class="kpi-card kpi-card--purple">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Bancos y Yape/Plin</span>
+              <div class="kpi-icon-wrap"><ng-icon name="heroChartBarSquare" /></div>
+            </div>
+            <strong class="kpi-value">
+              {{ (overview.paymentSummary.cardAmount + overview.paymentSummary.transferAmount + overview.paymentSummary.digitalWalletAmount) | currency:'PEN':'S/ ':'1.2-2' }}
+            </strong>
+            <span class="kpi-badge kpi-badge--purple">Tarjetas / Depósitos</span>
+          </article>
+
+          <article class="kpi-card kpi-card--teal">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Efectividad de Citas</span>
+              <div class="kpi-icon-wrap"><ng-icon name="heroCheckCircle" /></div>
+            </div>
+            <strong class="kpi-value">{{ overview.attendanceRate }}%</strong>
+            <span class="kpi-badge kpi-badge--teal">{{ overview.completedAppointments }} atenciones realizadas</span>
+          </article>
+        </div>
+
+        <!-- Charts Grid (Compact Layout for Minimal Scroll) -->
+        <div class="charts-compact-grid">
+          <!-- Main Chart: Monthly Revenue Line Chart -->
+          <article class="chart-card chart-card--main">
+            <div class="chart-card-header">
+              <div>
+                <h3>Evolución de Ingresos e Histórico Mensual</h3>
+                <span class="muted-sm">Tendencia de facturación en Soles (S/) de los últimos 6 meses</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas #revenueChartCanvas></canvas>
+            </div>
+          </article>
+
+          <!-- MoM Comparative Bar Chart -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Comparativa Mes Actual vs Anterior</h3>
+                <span class="muted-sm">Variación directa de recaudación</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas #momChartCanvas></canvas>
+            </div>
+          </article>
+
+          <!-- Payment Method Donut Chart -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Métodos de Pago Utilizados</h3>
+                <span class="muted-sm">Efectivo vs Tarjeta vs Yape/Plin</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas #methodChartCanvas></canvas>
+            </div>
+          </article>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: CIERRE DIARIO DE CAJA (ASCII PDF PRINT MATCHING) -->
+    @if (activeTab() === 'daily') {
+      <div class="daily-closing-container">
+        <!-- Subheader Info Box -->
+        <div class="report-meta-strip">
+          <div class="meta-item">
+            <ng-icon name="heroCalendarDays" />
+            <span><strong>Fecha del Cierre:</strong> {{ todayDate | date: "dd/MM/yyyy" }}</span>
+          </div>
+          <div class="meta-divider">|</div>
+          <div class="meta-item">
+            <ng-icon name="heroUsers" />
+            <span><strong>Generado por:</strong> {{ cashierName() }}</span>
+          </div>
+        </div>
+
+        <!-- 1. RESUMEN FINANCIERO -->
+        <div class="section-block">
+          <h3 class="section-title">RESUMEN FINANCIERO</h3>
+          <div class="financial-summary-grid">
+            <article class="summary-box summary-box--total">
+              <span class="box-label">TOTAL RECAUDADO</span>
+              <strong class="box-value">{{ overview.paymentSummary.totalAmount | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+            </article>
+
+            <article class="summary-box summary-box--cash">
+              <span class="box-label">EFECTIVO EN CAJA</span>
+              <strong class="box-value">{{ overview.paymentSummary.cashAmount | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+            </article>
+
+            <article class="summary-box summary-box--bank">
+              <span class="box-label">BANCOS (Tarjetas / Yape / Plin)</span>
+              <strong class="box-value">
+                {{ (overview.paymentSummary.cardAmount + overview.paymentSummary.transferAmount + overview.paymentSummary.digitalWalletAmount) | currency:'PEN':'S/ ':'1.2-2' }}
+              </strong>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2. DETALLE DE MOVIMIENTOS -->
+        <div class="section-block" style="margin-top: 2rem;">
+          <h3 class="section-title">DETALLE DE MOVIMIENTOS</h3>
+
+          @if (overview.payments.length > 0) {
+            <div class="table-responsive">
+              <table class="closing-movements-table">
+                <thead>
+                  <tr>
+                    <th style="width: 80px;">HORA</th>
+                    <th>PACIENTE</th>
+                    <th>SERVICIO</th>
+                    <th style="width: 140px;">PAGO</th>
+                    <th style="text-align: right; width: 140px;">MONTO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (payment of overview.payments; track payment.id) {
+                    <tr>
+                      <td class="font-mono">
+                        <strong>{{ payment.paidAt | date: "HH:mm" }}</strong>
+                      </td>
+                      <td>
+                        <strong class="patient-name">{{ payment.patientName || 'Paciente General' }}</strong>
+                      </td>
+                      <td>
+                        <span>{{ payment.notes || 'Atención Odontológica' }}</span>
+                      </td>
+                      <td>
+                        <span class="payment-badge">{{ payment.methodName || payment.methodCode || 'Efectivo' }}</span>
+                      </td>
+                      <td style="text-align: right;" class="font-mono">
+                        <strong [class.text-danger]="payment.status === 'voided'">
+                          {{ payment.amount | currency:'PEN':'S/ ':'1.2-2' }}
+                        </strong>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="table-total-row">
+                    <td colspan="4" style="text-align: right;"><strong>TOTAL:</strong></td>
+                    <td style="text-align: right;" class="font-mono">
+                      <strong class="total-grand-value">{{ overview.paymentSummary.totalAmount | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state-box">
+              <ng-icon name="heroDocumentText" class="empty-icon" />
+              <p class="muted">No hay movimientos registrados para el día de hoy.</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- TAB 3: ATENCIONES CLÍNICAS (RICA Y PROFESIONAL) -->
+    @if (activeTab() === 'clinical') {
+      <div class="clinical-analytics-suite">
+        <!-- Performance Meters -->
+        <div class="clinical-performance-cards">
+          <article class="clinical-card">
+            <div class="card-icon-title">
+              <div class="card-icon card-icon--green"><ng-icon name="heroCheckCircle" /></div>
+              <div>
+                <h4>Tasa de Asistencia Efectiva</h4>
+                <p class="muted-xs">Pacientes que completaron su consulta</p>
+              </div>
+            </div>
+            <div class="metric-meter-row">
+              <strong class="metric-big-num text-emerald">{{ overview.attendanceRate }}%</strong>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill fill-emerald" [style.width.%]="overview.attendanceRate"></div>
+              </div>
+            </div>
+            <div class="metric-detail-foot">
+              <span><strong>{{ overview.completedAppointments }}</strong> de {{ overview.totalAppointments }} citas completadas</span>
+            </div>
+          </article>
+
+          <article class="clinical-card">
+            <div class="card-icon-title">
+              <div class="card-icon card-icon--red"><ng-icon name="heroXCircle" /></div>
+              <div>
+                <h4>Tasa de Cancelación / Ausentismo</h4>
+                <p class="muted-xs">Citas anuladas o no asistidas</p>
+              </div>
+            </div>
+            <div class="metric-meter-row">
+              <strong class="metric-big-num text-danger">{{ overview.cancellationRate }}%</strong>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill fill-red" [style.width.%]="overview.cancellationRate"></div>
+              </div>
+            </div>
+            <div class="metric-detail-foot">
+              <span><strong>{{ overview.cancelledAppointments }}</strong> citas canceladas</span>
+            </div>
+          </article>
+
+          <article class="clinical-card">
+            <div class="card-icon-title">
+              <div class="card-icon card-icon--blue"><ng-icon name="heroClock" /></div>
+              <div>
+                <h4>Citas Programadas (En Agenda)</h4>
+                <p class="muted-xs">Próximas atenciones agendadas</p>
+              </div>
+            </div>
+            <div class="metric-meter-row">
+              <strong class="metric-big-num text-sky">{{ overview.scheduledAppointments }}</strong>
+            </div>
+            <div class="metric-detail-foot">
+              <span>Pacientes en espera de atención</span>
+            </div>
+          </article>
+        </div>
+
+        <!-- Clinical Appointments Ledger Table -->
+        <article class="card clinical-table-card">
+          <div class="card-title-row">
+            <h3><ng-icon name="heroCalendarDays" /> Historial Operativo de Atenciones Odontológicas</h3>
+            <span class="tag-badge font-mono">{{ overview.totalAppointments }} registros</span>
+          </div>
+
+          @if (overview.appointmentsList.length > 0) {
+            <div class="table-responsive">
+              <table class="clinical-table">
+                <thead>
+                  <tr>
+                    <th>Estado</th>
+                    <th>Paciente</th>
+                    <th>Cita / Tratamiento</th>
+                    <th>Fecha y Hora</th>
+                    <th>Dentista Responsable</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (apt of overview.appointmentsList; track apt.id) {
+                    <tr>
+                      <td>
+                        <span class="status-badge" [class.status--completed]="apt.status === 'completed'" [class.status--scheduled]="apt.status === 'scheduled'" [class.status--cancelled]="apt.status === 'cancelled'">
+                          {{ apt.status === 'completed' ? 'Completada' : (apt.status === 'scheduled' ? 'Programada' : 'Cancelada') }}
+                        </span>
+                      </td>
+                      <td><strong>{{ apt.patientName || 'Paciente' }}</strong></td>
+                      <td>{{ getServicesName(apt) }}</td>
+                      <td class="font-mono">{{ apt.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                      <td>{{ apt.dentistName || 'Dr(a). Odontólogo(a)' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state-box">
+              <ng-icon name="heroCalendarDays" class="empty-icon" />
+              <p class="muted">No hay registros de atenciones clínicas en la base de datos para este periodo.</p>
+            </div>
+          }
+        </article>
+      </div>
+    }
+
+    <!-- TAB 4: SERVICIOS MÁS SOLICITADOS (PURA BD DINÁMICA) -->
+    @if (activeTab() === 'services') {
+      <div class="services-analytics-suite">
+        @if (kpis$ | async; as kpis) {
+          @if (kpis.topServices && kpis.topServices.length > 0) {
+            <div class="services-rank-grid">
+              @for (svc of kpis.topServices; track svc.name; let idx = $index) {
+                <article class="service-rank-card">
+                  <div class="rank-header">
+                    <span class="rank-badge" [class.rank-badge--gold]="idx === 0" [class.rank-badge--silver]="idx === 1" [class.rank-badge--bronze]="idx === 2">
+                      #{{ idx + 1 }}
+                    </span>
+                    <span class="category-tag">Catálogo Odontológico</span>
+                  </div>
+
+                  <h3 class="service-title-name">{{ svc.name }}</h3>
+
+                  <div class="service-demand-bar-wrap">
+                    <div class="demand-info-row">
+                      <span>Demanda de Pacientes</span>
+                      <strong>{{ svc.count }} atenciones</strong>
+                    </div>
+                    <div class="progress-bar-track">
+                      <div class="progress-bar-fill fill-sky" [style.width.%]="svc.count > 0 ? (svc.count / (kpis.topServices[0]?.count || 1)) * 100 : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="service-meta-footer">
+                    <span class="muted-xs">Impacto en Registro:</span>
+                    <strong class="text-emerald font-mono">Frecuente en BD</strong>
+                  </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="empty-state-box">
+              <ng-icon name="heroHeart" class="empty-icon" />
+              <p class="muted">No hay registros de tratamientos solicitados aún en la base de datos.</p>
+            </div>
+          }
+        }
+      </div>
+    }
   }
 </section>

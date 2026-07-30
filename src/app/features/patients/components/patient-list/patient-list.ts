@@ -178,7 +178,7 @@ export class PatientList {
     }));
   });
 
-  readonly totalItems = computed(() => this.displayData().length);
+  readonly totalItems = computed(() => this.result()?.total ?? this.displayData().length);
 
   openDeleteConfirm(patient: Patient, event?: Event) {
     if (event) event.stopPropagation();
@@ -224,8 +224,8 @@ export class PatientList {
         lastName: p.lastName,
         phone: p.phone,
         documentNumber: p.documentNumber,
-        estado: true,
-      } as any)
+        status: 'active',
+      })
       .pipe(
         take(1),
         catchError((err) => {

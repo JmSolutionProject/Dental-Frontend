@@ -1,9 +1,17 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { take, catchError, of, finalize } from 'rxjs';
-import { Appointment, AppointmentStatus } from '../../domain/appointment';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroPlus, heroCalendarDays, heroHeart, heroEllipsisVertical, heroChevronDown, heroTrash, heroPencil } from '@ng-icons/heroicons/outline';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField } from '../../../../shared/components/form-field/form-field';
+import { Appointment, AppointmentStatus, UpdateAppointmentRequest } from '../../domain/appointment';
 import { GetAppointmentsUseCase } from '../../application/get-appointments.usecase';
+import { UpdateAppointmentUseCase } from '../../application/update-appointment.usecase';
 import { AppointmentFormModal } from '../appointment-form-modal/appointment-form-modal';
+import { Modal } from '../../../../shared/components/modal/modal';
+import { DeleteAppointmentUseCase } from '../../application/delete-appointment.usecase';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { API_URL } from '../../../../core/config/api.config';
 
 type StatusFilter = 'all' | AppointmentStatus;
@@ -38,14 +46,19 @@ const DATE_RANGES: { id: DateRange; label: string }[] = [
 
 @Component({
   selector: 'app-appointment-list',
-  imports: [AppointmentFormModal],
+  imports: [AppointmentFormModal, Modal, NgIcon, ReactiveFormsModule],
+  providers: [provideIcons({ heroPlus, heroCalendarDays, heroHeart, heroEllipsisVertical, heroChevronDown, heroTrash, heroPencil })],
   templateUrl: './appointment-list.html',
   styleUrl: './appointment-list.css',
 })
 export class AppointmentList {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
+  private readonly fb = inject(FormBuilder);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
+  private readonly updateAppointment = inject(UpdateAppointmentUseCase);
+  private readonly deleteAppointmentUseCase = inject(DeleteAppointmentUseCase);
+  private readonly toast = inject(ToastService);
 
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
@@ -63,6 +76,23 @@ export class AppointmentList {
   ]);
 
   readonly showCreateModal = signal(false);
+  
+  readonly editModalVisible = signal(false);
+  readonly editingAppointment = signal<Appointment | null>(null);
+
+  readonly deleteModalVisible = signal(false);
+  readonly appointmentToDelete = signal<Appointment | null>(null);
+
+  readonly editForm = this.fb.group({
+    patientName: ['', [Validators.required]],
+    patientId: ['', [Validators.required]],
+    dentistId: ['', [Validators.required]],
+    dentistName: ['', [Validators.required]],
+    scheduledDate: ['', [Validators.required]],
+    scheduledTime: ['', [Validators.required]],
+    reason: [''],
+    uiStatus: ['scheduled', [Validators.required]],
+  });
 
   readonly filteredAppointments = computed<Appointment[]>(() => {
     const all = this.appointments();
@@ -72,6 +102,7 @@ export class AppointmentList {
 
     return all.filter((a) => {
       if (status !== 'all' && a.status !== status) return false;
+      if (status === 'all' && a.status === 'cancelled') return false;
       if (dentist !== 'all' && a.dentistId !== dentist) return false;
       if (!this.matchesDateRange(a.scheduledAt, range)) return false;
       return true;
@@ -131,6 +162,113 @@ export class AppointmentList {
   onAppointmentCreated(): void {
     this.showCreateModal.set(false);
     this.loadAppointments();
+  }
+
+  openEditModal(appt: Appointment): void {
+    this.editingAppointment.set(appt);
+    const d = new Date(appt.scheduledAt);
+    const scheduledDate = this.dayKey(appt.scheduledAt);
+    const scheduledTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+    this.editForm.setValue({
+      patientName: appt.patientName,
+      patientId: appt.patientId,
+      dentistId: appt.dentistId ?? '',
+      dentistName: appt.dentistName ?? '',
+      scheduledDate,
+      scheduledTime,
+      reason: appt.reason,
+      uiStatus: appt.status,
+    });
+    this.editModalVisible.set(true);
+  }
+
+  closeEditModal(): void {
+    this.editModalVisible.set(false);
+    this.editingAppointment.set(null);
+    this.editForm.reset();
+  }
+
+  submitEditForm(): void {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    const appt = this.editingAppointment();
+    if (!appt) return;
+
+    const val = this.editForm.getRawValue();
+    let scheduledAt = appt.scheduledAt;
+    let newStatus = val.uiStatus;
+
+    if (val.uiStatus === 'rescheduled') {
+      scheduledAt = new Date(`${val.scheduledDate}T${val.scheduledTime}:00`).toISOString();
+      newStatus = 'scheduled';
+    }
+
+    const updateReq: UpdateAppointmentRequest = {
+      patientId: val.patientId || undefined,
+      patientName: val.patientName || undefined,
+      dentistId: val.dentistId || undefined,
+      dentistName: val.dentistName || undefined,
+      scheduledAt,
+      reason: val.reason || undefined,
+      status: newStatus as AppointmentStatus,
+    };
+
+    this.loading.set(true);
+    this.updateAppointment
+      .execute(appt.id, updateReq)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('Error al actualizar la cita.');
+          return of(null);
+        }),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe((res) => {
+        if (res) {
+          this.toast.success('Cita actualizada correctamente.');
+          this.closeEditModal();
+          this.loadAppointments();
+        }
+      });
+  }
+
+  openDeleteModal(appt: Appointment): void {
+    this.appointmentToDelete.set(appt);
+    this.deleteModalVisible.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.appointmentToDelete.set(null);
+    this.deleteModalVisible.set(false);
+  }
+
+  confirmDelete(): void {
+    const appt = this.appointmentToDelete();
+    if (!appt) return;
+
+    this.loading.set(true);
+    this.deleteAppointmentUseCase
+      .execute(appt.id)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('Error al eliminar la cita.');
+          return of(null);
+        }),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.toast.success('Cita eliminada definitivamente.');
+          this.closeDeleteModal();
+          this.loadAppointments();
+        }
+      });
   }
 
   getInitials(name: string): string {

@@ -1,5 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroBookOpen, heroDocumentText } from '@ng-icons/heroicons/outline';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
 import { Modal } from '../../../../shared/components/modal/modal';
@@ -23,7 +25,8 @@ interface ServiceGroup {
 @Component({
   selector: 'app-catalog-list',
   standalone: true,
-  imports: [ReactiveFormsModule, Modal, FormField, CurrencyPipe],
+  imports: [ReactiveFormsModule, Modal, FormField, CurrencyPipe, NgIcon],
+  providers: [provideIcons({ heroBookOpen, heroDocumentText })],
   templateUrl: './catalog-list.html',
   styleUrl: './catalog-list.css',
 })

@@ -1,0 +1,124 @@
+<section class="section-grid section-grid--direct">
+  <article class="card composer-card">
+    <div class="card-heading">
+      <div>
+        <p class="eyebrow">Direct Messaging</p>
+        <h2>Enviar mensaje directo</h2>
+      </div>
+    </div>
+
+    <form class="message-form" [formGroup]="sendForm" (ngSubmit)="submit()">
+      <div class="phone-grid">
+        <label class="field field--code">
+          <span>Código</span>
+          <select [formControl]="sendForm.controls.countryCode">
+            <option value="+51">🇵🇪 +51</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+56">🇨🇱 +56</option>
+            <option value="+57">🇨🇴 +57</option>
+            <option value="+52">🇲🇽 +52</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Número de teléfono</span>
+          <input type="tel" [formControl]="sendForm.controls.phone" placeholder="999 999 999" />
+        </label>
+      </div>
+
+      <section class="contact-picker">
+        <label class="field">
+          <span>Buscar contacto</span>
+          <input
+            type="search"
+            [value]="contactSearch()"
+            (input)="onContactSearchInput($event)"
+            placeholder="Buscar por nombre, DNI o WhatsApp"
+          />
+        </label>
+      </section>
+
+      @if (contactSearch()) {
+        <div class="contact-results">
+          @for (patient of filteredPatients(); track patient.id) {
+            <button class="contact-option" type="button" (click)="selectPatient(patient)">
+              <span>
+                <strong>{{ patientName(patient) }}</strong>
+                <small>{{ patient.documentNumber || 'Sin documento' }}</small>
+              </span>
+              <em>{{ patient.phone || 'Sin WhatsApp' }}</em>
+            </button>
+          } @empty {
+            <div class="contact-empty">
+              <strong>No encontramos contactos.</strong>
+              <p class="muted">No pasa nada: escribí el número manualmente y enviá el mensaje.</p>
+            </div>
+          }
+        </div>
+      }
+
+      @if (selectedPatients().length > 0) {
+        <section class="selected-panel">
+          <span class="selected-title">Contactos seleccionados</span>
+          <div class="selected-patients">
+            @for (patient of selectedPatients(); track patient.id) {
+              <button class="patient-chip" type="button" (click)="removeSelectedPatient(patient.id)">
+                {{ patientName(patient) }}
+                <span>×</span>
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      <div class="selection-actions">
+        <button class="button button--ghost button--sm" type="button" (click)="selectAllPatients()">Seleccionar todos</button>
+        <button class="button button--ghost button--sm" type="button" (click)="clearPatientSelection()">Limpiar</button>
+      </div>
+
+      <app-form-field label="Servicio o contexto" [control]="sendForm.controls.service">
+        <input type="text" [formControl]="sendForm.controls.service" placeholder="Ej. Limpieza dental, ortodoncia, control" />
+      </app-form-field>
+
+      <app-form-field label="Mensaje" [control]="sendForm.controls.content">
+        <textarea rows="8" [formControl]="sendForm.controls.content" [placeholder]="'Ej. Hola {{nombre}}, tu cita está confirmada.'"></textarea>
+      </app-form-field>
+
+      <div class="composer-tools">
+        <div class="attachment-actions" aria-label="Adjuntos">
+          <button type="button" class="tool-btn" (click)="addAttachment('Imagen')">Imagen</button>
+          <button type="button" class="tool-btn" (click)="addAttachment('PDF')">PDF</button>
+          <button type="button" class="tool-btn" (click)="addAttachment('Nota de voz')">Nota de voz</button>
+        </div>
+        <span class="character-count">{{ directCharacterCount() }} caracteres</span>
+      </div>
+
+      <button class="button button--primary send-now" type="submit" [disabled]="store.sending()">
+        {{ store.sending() ? 'Enviando...' : 'Enviar ahora' }}
+      </button>
+    </form>
+  </article>
+
+  <aside class="card preview-card">
+    <p class="eyebrow">Previsualización</p>
+    <div class="phone-preview">
+      <div class="phone-preview__header">
+        <span></span>
+        <strong>WhatsApp</strong>
+      </div>
+      <div class="chat-bubble">
+        {{ messagePreview() || 'La vista previa aparecerá cuando escribas un mensaje.' }}
+      </div>
+    </div>
+
+    <div class="quick-variables">
+      <strong>Variables rápidas</strong>
+      <p class="muted">{{ templateHelp() }}</p>
+      <div>
+        <button type="button" class="tool-btn" (click)="insertVariable(sendForm.controls.content, 'nombre')">{{ '{' }}{{ '{' }}nombre{{ '}' }}{{ '}' }}</button>
+        <button type="button" class="tool-btn" (click)="insertVariable(sendForm.controls.content, 'fecha')">{{ '{' }}{{ '{' }}fecha{{ '}' }}{{ '}' }}</button>
+        <button type="button" class="tool-btn" (click)="insertVariable(sendForm.controls.content, 'servicio')">{{ '{' }}{{ '{' }}servicio{{ '}' }}{{ '}' }}</button>
+      </div>
+    </div>
+  </aside>
+</section>

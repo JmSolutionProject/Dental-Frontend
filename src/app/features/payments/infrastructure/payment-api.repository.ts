@@ -46,14 +46,26 @@ export class PaymentApiRepository implements PaymentRepository {
   }
 
   create(payment: CreatePaymentRequest): Observable<Payment> {
-    return this.http.post<Payment>(`${this.apiUrl}/payments`, {
-      citaId: Number(payment.appointmentId),
-      usuarioCobradorId: Number(payment.cashierId),
-      metodoPagoId: Number(payment.methodId),
+    const payload: any = {
+      metodoPagoId: Number(payment.methodId) || 1,
       montoPagado: payment.amount,
       numeroOperacion: payment.reference || undefined,
       observacion: payment.notes || undefined,
       fechaPago: payment.paidAt,
-    });
+    };
+
+    if (payment.appointmentId && payment.appointmentId !== '') {
+      const numCita = Number(payment.appointmentId);
+      payload.citaId = isNaN(numCita) ? payment.appointmentId : numCita;
+    }
+
+    if (payment.cashierId) {
+      const numCashier = Number(payment.cashierId);
+      payload.usuarioCobradorId = isNaN(numCashier) || numCashier <= 0 ? 1 : numCashier;
+    } else {
+      payload.usuarioCobradorId = 1;
+    }
+
+    return this.http.post<Payment>(`${this.apiUrl}/payments`, payload);
   }
 }

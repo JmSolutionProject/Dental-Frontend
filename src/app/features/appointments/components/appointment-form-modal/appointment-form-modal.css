@@ -60,6 +60,43 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-slate-100);
+  border-top: 1px solid #f1f5f9;
   margin-top: 0.5rem;
+}
+
+.appt-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.appt-shift-btns {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.appt-shift-btn {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.appt-shift-btn:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+.appt-shift-btn--active {
+  border-color: #0284c7;
+  background: #e0f2fe;
+  color: #0284c7;
 }

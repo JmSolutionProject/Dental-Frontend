@@ -115,6 +115,17 @@ export class MessageApiRepository implements MessageRepository {
     );
   }
 
+  sendWhatsAppDirect(
+    phone: string,
+    data: SendWhatsAppMessageRequest,
+  ): Observable<SendWhatsAppMessageResponse> {
+    return this.http.post<SendWhatsAppMessageResponse>(`${this.apiUrl}/whatsapp/send`, {
+      phone,
+      phoneNumber: phone,
+      content: data.content,
+    });
+  }
+
   private fromBackend(message: BackendMessage): Message {
     return {
       id: message.id,

@@ -1,27 +1,69 @@
-<article class="dossier-card observations-card">
+<article class="dossier-card">
   <div class="card-title-bar">
     <div>
-      <h2>Observaciones y Notas Internas del Paciente</h2>
-      <p class="subtitle">Indicaciones de conducta, recomendaciones de atención o notas internas del dentista.</p>
+      <h2>Observaciones del Paciente</h2>
+      <p class="subtitle">Historial cronológico de notas clínicas registradas en cada cita.</p>
     </div>
   </div>
 
-  <form [formGroup]="form()" class="observations-form">
-    <label class="observations-label" for="observations-field">
-      Observaciones
-    </label>
-    <textarea
-      id="observations-field"
-      formControlName="observations"
-      class="observations-textarea"
-      rows="8"
-      placeholder="Escriba observaciones sobre la conducta del paciente, preferencias de anestesia o indicaciones especiales..."
-    ></textarea>
-
-    <div class="observations-actions">
-      <button type="button" class="btn btn--success btn--lg" [disabled]="saving()" (click)="onSave()">
-        {{ saving() ? 'Guardando Observaciones…' : 'Guardar Observaciones' }}
-      </button>
+  <div class="obs-layout">
+    <div class="obs-history">
+      @if (!hasEntries()) {
+        <div class="obs-empty">
+          <p>Sin observaciones registradas.</p>
+          <p class="muted">Usa el formulario para agregar la primera.</p>
+        </div>
+      } @else {
+        <div class="obs-timeline">
+          @for (entry of entries(); track $index) {
+            <div class="obs-entry">
+              <div class="obs-entry-dot"></div>
+              <div class="obs-entry-content">
+                <div class="obs-entry-meta">
+                  <span class="obs-entry-date">{{ formatDate(entry.date) }}</span>
+                  <span class="obs-entry-doctor">{{ entry.doctor }}</span>
+                  <div class="obs-entry-actions">
+                    <button type="button" class="obs-entry-btn" title="Editar" (click)="editEntry(entry.rawIndex)">✎</button>
+                    <button type="button" class="obs-entry-btn obs-entry-btn--danger" title="Eliminar" (click)="deleteEntry(entry.rawIndex)">✕</button>
+                  </div>
+                </div>
+                <p class="obs-entry-text">{{ entry.text }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
-  </form>
+
+    <aside class="obs-sidebar">
+      <h3>{{ editingIndex() !== null ? 'Editar Observación' : 'Nueva Observación' }}</h3>
+      <p class="obs-sidebar-hint">Asociada a la fecha de consulta.</p>
+
+      <form [formGroup]="newObsForm" class="obs-form">
+        <label class="obs-label">Fecha</label>
+        <input type="date" formControlName="date" class="obs-input" />
+
+        <label class="obs-label">Observación</label>
+        <textarea
+          formControlName="text"
+          class="obs-textarea"
+          rows="4"
+          placeholder="Describa hallazgos, indicaciones o notas relevantes..."
+        ></textarea>
+
+        <div class="obs-form-btns">
+          <button type="button" class="btn btn--primary" (click)="addObservation()" [disabled]="newObsForm.invalid">
+            {{ editingIndex() !== null ? 'Guardar Cambios' : 'Agregar' }}
+          </button>
+          @if (editingIndex() !== null) {
+            <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
+          }
+        </div>
+      </form>
+
+      <button type="button" class="btn btn--success w-100 mt-2" [disabled]="saving()" (click)="save()">
+        {{ saving() ? 'Guardando…' : 'Guardar Todo' }}
+      </button>
+    </aside>
+  </div>
 </article>

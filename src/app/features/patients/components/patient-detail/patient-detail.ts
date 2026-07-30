@@ -2,6 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { take, catchError, of, finalize } from 'rxjs';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroArrowLeftCircle, heroPencilSquare, heroCheck, heroXMark, heroTrash } from '@ng-icons/heroicons/outline';
 import {
   FormBuilder,
   FormGroup,
@@ -17,6 +19,8 @@ import { API_URL } from '../../../../core/config/api.config';
 import { GetPatientUseCase } from '../../application/get-patient.usecase';
 import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
 import { DeletePatientUseCase } from '../../application/delete-patient.usecase';
+import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
+import { Appointment } from '../../../appointments/domain/appointment';
 import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, BudgetItemRecord, PaymentRecord, InstallmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
 
 import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
@@ -30,8 +34,6 @@ import { PatientAttachmentsTab } from '../patient-attachments-tab/patient-attach
 import { PatientPaymentsTab } from '../patient-payments-tab/patient-payments-tab';
 import { PersonalDataForm } from '../personal-data-form/personal-data-form';
 import { ObservationsTab } from '../observations-tab/observations-tab';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { heroArrowLeftCircle } from '@ng-icons/heroicons/outline';
 
 export type DetailTab =
   | 'summary'
@@ -49,7 +51,7 @@ export type DetailTab =
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ModalComponent, PersonalDataForm, ObservationsTab, PatientSummaryTab, PatientOdontogramTab, PatientTreatmentPlanTab, PatientMedicalHistoryTab, PatientAttachmentsTab, PatientPaymentsTab, NgIcon],
   providers: [
-    provideIcons({ heroArrowLeftCircle })
+    provideIcons({ heroArrowLeftCircle, heroPencilSquare, heroCheck, heroXMark, heroTrash })
   ],
   templateUrl: './patient-detail.html',
   styleUrl: './patient-detail.css',
@@ -67,9 +69,11 @@ export class PatientDetail {
   private readonly auth = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
+  private readonly getAppointments = inject(GetAppointmentsUseCase);
 
   readonly role = this.auth.role;
   readonly patient = signal<Patient | null>(null);
+  readonly patientAppointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
   readonly editing = signal(false);
   readonly saving = signal(false);
@@ -89,17 +93,37 @@ export class PatientDetail {
     takesMedication: false,
   });
 
-  // STATICS FOR PATIENT DOSSIER
-  readonly assignedDoctor = signal('Dr. Carlos Pérez S.');
-  readonly lastVisitDate = signal('15/07/2026');
-  readonly nextAppointmentDate = signal('22/07/2026 - 10:30 AM');
+  // COMPUTED FROM REAL APPOINTMENT DATA
+  readonly assignedDoctor = computed(() => {
+    const completed = this.patientAppointments()
+      .filter(a => a.status === 'completed')
+      .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+    return completed.length > 0 ? (completed[0].dentistName || 'Sin asignar') : 'Sin asignar';
+  });
+
+  readonly lastVisitDate = computed(() => {
+    const completed = this.patientAppointments()
+      .filter(a => a.status === 'completed')
+      .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+    if (completed.length === 0) return '';
+    return new Date(completed[0].scheduledAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  });
+
+  readonly nextAppointmentDate = computed(() => {
+    const now = new Date();
+    const upcoming = this.patientAppointments()
+      .filter(a => a.status === 'scheduled' && new Date(a.scheduledAt) >= now)
+      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    if (upcoming.length === 0) return '';
+    const d = new Date(upcoming[0].scheduledAt);
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) + ' - ' + d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+  });
+
+  readonly totalAppointments = computed(() => this.patientAppointments().length);
+  readonly completedAppointments = computed(() => this.patientAppointments().filter(a => a.status === 'completed').length);
 
   // Appointments History
-  readonly appointmentsHistory = signal<AppointmentRecord[]>([
-    { id: '1', date: '15/07/2026', doctor: 'Dr. Carlos Pérez S.', reason: 'Evaluación y Limpieza Ultrasónica', status: 'Finalizada' },
-    { id: '2', date: '22/07/2026', doctor: 'Dra. María Ruiz M.', reason: 'Endodoncia Unirradicular Pieza 36', status: 'Programada' },
-    { id: '3', date: '05/06/2026', doctor: 'Dr. Carlos Pérez S.', reason: 'Consulta Inicial y Odontograma', status: 'Finalizada' },
-  ]);
+  readonly appointmentsHistory = signal<AppointmentRecord[]>([]);
 
   // Unified Treatment Plans
   readonly treatmentPlans = signal<TreatmentPlan[]>([]);
@@ -180,6 +204,7 @@ export class PatientDetail {
             this.patient.set(p);
             this.populateForm(p);
             this.loadTreatmentPlans(p.id);
+            this.loadPatientAppointments(p.id);
           }
         });
     });
@@ -223,6 +248,42 @@ export class PatientDetail {
       });
   }
 
+  private loadPatientAppointments(patientId: string) {
+    this.http.get<{ data: Array<{
+      id: string; patientId: string; patientName: string; dentistId: string; dentistName: string;
+      scheduledAt: string; reason: string; status: string;
+    }> }>(`${this.apiUrl}/appointments?limit=100`)
+      .pipe(take(1), catchError(() => of({ data: [] })))
+      .subscribe((res) => {
+        const filtered = res.data.filter((a) => a.patientId === patientId || String(a.patientId) === patientId);
+        const raw: Appointment[] = filtered.map((a) => ({
+          id: a.id,
+          patientId: a.patientId,
+          patientName: a.patientName,
+          dentistId: a.dentistId,
+          dentistName: a.dentistName,
+          scheduledAt: a.scheduledAt,
+          reason: a.reason,
+          status: a.status as Appointment['status'],
+        }));
+        this.patientAppointments.set(raw);
+
+        const records = filtered.map((a) => {
+          const statusMap: Record<string, AppointmentRecord['status']> = {
+            scheduled: 'Programada', completed: 'Finalizada', cancelled: 'Cancelada',
+          };
+          return {
+            id: a.id,
+            date: new Date(a.scheduledAt).toLocaleDateString('es-PE'),
+            doctor: a.dentistName || 'Sin asignar',
+            reason: a.reason || 'Sin motivo',
+            status: (statusMap[a.status] || 'Programada') as AppointmentRecord['status'],
+          };
+        });
+        this.appointmentsHistory.set(records);
+      });
+  }
+
   onPlanAdded(newPlan: TreatmentPlan) {
     this.treatmentPlans.update((plans) => [newPlan, ...plans]);
     this.reloadTreatmentPlans();
@@ -258,7 +319,7 @@ export class PatientDetail {
       customAllergy: '',
       customDisease: '',
       medicationDetails: (mh.medications || []).join(', '),
-      observations: '',
+      observations: p.notes || '',
       notes: p.notes,
     });
   }

@@ -1,10 +1,13 @@
 import { Component, OnDestroy, OnInit, computed, input, signal } from '@angular/core';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroCalendarDays } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-birth-date-field',
-  imports: [],
+  imports: [NgIcon],
+  providers: [provideIcons({ heroCalendarDays })],
   templateUrl: './birth-date-field.html',
   styleUrl: './birth-date-field.css',
 })
