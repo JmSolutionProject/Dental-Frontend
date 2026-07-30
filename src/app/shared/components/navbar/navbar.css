@@ -1,6 +1,6 @@
 .topbar {
   align-items: center;
-  background: var(--color-white);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -33,20 +33,73 @@
   font-style: italic;
 }
 
+.topbar-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.65rem;
+}
+
+.theme-toggle,
 .logout {
-  background: var(--color-white);
+  align-items: center;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   color: var(--color-text);
   cursor: pointer;
+  display: inline-flex;
   font-family: var(--font-display);
   font-size: var(--text-sm);
   font-weight: 600;
+  gap: 0.45rem;
   padding: 0.5rem 1rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle {
+  background: var(--color-primary-a10);
+  border-color: var(--color-primary-a18);
+  color: var(--color-primary-dark);
+}
+
+.theme-toggle ng-icon,
+.logout ng-icon {
+  font-size: 1rem;
+}
+
+.theme-toggle:hover {
+  background: var(--color-sky-100);
+  border-color: var(--color-primary);
+  color: var(--color-sky-600);
+  transform: translateY(-1px);
 }
 
 .logout:hover {
-  background: var(--color-sky-100);
-  color: var(--color-sky-600);
+  background: var(--color-red-800);
+  border-color: var(--color-red-800);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    align-items: stretch;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .topbar-title {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-toggle,
+  .logout {
+    justify-content: center;
+  }
 }
