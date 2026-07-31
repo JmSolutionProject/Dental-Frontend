@@ -13,6 +13,7 @@ export interface AccountProfile {
 export interface UpdateProfileRequest {
   nombreCompleto: string;
   email: string;
+  roleIds: number[];
 }
 
 export interface ChangePasswordRequest {

@@ -63,62 +63,40 @@
         </select>
       </label>
 
-      @if (totalItems() > pageSize()) {
-        <nav class="pagination" aria-label="Paginación de tabla">
-          <button
-            class="page-btn page-btn--wide"
-            type="button"
-            [disabled]="!hasPreviousPage"
-            aria-label="Ir a la primera página"
-            (click)="goToFirstPage()"
-          >
-            Primera
-          </button>
+      <nav class="pagination" aria-label="Paginación de tabla">
+        <button
+          class="page-btn page-btn--wide"
+          type="button"
+          [disabled]="!hasPreviousPage"
+          aria-label="Ir a la página anterior"
+          (click)="goToPreviousPage()"
+        >
+          Anterior
+        </button>
 
+        @for (p of pageNumbers; track p) {
           <button
-            class="page-btn page-btn--wide"
+            class="page-btn"
             type="button"
-            [disabled]="!hasPreviousPage"
-            aria-label="Ir a la página anterior"
-            (click)="goToPreviousPage()"
+            [class.active]="p === currentPage()"
+            [attr.aria-current]="p === currentPage() ? 'page' : null"
+            [attr.aria-label]="p === currentPage() ? 'Página ' + p + ' actual' : 'Ir a la página ' + p"
+            (click)="goToPage(p)"
           >
-            Anterior
+            {{ p }}
           </button>
+        }
 
-          @for (p of pageNumbers; track p) {
-            <button
-              class="page-btn"
-              type="button"
-              [class.active]="p === currentPage()"
-              [attr.aria-current]="p === currentPage() ? 'page' : null"
-              [attr.aria-label]="p === currentPage() ? 'Página ' + p + ' actual' : 'Ir a la página ' + p"
-              (click)="goToPage(p)"
-            >
-              {{ p }}
-            </button>
-          }
-
-          <button
-            class="page-btn page-btn--wide"
-            type="button"
-            [disabled]="!hasNextPage"
-            aria-label="Ir a la página siguiente"
-            (click)="goToNextPage()"
-          >
-            Siguiente
-          </button>
-
-          <button
-            class="page-btn page-btn--wide"
-            type="button"
-            [disabled]="!hasNextPage"
-            aria-label="Ir a la última página"
-            (click)="goToLastPage()"
-          >
-            Última
-          </button>
-        </nav>
-      }
+        <button
+          class="page-btn page-btn--wide"
+          type="button"
+          [disabled]="!hasNextPage"
+          aria-label="Ir a la página siguiente"
+          (click)="goToNextPage()"
+        >
+          Siguiente
+        </button>
+      </nav>
     </div>
   }
 </div>

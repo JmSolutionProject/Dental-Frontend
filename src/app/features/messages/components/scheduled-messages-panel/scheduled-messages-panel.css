@@ -4,9 +4,7 @@
 }
 
 .management-card {
-  background:
-    radial-gradient(circle at top right, var(--color-primary-a10), transparent 18rem),
-    linear-gradient(135deg, var(--color-white), var(--color-slate-50));
+  background: var(--color-white);
   border-color: var(--color-slate-200);
   box-shadow: 0 18px 45px var(--color-slate-900-a08);
   display: grid;

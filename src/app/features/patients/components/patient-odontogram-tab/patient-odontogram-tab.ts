@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, effect, inject, input, signal, computed } from '@angular/core';
 import {
   FdiTooth,
@@ -16,7 +17,7 @@ import {
 import { GetOdontogramUseCase } from '../../../odontogram/application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../../odontogram/application/update-tooth-condition.usecase';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { catchError, finalize, of, take } from 'rxjs';
+import { catchError, finalize, of, switchMap, take } from 'rxjs';
 import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
 import { Modal } from '../../../../shared/components/modal/modal';
 
@@ -142,7 +143,7 @@ export class PatientOdontogramTab {
 
     this.selectedTooth.set(tooth);
     this.selectedSurface.set(selection.surface);
-    this.selectedCondition.set(tooth.condition);
+    this.selectedCondition.set(tooth.surfaceConditions?.[selection.surface] ?? tooth.condition);
     this.progressNotes.set('');
     this.showToothProgressModal.set(true);
   }
@@ -155,6 +156,14 @@ export class PatientOdontogramTab {
 
   selectCondition(condition: ToothCondition) {
     this.selectedCondition.set(condition);
+  }
+
+  currentSelectedCondition(): ToothCondition {
+    const tooth = this.selectedTooth();
+    const surface = this.selectedSurface();
+
+    if (!tooth) return 'healthy';
+    return surface ? tooth.surfaceConditions?.[surface] ?? tooth.condition : tooth.condition;
   }
 
   saveToothProgress() {
@@ -203,35 +212,42 @@ export class PatientOdontogramTab {
       .execute(pid, updatedTooth)
       .pipe(
         take(1),
-        catchError(() => {
-          this.toast.error('Error al actualizar la pieza dental.');
+        switchMap(() => this.getOdontogram.execute(pid).pipe(take(1))),
+        catchError((err) => {
+          console.error('Error al guardar odontograma:', err);
+          this.toast.error(this.getBackendErrorMessage(err));
           return of(null);
         }),
         finalize(() => this.savingTooth.set(false)),
       )
-      .subscribe((updatedOdontogram) => {
-        if (updatedOdontogram) {
-          const persistedTooth = updatedOdontogram.teeth.find(
-            (t) => t.fdiNumber === tooth.fdiNumber,
-          );
-          const refreshed: FdiTooth = {
-            ...updatedTooth,
-            id: persistedTooth?.id ?? updatedTooth.id,
-            detailId: persistedTooth?.detailId ?? updatedTooth.detailId,
-            surfaceDetailIds: {
-              ...updatedTooth.surfaceDetailIds,
-              ...persistedTooth?.surfaceDetailIds,
-            },
-            history: updatedTooth.history,
-          };
+      .subscribe((persistedOdontogram) => {
+        if (!persistedOdontogram) return;
 
-          this.mergeTooth(refreshed);
-          this.selectedTooth.set(refreshed);
-          this.toast.success(
-            `Pieza dental ${tooth.fdiNumber} marcada como: ${this.conditionLabel(condition)}.`,
-          );
-          this.progressNotes.set('');
+        const completedOdontogram = this.completeLocalOdontogram(pid, persistedOdontogram);
+        const persistedTooth = completedOdontogram.teeth.find(
+          (t) => t.fdiNumber === tooth.fdiNumber,
+        );
+        const surface = this.selectedSurface();
+        const persistedCondition = surface
+          ? persistedTooth?.surfaceConditions?.[surface]
+          : persistedTooth?.condition;
+
+        if (!persistedTooth || persistedCondition !== condition) {
+          this.toast.error('El backend no devolvió el tratamiento guardado. Revisa si el endpoint está persistiendo en la DB.');
+          return;
         }
+
+        const refreshed: FdiTooth = {
+          ...persistedTooth,
+          history: updatedTooth.history,
+        };
+
+        this.odontogram.set(completedOdontogram);
+        this.selectedTooth.set(refreshed);
+        this.toast.success(
+          `Pieza dental ${tooth.fdiNumber} marcada como: ${this.conditionLabel(condition)}.`,
+        );
+        this.progressNotes.set('');
       });
   }
 
@@ -246,6 +262,18 @@ export class PatientOdontogramTab {
         item.fdiNumber === tooth.fdiNumber ? { ...item, ...tooth } : item,
       ),
     });
+  }
+
+  private getBackendErrorMessage(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      const message = err.error?.message;
+      if (Array.isArray(message)) return message.join(', ');
+      if (message) return message;
+    }
+
+    if (err instanceof Error && err.message) return err.message;
+
+    return 'Error al actualizar la pieza dental.';
   }
 
   setQuadrant(q: 'adult' | 'child') {

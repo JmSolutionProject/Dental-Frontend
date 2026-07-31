@@ -24,6 +24,7 @@ import {
 import { AuthService } from '../../../core/services/auth';
 import { GetAppointmentsUseCase } from '../../appointments/application/get-appointments.usecase';
 import { GetPatientsUseCase } from '../../patients/application/get-patients.usecase';
+import { UserRepository } from '../../users/infrastructure/user-api.repository';
 import { GetDashboardKpisUseCase } from '../application/get-dashboard-kpis.usecase';
 import { AppointmentStatus } from '../../appointments/domain/appointment';
 
@@ -58,6 +59,7 @@ export class Dashboard {
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
   private readonly getDashboardKpis = inject(GetDashboardKpisUseCase);
+  private readonly userRepository = inject(UserRepository);
 
   protected readonly rawRole = this.auth.role;
   protected readonly currentRole = computed(() => (this.rawRole() || 'admin').toLowerCase());
@@ -79,6 +81,10 @@ export class Dashboard {
 
   protected readonly patientsTotal$ = isPlatformBrowser(this.platformId)
     ? this.getPatients.execute({ limit: 1 }).pipe(map((res) => res.total), catchError(() => of(0)))
+    : of(0);
+
+  protected readonly workersTotal$ = isPlatformBrowser(this.platformId)
+    ? this.userRepository.findAll().pipe(map((users) => users.length), catchError(() => of(0)))
     : of(0);
 
   protected readonly appointments$ = isPlatformBrowser(this.platformId)

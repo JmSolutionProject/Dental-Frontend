@@ -20,3 +20,9 @@ export interface SaveUserRequest {
   roleIds: number[];
   porcentajeComision?: number;
 }
+
+export type UpdateUserRequest = Omit<SaveUserRequest, 'password'>;
+
+export interface ChangeUserPasswordRequest {
+  password: string;
+}
