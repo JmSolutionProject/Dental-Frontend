@@ -5,6 +5,7 @@ import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../core/config/api.config';
 import { MessageRepository } from '../domain/message.repository';
 import {
+  CreateWhatsAppBroadcastCampaignRequest,
   CreateMessageRequest,
   FindMessagesParams,
   Message,
@@ -15,6 +16,8 @@ import {
   SendWhatsAppMessageResponse,
   UpdateMessageRequest,
   WhatsAppQrResponse,
+  WhatsAppBroadcastCampaign,
+  WhatsAppMediaAttachment,
   WhatsAppStatus,
 } from '../domain/messages';
 
@@ -93,8 +96,8 @@ export class MessageApiRepository implements MessageRepository {
       .pipe(
         map((status) => ({
           status: status.status ?? 'unknown',
-          ready: Boolean(status.ready),
-          message: status.message,
+          ready: status.status === 'ready' || Boolean(status.ready),
+          message: status.message ?? (status as { error?: string }).error,
         })),
       );
   }
@@ -124,6 +127,52 @@ export class MessageApiRepository implements MessageRepository {
       phoneNumber: phone,
       content: data.content,
     });
+  }
+
+  createWhatsAppBroadcastCampaign(
+    data: CreateWhatsAppBroadcastCampaignRequest,
+  ): Observable<WhatsAppBroadcastCampaign> {
+    return this.http.post<WhatsAppBroadcastCampaign>(
+      `${this.apiUrl}/whatsapp/broadcast/campaigns`,
+      data,
+    );
+  }
+
+  getWhatsAppBroadcastCampaign(id: string): Observable<WhatsAppBroadcastCampaign> {
+    return this.http.get<WhatsAppBroadcastCampaign>(
+      `${this.apiUrl}/whatsapp/broadcast/campaigns/${id}`,
+    );
+  }
+
+  startWhatsAppBroadcastCampaign(id: string): Observable<WhatsAppBroadcastCampaign> {
+    return this.http.post<WhatsAppBroadcastCampaign>(
+      `${this.apiUrl}/whatsapp/broadcast/campaigns/${id}/start`,
+      {},
+    );
+  }
+
+  pauseWhatsAppBroadcastCampaign(id: string): Observable<WhatsAppBroadcastCampaign> {
+    return this.http.post<WhatsAppBroadcastCampaign>(
+      `${this.apiUrl}/whatsapp/broadcast/campaigns/${id}/pause`,
+      {},
+    );
+  }
+
+  cancelWhatsAppBroadcastCampaign(id: string): Observable<WhatsAppBroadcastCampaign> {
+    return this.http.post<WhatsAppBroadcastCampaign>(
+      `${this.apiUrl}/whatsapp/broadcast/campaigns/${id}/cancel`,
+      {},
+    );
+  }
+
+  uploadWhatsAppMedia(file: File): Observable<WhatsAppMediaAttachment> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<WhatsAppMediaAttachment>(
+      `${this.apiUrl}/files/upload`,
+      formData,
+    );
   }
 
   private fromBackend(message: BackendMessage): Message {

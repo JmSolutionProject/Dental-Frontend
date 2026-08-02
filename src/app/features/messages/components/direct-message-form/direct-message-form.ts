@@ -1,9 +1,11 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { catchError, finalize, of, take } from 'rxjs';
 
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Patient } from '../../../patients/domain/patient';
+import { WhatsAppMediaAttachment } from '../../domain/messages';
 import { MessageCenterStore, ScheduledRecipient } from '../messages-center.store';
 
 type SendMode = 'now' | 'scheduled';
@@ -19,6 +21,8 @@ export class DirectMessageForm {
   private readonly toast = inject(ToastService);
 
   readonly contactSearch = signal('');
+  readonly attachment = signal<WhatsAppMediaAttachment | null>(null);
+  readonly uploadingAttachment = signal(false);
 
   readonly sendForm = new FormGroup({
     countryCode: new FormControl('+51', { nonNullable: true }),
@@ -65,6 +69,14 @@ export class DirectMessageForm {
         this.store.pendingDirectContent.set(null);
       }
     });
+
+    effect(() => {
+      const attachment = this.store.pendingDirectAttachment();
+      if (attachment) {
+        this.attachment.set(attachment);
+        this.store.pendingDirectAttachment.set(null);
+      }
+    });
   }
 
   submit() {
@@ -85,12 +97,21 @@ export class DirectMessageForm {
     const recipients: ScheduledRecipient[] = patients.map((patient) => ({
       patient,
       content: this.store.renderTemplate(patient, content, value.service),
+      attachment: this.attachment(),
     }));
 
-    const resetForm = () => this.sendForm.controls.content.reset();
+    const resetForm = () => {
+      this.sendForm.controls.content.reset();
+      this.attachment.set(null);
+    };
 
     if (patients.length === 0) {
-      this.store.sendImmediateToPhone(this.normalizedManualPhone()!, content, resetForm);
+      this.store.sendImmediateToPhone(this.normalizedManualPhone()!, content, resetForm, this.attachment());
+      return;
+    }
+
+    if (patients.length > 1) {
+      this.store.createBroadcastCampaignForPatients(patients, content, resetForm, this.attachment());
       return;
     }
 
@@ -100,6 +121,14 @@ export class DirectMessageForm {
     }
 
     this.store.sendImmediate(recipients, resetForm);
+  }
+
+  broadcastTotal(status: string): number {
+    return this.store.currentBroadcast()?.totals[status] ?? 0;
+  }
+
+  broadcastTotalCount(): number {
+    return this.store.currentBroadcast()?.recipients.length ?? 0;
   }
 
   onContactSearchInput(event: Event) {
@@ -159,6 +188,39 @@ export class DirectMessageForm {
 
   addAttachment(type: string) {
     this.toast.info(`${type} listo para adjuntar cuando el backend habilite archivos.`);
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.toast.info('Seleccioná una imagen válida.');
+      return;
+    }
+
+    this.uploadingAttachment.set(true);
+    this.store
+      .uploadMedia(file)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo subir la imagen.');
+          return of(null);
+        }),
+        finalize(() => this.uploadingAttachment.set(false)),
+      )
+      .subscribe((attachment) => {
+        if (!attachment) return;
+        this.attachment.set(attachment);
+        this.toast.success('Imagen adjuntada al mensaje.');
+      });
+  }
+
+  removeAttachment() {
+    this.attachment.set(null);
   }
 
   patientName(patient: Patient): string {

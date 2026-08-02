@@ -7,8 +7,14 @@ import { Patient } from '../../patients/domain/patient';
 import { GetMessagesUseCase } from '../application/get-messages.usecase';
 import { GetWhatsAppQrUseCase } from '../application/get-whatsapp-qr.usecase';
 import { GetWhatsAppStatusUseCase } from '../application/get-whatsapp-status.usecase';
+import { ManageWhatsAppBroadcastUseCase } from '../application/manage-whatsapp-broadcast.usecase';
 import { SendWhatsAppMessageUseCase } from '../application/send-whatsapp-message.usecase';
-import { Message, WhatsAppStatus } from '../domain/messages';
+import {
+  Message,
+  WhatsAppBroadcastCampaign,
+  WhatsAppMediaAttachment,
+  WhatsAppStatus,
+} from '../domain/messages';
 import QRCode from 'qrcode';
 
 export type MessageSection = 'direct' | 'scheduled' | 'templates';
@@ -18,6 +24,7 @@ export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly';
 export interface ScheduledRecipient {
   patient: Patient;
   content: string;
+  attachment?: WhatsAppMediaAttachment | null;
 }
 
 export interface ScheduledMessageItem {
@@ -27,6 +34,7 @@ export interface ScheduledMessageItem {
   scheduledAt: string;
   frequency: Frequency;
   status: ScheduledStatus;
+  attachment?: WhatsAppMediaAttachment | null;
 }
 
 export interface MessageTemplateItem {
@@ -34,6 +42,7 @@ export interface MessageTemplateItem {
   name: string;
   category: string;
   content: string;
+  attachment?: WhatsAppMediaAttachment | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +51,7 @@ export class MessageCenterStore {
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly getWhatsAppStatus = inject(GetWhatsAppStatusUseCase);
   private readonly getWhatsAppQr = inject(GetWhatsAppQrUseCase);
+  private readonly manageWhatsAppBroadcast = inject(ManageWhatsAppBroadcastUseCase);
   private readonly sendWhatsAppMessage = inject(SendWhatsAppMessageUseCase);
   private readonly toast = inject(ToastService);
 
@@ -57,6 +67,8 @@ export class MessageCenterStore {
   readonly loadingStatus = signal(false);
   readonly loadingQr = signal(false);
   readonly sending = signal(false);
+  readonly broadcastBusy = signal(false);
+  readonly currentBroadcast = signal<WhatsAppBroadcastCampaign | null>(null);
 
   readonly scheduledRunning = signal(false);
   readonly scheduledQueue = signal<ScheduledRecipient[]>([]);
@@ -100,6 +112,8 @@ export class MessageCenterStore {
   readonly requestedSection = signal<MessageSection | null>(null);
   readonly pendingDirectContent = signal<string | null>(null);
   readonly pendingScheduledContent = signal<string | null>(null);
+  readonly pendingDirectAttachment = signal<WhatsAppMediaAttachment | null>(null);
+  readonly pendingScheduledAttachment = signal<WhatsAppMediaAttachment | null>(null);
 
   private scheduledTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -176,14 +190,187 @@ export class MessageCenterStore {
   }
 
   sendImmediate(recipients: ScheduledRecipient[], onDone: () => void) {
+    if (recipients.length > 1) {
+      this.createBroadcastCampaign(recipients, onDone);
+      return;
+    }
+
     this.sending.set(true);
     this.sendRecipientsSequentially(recipients, 0, onDone);
   }
 
-  sendImmediateToPhone(phone: string, content: string, onDone: () => void) {
+  createBroadcastCampaign(recipients: ScheduledRecipient[], onDone: () => void) {
+    const firstRecipient = recipients[0];
+    if (!firstRecipient) return;
+
+    const hasDifferentContents = recipients.some((recipient) => recipient.content !== firstRecipient.content);
+    if (hasDifferentContents) {
+      this.toast.info('La campaña masiva usa un solo contenido base para todos los destinatarios.');
+    }
+
+    this.broadcastBusy.set(true);
+    this.manageWhatsAppBroadcast
+      .create({
+        nombreCampana: `Campaña WhatsApp ${new Date().toLocaleString('es-PE')}`,
+        descripcion: `Envío masivo creado desde el centro de WhatsApp para ${recipients.length} pacientes.`,
+        pacienteIds: recipients.map((recipient) => Number(recipient.patient.id)),
+        contenido: firstRecipient.content,
+        mediaKey: firstRecipient.attachment?.key,
+        mediaName: firstRecipient.attachment?.originalName,
+        mediaMimeType: firstRecipient.attachment?.mimeType,
+        tipoEnvio: 'custom-message',
+        maxIntentos: 3,
+      })
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo crear la campaña de WhatsApp.');
+          return of(null);
+        }),
+      )
+      .subscribe((campaign) => {
+        if (!campaign) {
+          this.broadcastBusy.set(false);
+          return;
+        }
+
+        this.manageWhatsAppBroadcast
+          .start(campaign.id)
+          .pipe(
+            take(1),
+            catchError(() => {
+              this.toast.error('La campaña se creó, pero no se pudo iniciar.');
+              return of(campaign);
+            }),
+            finalize(() => this.broadcastBusy.set(false)),
+          )
+          .subscribe((startedCampaign) => {
+            this.currentBroadcast.set(startedCampaign);
+            this.toast.success('Campaña masiva iniciada. El backend enviará un mensaje cada 30 segundos.');
+            onDone();
+          });
+      });
+  }
+
+  createBroadcastCampaignForPatients(
+    patients: Patient[],
+    content: string,
+    onDone: () => void,
+    attachment?: WhatsAppMediaAttachment | null,
+  ) {
+    if (patients.length === 0) return;
+
+    this.broadcastBusy.set(true);
+    this.manageWhatsAppBroadcast
+      .create({
+        nombreCampana: `Campaña WhatsApp ${new Date().toLocaleString('es-PE')}`,
+        descripcion: `Envío masivo creado desde el centro de WhatsApp para ${patients.length} pacientes.`,
+        pacienteIds: patients.map((patient) => Number(patient.id)),
+        contenido: content,
+        mediaKey: attachment?.key,
+        mediaName: attachment?.originalName,
+        mediaMimeType: attachment?.mimeType,
+        tipoEnvio: 'custom-message',
+        maxIntentos: 3,
+      })
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo crear la campaña de WhatsApp.');
+          return of(null);
+        }),
+      )
+      .subscribe((campaign) => {
+        if (!campaign) {
+          this.broadcastBusy.set(false);
+          return;
+        }
+
+        this.manageWhatsAppBroadcast
+          .start(campaign.id)
+          .pipe(
+            take(1),
+            catchError(() => {
+              this.toast.error('La campaña se creó, pero no se pudo iniciar.');
+              return of(campaign);
+            }),
+            finalize(() => this.broadcastBusy.set(false)),
+          )
+          .subscribe((startedCampaign) => {
+            this.currentBroadcast.set(startedCampaign);
+            this.toast.success('Campaña masiva iniciada. El backend enviará un mensaje cada 30 segundos.');
+            onDone();
+          });
+      });
+  }
+
+  refreshBroadcastCampaign() {
+    const campaign = this.currentBroadcast();
+    if (!campaign) return;
+
+    this.broadcastBusy.set(true);
+    this.manageWhatsAppBroadcast
+      .findById(campaign.id)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo actualizar el estado de la campaña.');
+          return of(null);
+        }),
+        finalize(() => this.broadcastBusy.set(false)),
+      )
+      .subscribe((updatedCampaign) => {
+        if (updatedCampaign) this.currentBroadcast.set(updatedCampaign);
+      });
+  }
+
+  pauseBroadcastCampaign() {
+    this.updateBroadcastCampaign('pause', 'Campaña pausada.');
+  }
+
+  startBroadcastCampaign() {
+    this.updateBroadcastCampaign('start', 'Campaña iniciada.');
+  }
+
+  cancelBroadcastCampaign() {
+    this.updateBroadcastCampaign('cancel', 'Campaña cancelada.');
+  }
+
+  private updateBroadcastCampaign(action: 'start' | 'pause' | 'cancel', successMessage: string) {
+    const campaign = this.currentBroadcast();
+    if (!campaign) return;
+
+    this.broadcastBusy.set(true);
+    this.manageWhatsAppBroadcast[action](campaign.id)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo actualizar la campaña.');
+          return of(null);
+        }),
+        finalize(() => this.broadcastBusy.set(false)),
+      )
+      .subscribe((updatedCampaign) => {
+        if (!updatedCampaign) return;
+        this.currentBroadcast.set(updatedCampaign);
+        this.toast.success(successMessage);
+      });
+  }
+
+  sendImmediateToPhone(
+    phone: string,
+    content: string,
+    onDone: () => void,
+    attachment?: WhatsAppMediaAttachment | null,
+  ) {
     this.sending.set(true);
     this.sendWhatsAppMessage
-      .executeDirect(phone, { content })
+      .executeDirect(phone, {
+        content,
+        mediaKey: attachment?.key,
+        mediaName: attachment?.originalName,
+        mediaMimeType: attachment?.mimeType,
+      })
       .pipe(
         take(1),
         catchError(() => {
@@ -211,7 +398,12 @@ export class MessageCenterStore {
     }
 
     this.sendWhatsAppMessage
-      .execute(recipient.patient.id, { content: recipient.content })
+      .execute(recipient.patient.id, {
+        content: recipient.content,
+        mediaKey: recipient.attachment?.key,
+        mediaName: recipient.attachment?.originalName,
+        mediaMimeType: recipient.attachment?.mimeType,
+      })
       .pipe(
         take(1),
         catchError(() => {
@@ -249,7 +441,12 @@ export class MessageCenterStore {
 
     this.nextScheduledPatient.set(this.patientName(recipient.patient));
     this.sendWhatsAppMessage
-      .execute(recipient.patient.id, { content: recipient.content })
+      .execute(recipient.patient.id, {
+        content: recipient.content,
+        mediaKey: recipient.attachment?.key,
+        mediaName: recipient.attachment?.originalName,
+        mediaMimeType: recipient.attachment?.mimeType,
+      })
       .pipe(
         take(1),
         catchError(() => {
@@ -284,6 +481,7 @@ export class MessageCenterStore {
     content: string;
     scheduledAt: string;
     frequency: Frequency;
+    attachment?: WhatsAppMediaAttachment | null;
   }) {
     this.scheduledMessages.update((messages) => [
       {
@@ -293,6 +491,7 @@ export class MessageCenterStore {
         scheduledAt: value.scheduledAt,
         frequency: value.frequency,
         status: 'pending',
+        attachment: value.attachment ?? null,
       },
       ...messages,
     ]);
@@ -304,27 +503,39 @@ export class MessageCenterStore {
     if (notify) this.toast.info('Mensaje programado cancelado.');
   }
 
-  saveTemplate(value: { name: string; category: string; content: string }) {
+  saveTemplate(value: {
+    name: string;
+    category: string;
+    content: string;
+    attachment?: WhatsAppMediaAttachment | null;
+  }) {
     this.templates.update((templates) => [
       {
         id: Date.now(),
         name: value.name.trim(),
         category: value.category.trim(),
         content: value.content.trim(),
+        attachment: value.attachment ?? null,
       },
       ...templates,
     ]);
     this.toast.success('Plantilla creada correctamente.');
   }
 
-  useTemplate(content: string, target: 'direct' | 'scheduled') {
+  useTemplate(template: MessageTemplateItem, target: 'direct' | 'scheduled') {
     if (target === 'scheduled') {
-      this.pendingScheduledContent.set(content);
+      this.pendingScheduledContent.set(template.content);
+      this.pendingScheduledAttachment.set(template.attachment ?? null);
       this.requestedSection.set('scheduled');
     } else {
-      this.pendingDirectContent.set(content);
+      this.pendingDirectContent.set(template.content);
+      this.pendingDirectAttachment.set(template.attachment ?? null);
       this.requestedSection.set('direct');
     }
+  }
+
+  uploadMedia(file: File) {
+    return this.manageWhatsAppBroadcast.uploadMedia(file);
   }
 
   renderTemplate(patient: Patient, template: string, service: string): string {

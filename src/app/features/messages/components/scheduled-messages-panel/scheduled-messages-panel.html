@@ -20,6 +20,9 @@
     >
       <ng-template appTableCell="content" let-message>
         {{ excerpt(message.content) }}
+        @if (message.attachment) {
+          <small class="muted block">Imagen: {{ message.attachment.originalName }}</small>
+        }
       </ng-template>
 
       <ng-template appTableCell="scheduledAt" let-message>
@@ -83,10 +86,21 @@
     <div class="composer-tools">
       <span class="character-count">{{ scheduleCharacterCount() }} caracteres</span>
       <div class="attachment-actions">
+        <label class="tool-btn tool-btn--file">
+          {{ uploadingAttachment() ? 'Subiendo imagen...' : 'Adjuntar imagen' }}
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="uploadingAttachment()" />
+        </label>
         <button type="button" class="tool-btn" (click)="insertVariable(scheduleForm.controls.content, 'nombre')">Variable nombre</button>
         <button type="button" class="tool-btn" (click)="insertVariable(scheduleForm.controls.content, 'fecha')">Variable fecha</button>
       </div>
     </div>
+
+    @if (attachment(); as file) {
+      <div class="attachment-preview">
+        <span>Imagen adjunta: {{ file.originalName }}</span>
+        <button type="button" class="tool-btn" (click)="removeAttachment()">Quitar</button>
+      </div>
+    }
 
     <div class="modal-actions-row">
       <button class="button button--ghost" type="button" (click)="closeScheduleModal()">Cancelar</button>
