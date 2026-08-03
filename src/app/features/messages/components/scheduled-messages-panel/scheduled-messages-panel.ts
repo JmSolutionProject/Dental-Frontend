@@ -1,9 +1,11 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { catchError, finalize, of, take } from 'rxjs';
 
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { Frequency, MessageCenterStore, ScheduledMessageItem } from '../messages-center.store';
+import { WhatsAppMediaAttachment } from '../../domain/messages';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPlus } from '@ng-icons/heroicons/outline';
 
@@ -19,6 +21,8 @@ import { heroPlus } from '@ng-icons/heroicons/outline';
 export class ScheduledMessagesPanel {
   readonly store = inject(MessageCenterStore);
   readonly showScheduleModal = signal(false);
+  readonly attachment = signal<WhatsAppMediaAttachment | null>(null);
+  readonly uploadingAttachment = signal(false);
 
   readonly scheduledColumns: TableColumn[] = [
     { key: 'recipient', label: 'Destinatario' },
@@ -49,6 +53,15 @@ export class ScheduledMessagesPanel {
         this.showScheduleModal.set(true);
       }
     });
+
+    effect(() => {
+      const attachment = this.store.pendingScheduledAttachment();
+      if (attachment) {
+        this.attachment.set(attachment);
+        this.store.pendingScheduledAttachment.set(null);
+        this.showScheduleModal.set(true);
+      }
+    });
   }
 
   openScheduleModal() {
@@ -65,13 +78,14 @@ export class ScheduledMessagesPanel {
       return;
     }
     const value = this.scheduleForm.getRawValue();
-    this.store.scheduleMessage(value);
+    this.store.scheduleMessage({ ...value, attachment: this.attachment() });
     this.closeScheduleModal();
     this.scheduleForm.patchValue({
       content: '',
       scheduledAt: this.toDatetimeLocal(this.addHours(new Date(), 1)),
       frequency: 'once',
     });
+    this.attachment.set(null);
   }
 
   editScheduled(message: ScheduledMessageItem) {
@@ -81,6 +95,7 @@ export class ScheduledMessagesPanel {
       scheduledAt: message.scheduledAt,
       frequency: message.frequency,
     });
+    this.attachment.set(message.attachment ?? null);
     this.store.cancelScheduled(message.id, false);
     this.openScheduleModal();
   }
@@ -108,6 +123,31 @@ export class ScheduledMessagesPanel {
 
   frequencyLabel(frequency: Frequency): string {
     return { once: 'Envío único', daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' }[frequency];
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+
+    this.uploadingAttachment.set(true);
+    this.store
+      .uploadMedia(file)
+      .pipe(
+        take(1),
+        catchError(() => of(null)),
+        finalize(() => this.uploadingAttachment.set(false)),
+      )
+      .subscribe((attachment) => {
+        if (attachment) this.attachment.set(attachment);
+      });
+  }
+
+  removeAttachment() {
+    this.attachment.set(null);
   }
 
   private addHours(date: Date, hours: number): Date {

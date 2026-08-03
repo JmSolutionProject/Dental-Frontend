@@ -1,12 +1,8 @@
 import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { catchError, of, take, finalize } from 'rxjs';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { catchError, of } from 'rxjs';
 import { Modal } from '../../../../shared/components/modal/modal';
-import { FormField } from '../../../../shared/components/form-field/form-field';
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
-import { CancelAppointmentUseCase } from '../../../appointments/application/cancel-appointment.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
 import { AgendaDay, DentistColumn } from '../../domain/agenda';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -21,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-timeline',
-  imports: [DatePipe, Modal, FormField, ReactiveFormsModule, NgIcon],
+  imports: [DatePipe, Modal, NgIcon],
   providers: [
     provideIcons({
       heroArrowLeftCircle,
@@ -38,27 +34,22 @@ import {
 export class Timeline {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
-  private readonly cancelAppointment = inject(CancelAppointmentUseCase);
-  private readonly toast = inject(ToastService);
 
   readonly currentDate = signal(new Date());
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(false);
   readonly selectedAppointment = signal<Appointment | null>(null);
   readonly detailModalVisible = signal(false);
-  readonly cancelModalVisible = signal(false);
-  readonly cancelTarget = signal<Appointment | null>(null);
-  readonly canceling = signal(false);
-
-  readonly cancelForm = new FormControl('', { nonNullable: true });
 
   readonly hours = Array.from({ length: 13 }, (_, i) => `${String(i + 8).padStart(2, '0')}:00`);
 
   readonly agendaDay = computed<AgendaDay>(() => {
     const dateStr = this.dateKey(this.currentDate());
-    const dayAppointments = this.appointments().filter((a) =>
-      a.scheduledAt.startsWith(dateStr),
-    );
+    const dayAppointments = this.appointments().filter((a) => {
+      if (a.status === 'cancelled') return false;
+      const d = new Date(a.scheduledAt);
+      return this.dateKey(d) === dateStr;
+    });
 
     const dentistsMap = new Map<string, DentistColumn>();
     for (const apt of dayAppointments) {
@@ -111,7 +102,9 @@ export class Timeline {
       counts.set(wd.key, 0);
     }
     for (const a of this.appointments()) {
-      const key = a.scheduledAt.slice(0, 10);
+      if (a.status === 'cancelled') continue;
+      const d = new Date(a.scheduledAt);
+      const key = this.dateKey(d);
       if (counts.has(key)) {
         counts.set(key, (counts.get(key) ?? 0) + 1);
       }
@@ -159,8 +152,9 @@ export class Timeline {
   }
 
   blockStyle(apt: Appointment): Record<string, string> {
-    const time = apt.scheduledAt.slice(11, 16);
-    const [h, m] = time.split(':').map(Number);
+    const d = new Date(apt.scheduledAt);
+    const h = d.getHours();
+    const m = d.getMinutes();
     const top = (h - 8) * 64 + (m / 60) * 64;
     return {
       top: `${top}px`,
@@ -186,47 +180,6 @@ export class Timeline {
   closeDetail(): void {
     this.detailModalVisible.set(false);
     this.selectedAppointment.set(null);
-  }
-
-  openCancel(apt: Appointment): void {
-    this.cancelTarget.set(apt);
-    this.cancelForm.reset();
-    this.cancelModalVisible.set(true);
-  }
-
-  closeCancel(): void {
-    this.cancelModalVisible.set(false);
-    this.cancelTarget.set(null);
-    this.cancelForm.reset();
-  }
-
-  confirmCancel(): void {
-    const target = this.cancelTarget();
-    if (!target) return;
-    const reason = this.cancelForm.value.trim();
-    if (!reason) {
-      this.toast.info('Escribe un motivo de cancelación.');
-      return;
-    }
-
-    this.canceling.set(true);
-    this.cancelAppointment
-      .execute(target.id, reason)
-      .pipe(
-        take(1),
-        catchError(() => {
-          this.toast.error('Error al cancelar la cita.');
-          return of(null);
-        }),
-        finalize(() => this.canceling.set(false)),
-      )
-      .subscribe((appointment) => {
-        if (appointment) {
-          this.toast.success('Cita cancelada exitosamente.');
-          this.closeCancel();
-          this.loadAppointments();
-        }
-      });
   }
 
   dateKey(d: Date): string {

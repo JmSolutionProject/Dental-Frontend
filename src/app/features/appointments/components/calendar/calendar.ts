@@ -10,17 +10,17 @@ import { catchError, of, switchMap } from 'rxjs';
 
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Modal } from '../../../../shared/components/modal/modal';
-import { FormField } from '../../../../shared/components/form-field/form-field';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroTrash, heroHeart, heroCalendarDays, heroUser, heroExclamationTriangle, heroSparkles } from '@ng-icons/heroicons/outline';
 import { GetAppointmentsUseCase } from '../../application/get-appointments.usecase';
 import { CreateAppointmentUseCase } from '../../application/create-appointment.usecase';
 import { UpdateAppointmentUseCase } from '../../application/update-appointment.usecase';
-import { CancelAppointmentUseCase } from '../../application/cancel-appointment.usecase';
 import { CheckAvailabilityUseCase } from '../../application/check-availability.usecase';
 import {
   Appointment,
@@ -28,6 +28,8 @@ import {
   CalendarSlot,
   Dentist,
 } from '../../domain/appointment';
+import { User } from '../../../users/domain/user';
+import { UserRepository } from '../../../users/infrastructure/user-api.repository';
 
 type CalendarView = 'day' | 'week' | 'month';
 
@@ -42,10 +44,13 @@ interface CalendarDay {
 @Component({
   selector: 'app-calendar',
   imports: [
-    DatePipe,
     Modal,
-    FormField,
+    NgIcon,
     ReactiveFormsModule,
+    DatePipe,
+  ],
+  providers: [
+    provideIcons({ heroTrash, heroHeart, heroCalendarDays, heroUser, heroExclamationTriangle, heroSparkles })
   ],
   templateUrl: './calendar.html',
   styleUrl: './calendar.css',
@@ -55,9 +60,9 @@ export class Calendar {
   private readonly getAppointments = inject(GetAppointmentsUseCase);
   private readonly createAppointment = inject(CreateAppointmentUseCase);
   private readonly updateAppointment = inject(UpdateAppointmentUseCase);
-  private readonly cancelAppointment = inject(CancelAppointmentUseCase);
   private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly toast = inject(ToastService);
+  private readonly userRepository = inject(UserRepository);
 
   readonly view = signal<CalendarView>('week');
   readonly currentDate = signal(new Date());
@@ -66,18 +71,15 @@ export class Calendar {
   readonly endHour = signal(20);
   readonly appointmentDuration = signal(30);
   readonly appointments = signal<Appointment[]>([]);
+  readonly availableDentists = signal<Dentist[]>([]);
   readonly loading = signal(false);
 
   readonly modalVisible = signal(false);
   readonly modalTitle = signal('Nueva cita');
   readonly editingAppointment = signal<Appointment | null>(null);
-  readonly cancelModalVisible = signal(false);
-  readonly cancelTarget = signal<Appointment | null>(null);
 
-  readonly cancelForm = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required],
-  });
+  readonly detailModalVisible = signal(false);
+  readonly selectedAppointment = signal<Appointment | null>(null);
 
   readonly form = new FormGroup({
     patientName: new FormControl('', {
@@ -108,10 +110,17 @@ export class Calendar {
       nonNullable: true,
       validators: [Validators.required],
     }),
+    uiStatus: new FormControl('scheduled', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
   });
 
   readonly dentists = computed<Dentist[]>(() => {
     const seen = new Map<string, Dentist>();
+    for (const dentist of this.availableDentists()) {
+      seen.set(dentist.id, dentist);
+    }
     for (const a of this.appointments()) {
       if (a.dentistId && !seen.has(a.dentistId)) {
         seen.set(a.dentistId, {
@@ -126,8 +135,11 @@ export class Calendar {
   readonly filteredAppointments = computed<Appointment[]>(() => {
     const all = this.appointments();
     const dentist = this.selectedDentistId();
-    if (!dentist) return all;
-    return all.filter((a) => a.dentistId === dentist);
+    let result = all.filter(a => a.status !== 'cancelled');
+    if (dentist) {
+      result = result.filter((a) => a.dentistId === dentist);
+    }
+    return result;
   });
 
   readonly hours = computed<number[]>(() =>
@@ -223,16 +235,29 @@ export class Calendar {
   });
 
   private getAppointmentsForDate(date: Date): Appointment[] {
-    const dateStr = this.dateKey(date);
-    return this.filteredAppointments().filter((a) =>
-      a.scheduledAt.startsWith(dateStr),
-    );
+    return this.filteredAppointments().filter((a) => {
+      const d = new Date(a.scheduledAt);
+      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+    });
   }
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
+      this.loadDoctors();
       this.loadAppointments();
     }
+  }
+
+  loadDoctors() {
+    this.userRepository.findAll()
+      .pipe(catchError(() => of([])))
+      .subscribe((users) => {
+        this.availableDentists.set(
+          users
+            .filter((user) => this.isDoctor(user))
+            .map((user) => ({ id: String(user.id), name: user.nombreCompleto })),
+        );
+      });
   }
 
   loadAppointments() {
@@ -296,6 +321,7 @@ export class Calendar {
     if (slotDate) {
       this.form.patchValue({
         scheduledDate: slotDate.toISOString().slice(0, 10),
+        uiStatus: 'scheduled',
       });
     }
     if (slotTime) {
@@ -316,10 +342,11 @@ export class Calendar {
 
   openEditModal(appointment: Appointment) {
     this.editingAppointment.set(appointment);
-    this.modalTitle.set('Editar cita');
+    this.modalTitle.set('Actualización de la cita');
 
-    const scheduledDate = appointment.scheduledAt.slice(0, 10);
-    const scheduledTime = appointment.scheduledAt.slice(11, 16);
+    const d = new Date(appointment.scheduledAt);
+    const scheduledDate = this.dateKey(d);
+    const scheduledTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
     this.form.setValue({
       patientName: appointment.patientName,
@@ -329,6 +356,7 @@ export class Calendar {
       scheduledDate,
       scheduledTime,
       reason: appointment.reason,
+      uiStatus: appointment.status,
     });
 
     this.modalVisible.set(true);
@@ -339,6 +367,28 @@ export class Calendar {
     this.form.reset();
   }
 
+  openDetailModal(appointment: Appointment) {
+    this.selectedAppointment.set(appointment);
+    this.detailModalVisible.set(true);
+  }
+
+  closeDetailModal() {
+    this.detailModalVisible.set(false);
+    this.selectedAppointment.set(null);
+  }
+
+  statusLabel(status?: string): string {
+    if (status === 'completed') return 'Atendida';
+    if (status === 'cancelled') return 'Cancelada';
+    return 'Pendiente';
+  }
+
+  statusClass(status?: string): string {
+    if (status === 'completed') return 'appt-status-badge--completed';
+    if (status === 'cancelled') return 'appt-status-badge--cancelled';
+    return 'appt-status-badge--scheduled';
+  }
+
   submitForm() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -346,19 +396,28 @@ export class Calendar {
     }
 
     const formVal = this.form.getRawValue();
-    const scheduledAt = `${formVal.scheduledDate}T${formVal.scheduledTime}:00`;
+    const scheduledAt = new Date(`${formVal.scheduledDate}T${formVal.scheduledTime}:00`).toISOString();
 
     const existing = this.editingAppointment();
 
     if (existing) {
+      let finalScheduledAt = existing.scheduledAt;
+      let newStatus = formVal.uiStatus;
+
+      if (formVal.uiStatus === 'rescheduled') {
+        finalScheduledAt = scheduledAt;
+        newStatus = 'scheduled';
+      }
+
       this.updateAppointment
         .execute(existing.id, {
-          scheduledAt,
+          scheduledAt: finalScheduledAt,
           reason: formVal.reason,
           patientId: formVal.patientId,
           patientName: formVal.patientName,
           dentistId: formVal.dentistId || undefined,
           dentistName: formVal.dentistName || undefined,
+          status: newStatus as AppointmentStatus,
         })
         .pipe(
           catchError(() => {
@@ -417,56 +476,15 @@ export class Calendar {
       });
   }
 
-  openCancelModal(appointment: Appointment) {
-    this.cancelTarget.set(appointment);
-    this.cancelForm.reset();
-    this.cancelModalVisible.set(true);
-  }
-
-  closeCancelModal() {
-    this.cancelModalVisible.set(false);
-    this.cancelTarget.set(null);
-    this.cancelForm.reset();
-  }
-
-  confirmCancel() {
-    const target = this.cancelTarget();
-    const reason = this.cancelForm.value.trim();
-    if (!target) return;
-    if (this.cancelForm.invalid) {
-      this.cancelForm.markAsTouched();
-      return;
-    }
-
-    this.cancelAppointment
-      .execute(target.id, reason)
-        .pipe(
-          catchError(() => {
-            this.toast.error('No se pudo cancelar la cita.');
-            return of(null);
-          }),
-        )
-      .subscribe((appointment) => {
-        if (appointment) {
-          this.toast.success('Cita cancelada.');
-          this.closeCancelModal();
-          this.loadAppointments();
-        }
-      });
-  }
-
   getStatusClass(status: AppointmentStatus): string {
     return `status--${status}`;
   }
 
   getAppointmentsForHour(date: Date, hour: number): Appointment[] {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const hourStr = pad(hour);
-    const dateStr = this.dateKey(date);
-    const prefix = `${dateStr}T${hourStr}`;
-    return this.filteredAppointments().filter((a) =>
-      a.scheduledAt.startsWith(prefix),
-    );
+    return this.filteredAppointments().filter((a) => {
+      const d = new Date(a.scheduledAt);
+      return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate() && d.getHours() === hour;
+    });
   }
 
   onHourClick(date: Date, hour: number) {
@@ -515,6 +533,13 @@ export class Calendar {
   private addMinutes(isoString: string, minutes: number): string {
     const d = new Date(isoString);
     d.setMinutes(d.getMinutes() + minutes);
-    return d.toISOString().slice(0, 19);
+    return d.toISOString();
+  }
+
+  private isDoctor(user: User): boolean {
+    return user.estado !== false && user.roles.some((role) => {
+      const roleName = role.nombreRol.toUpperCase();
+      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+    });
   }
 }

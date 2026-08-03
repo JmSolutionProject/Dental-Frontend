@@ -7,7 +7,7 @@
         <h1>{{ p.patientName ?? 'Patient' }} — Plan Details</h1>
         <p class="muted">
           Status: <span class="badge" [attr.data-status]="p.status">{{ planStatusLabel(p.status) }}</span>
-          &middot; Total: <strong>{{ totalCost() | currency }}</strong>
+          &middot; Total: <strong>{{ totalCost() | currency:'PEN':'S/ ':'1.2-2' }}</strong>
         </p>
       } @else if (!loading()) {
         <h1>Treatment Plans</h1>
@@ -51,7 +51,7 @@
           </div>
           <div class="plan-meta">
             <span>{{ plan.phases.length }} phase(s)</span>
-            <span class="muted">{{ plan.totalCost | currency }}</span>
+            <span class="muted">{{ plan.totalCost | currency:'PEN':'S/ ':'1.2-2' }}</span>
             <span class="muted">{{ plan.createdAt | date:'shortDate' }}</span>
           </div>
         </article>
@@ -79,7 +79,7 @@
         }
       </div>
       <div class="cost-total">
-        Total Cost: <strong>{{ totalCost() | currency }}</strong>
+        Total Cost: <strong>{{ totalCost() | currency:'PEN':'S/ ':'1.2-2' }}</strong>
       </div>
     </div>
 
@@ -106,7 +106,7 @@
           </div>
           <div class="phase-meta">
             <span>{{ phaseProcCount(phase) }} procedure(s)</span>
-            <span class="muted">{{ phaseTotalCost(phase) | currency }}</span>
+            <span class="muted">{{ phaseTotalCost(phase) | currency:'PEN':'S/ ':'1.2-2' }}</span>
           </div>
           @if (phase.description) {
             <p class="muted phase-desc">{{ phase.description }}</p>
@@ -136,7 +136,7 @@
                       <td>{{ proc.catalogItem.name }}</td>
                       <td><code>{{ proc.catalogItem.code }}</code></td>
                       <td>{{ proc.toothNumber ?? '—' }}</td>
-                      <td>{{ proc.cost | currency }}</td>
+                      <td>{{ proc.cost | currency:'PEN':'S/ ':'1.2-2' }}</td>
                       <td>
                         <span class="badge badge--small" [attr.data-status]="proc.status">
                           {{ procStatusLabel(proc.status) }}
@@ -267,7 +267,7 @@
                   >
                     <strong>{{ item.name }}</strong>
                     <code>{{ item.code }}</code>
-                    <span class="cat-cost">{{ item.defaultCost | currency }}</span>
+                    <span class="cat-cost">{{ item.defaultCost | currency:'PEN':'S/ ':'1.2-2' }}</span>
                   </button>
                 }
               </div>

@@ -224,8 +224,8 @@ export class PatientList {
         lastName: p.lastName,
         phone: p.phone,
         documentNumber: p.documentNumber,
-        estado: true,
-      } as any)
+        status: 'active',
+      })
       .pipe(
         take(1),
         catchError((err) => {

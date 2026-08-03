@@ -63,8 +63,8 @@
                     {{ statusLabel(inv.status) }}
                   </span>
                 </td>
-                <td>{{ inv.total | currency }}</td>
-                <td>{{ inv.outstanding | currency }}</td>
+                <td>{{ inv.total | currency:'PEN':'S/ ':'1.2-2' }}</td>
+                <td>{{ inv.outstanding | currency:'PEN':'S/ ':'1.2-2' }}</td>
                 <td>{{ inv.createdAt | date: 'shortDate' }}</td>
                 <td class="cell-actions">
                   @if (canConvert(inv)) {
@@ -122,11 +122,11 @@
           </div>
           <div class="detail-field">
             <span class="label">Total</span>
-            <span class="value">{{ inv.total | currency }}</span>
+            <span class="value">{{ inv.total | currency:'PEN':'S/ ':'1.2-2' }}</span>
           </div>
           <div class="detail-field">
             <span class="label">Outstanding</span>
-            <span class="value">{{ inv.outstanding | currency }}</span>
+            <span class="value">{{ inv.outstanding | currency:'PEN':'S/ ':'1.2-2' }}</span>
           </div>
         </div>
 
@@ -149,8 +149,8 @@
                     <td>{{ item.description }}</td>
                     <td>{{ item.toothNumber ?? '—' }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice | currency }}</td>
-                    <td>{{ item.total | currency }}</td>
+                    <td>{{ item.unitPrice | currency:'PEN':'S/ ':'1.2-2' }}</td>
+                    <td>{{ item.total | currency:'PEN':'S/ ':'1.2-2' }}</td>
                   </tr>
                 }
               </tbody>
@@ -174,7 +174,7 @@
                 @for (payment of inv.payments; track payment.id) {
                   <tr>
                     <td>{{ payment.createdAt | date: 'shortDate' }}</td>
-                    <td>{{ payment.amount | currency }}</td>
+                    <td>{{ payment.amount | currency:'PEN':'S/ ':'1.2-2' }}</td>
                     <td>{{ payment.method }}</td>
                     <td>{{ payment.reference ?? '—' }}</td>
                   </tr>

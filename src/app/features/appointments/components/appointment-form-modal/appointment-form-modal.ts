@@ -9,12 +9,15 @@ import {
 import { take, catchError, of, finalize } from 'rxjs';
 import { CreateAppointmentRequest } from '../../domain/appointment';
 import { CreateAppointmentUseCase } from '../../application/create-appointment.usecase';
+import { CheckAvailabilityUseCase } from '../../application/check-availability.usecase';
 import { GetPatientsUseCase } from '../../../patients/application/get-patients.usecase';
 import { Patient } from '../../../patients/domain/patient';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { API_URL } from '../../../../core/config/api.config';
+import { UserRepository } from '../../../users/infrastructure/user-api.repository';
+import { User } from '../../../users/domain/user';
 
 interface DoctorOption {
   id: string;
@@ -45,8 +48,10 @@ export class AppointmentFormModal implements OnChanges {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly createAppointment = inject(CreateAppointmentUseCase);
+  private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly toast = inject(ToastService);
+  private readonly userRepository = inject(UserRepository);
 
   @Input() visible = false;
   @Input() prefill?: { patientId?: string; dentistId?: string; reason?: string; planServicioId?: string; };
@@ -60,6 +65,7 @@ export class AppointmentFormModal implements OnChanges {
   readonly loadingPatients = signal(true);
   readonly saving = signal(false);
   readonly selectedCategoryId = signal<string>('');
+  readonly selectedShift = signal<'morning' | 'afternoon'>('morning');
 
   readonly categories = computed<CategoryOption[]>(() => {
     const map = new Map<string, string>();
@@ -89,6 +95,7 @@ export class AppointmentFormModal implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true) {
       this.selectedCategoryId.set('');
+      this.selectedShift.set(this.currentShift());
       if (this.prefill) {
         this.form.patchValue({
           patientId: this.prefill.patientId ?? '',
@@ -133,6 +140,10 @@ export class AppointmentFormModal implements OnChanges {
     this.closed.emit();
   }
 
+  setShift(shift: 'morning' | 'afternoon'): void {
+    this.selectedShift.set(shift);
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -151,10 +162,36 @@ export class AppointmentFormModal implements OnChanges {
       return;
     }
 
+    const scheduledAt = this.buildIso(raw.date, raw.time);
+    const endAt = this.buildIso(raw.date, this.addMinutes(raw.time, 30));
+
+    this.saving.set(true);
+
+    this.checkAvailability
+      .execute(raw.dentistId, { dentistId: raw.dentistId, start: scheduledAt, end: endAt })
+      .pipe(
+        take(1),
+        catchError(() => of({ available: true, conflicts: [] })),
+      )
+      .subscribe((result) => {
+        if (!result.available) {
+          this.saving.set(false);
+          const name = this.getDoctorName(raw.dentistId);
+          this.toast.error(`El doctor ${name} ya tiene una cita en ese horario.`);
+          return;
+        }
+        this.doCreateAppointment();
+      });
+  }
+
+  private doCreateAppointment(): void {
+    const raw = this.form.getRawValue();
+    const scheduledAt = this.buildIso(raw.date, raw.time);
+
     const request: CreateAppointmentRequest = {
       patientId: raw.patientId,
       dentistId: raw.dentistId,
-      scheduledAt: this.buildIso(raw.date, raw.time),
+      scheduledAt,
       reason: raw.reason.trim(),
       observations: raw.observations?.trim() || undefined,
       patientName: this.getPatientName(raw.patientId),
@@ -163,7 +200,6 @@ export class AppointmentFormModal implements OnChanges {
       serviceId: raw.serviceId || undefined,
     };
 
-    this.saving.set(true);
     this.createAppointment
       .execute(request)
       .pipe(
@@ -177,7 +213,7 @@ export class AppointmentFormModal implements OnChanges {
       .subscribe((appointment) => {
         if (appointment) {
           this.toast.success('Cita creada exitosamente.');
-          this.form.reset({ date: this.todayString(), time: '10:00' });
+          this.form.reset({ date: this.todayString(), time: '' });
           this.saved.emit();
         }
       });
@@ -194,11 +230,22 @@ export class AppointmentFormModal implements OnChanges {
   }
 
   private loadDoctors(): void {
-    this.http.get<{ id: number; nombreCompleto: string }[]>(`${this.apiUrl}/users?role=MEDICO`)
+    this.userRepository.findAll()
       .pipe(take(1), catchError(() => of([])))
       .subscribe((users) => {
-        this.doctors.set(users.map((u) => ({ id: String(u.id), name: u.nombreCompleto })));
+        this.doctors.set(
+          users
+            .filter((user) => this.isDoctor(user))
+            .map((user) => ({ id: String(user.id), name: user.nombreCompleto })),
+        );
       });
+  }
+
+  private isDoctor(user: User): boolean {
+    return user.estado !== false && user.roles.some((role) => {
+      const roleName = role.nombreRol.toUpperCase();
+      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+    });
   }
 
   private loadPatients(): void {
@@ -213,7 +260,10 @@ export class AppointmentFormModal implements OnChanges {
         }),
         finalize(() => this.loadingPatients.set(false)),
       )
-      .subscribe((res) => this.patients.set(res.data));
+      .subscribe((res) => {
+        const activePatients = res.data.filter((p) => p.status === 'active');
+        this.patients.set(activePatients);
+      });
   }
 
   private loadCatalog(): void {
@@ -229,5 +279,17 @@ export class AppointmentFormModal implements OnChanges {
 
   private buildIso(date: string, time: string): string {
     return new Date(`${date}T${time}:00`).toISOString();
+  }
+
+  private addMinutes(time: string, minutes: number): string {
+    const [h, m] = time.split(':').map(Number);
+    const total = h * 60 + m + minutes;
+    const nh = Math.floor(total / 60);
+    const nm = total % 60;
+    return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
+  }
+
+  private currentShift(): 'morning' | 'afternoon' {
+    return new Date().getHours() < 13 ? 'morning' : 'afternoon';
   }
 }

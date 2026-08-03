@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from '../../../core/config/api.config';
-import { User, SaveUserRequest } from '../domain/user';
+import { ChangeUserPasswordRequest, SaveUserRequest, UpdateUserRequest, User } from '../domain/user';
 
 @Injectable({ providedIn: 'root' })
 export class UserRepository {
@@ -17,8 +17,12 @@ export class UserRepository {
     return this.http.post<User>(`${this.apiUrl}/users`, request);
   }
 
-  update(id: number, request: SaveUserRequest): Observable<User> {
+  update(id: number, request: UpdateUserRequest): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/users/${id}`, request);
+  }
+
+  changePassword(id: number, request: ChangeUserPasswordRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/users/${id}/password`, request);
   }
 
   disable(id: number): Observable<User> {

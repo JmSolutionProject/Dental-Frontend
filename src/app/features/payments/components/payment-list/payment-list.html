@@ -1,51 +1,56 @@
 <section class="page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Pagos y Caja</p>
-      <h1>Control de pagos</h1>
-      <p class="muted">Registra pagos de citas.</p>
+      <p class="eyebrow">Gestión financiera</p>
+      <h1>Pagos</h1>
+      <p class="muted">Lista y registro de cobros por citas y tratamientos.</p>
     </div>
 
-    <div class="header-actions">
-      <button class="button button--ghost" type="button" (click)="loadPayments()">
-        Actualizar
-      </button>
-      <button class="button" type="button" (click)="openForm()">
-        Agregar pago
-      </button>
-    </div>
+    <button class="btn btn--primary" type="button" (click)="openForm()">
+      + Registrar pago
+    </button>
   </header>
 
   <div class="summary-grid">
-    <article class="summary-card summary-card--blue">
-      <span>Total cobrado</span>
-      <strong>{{ summary().totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
-      <small>{{ total() }} pagos registrados</small>
-    </article>
-    <article class="summary-card summary-card--green">
-      <span>Efectivo</span>
-      <strong>{{ summary().cashAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
-      <small>Según methodCode = cash</small>
-    </article>
-    <article class="summary-card summary-card--amber">
-      <span>Tarjeta / transferencia</span>
-      <strong>
-        {{ summary().cardAmount + summary().transferAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}
+    <article class="summary-card summary-card--emerald">
+      <span class="summary-card__title">Total Recaudado</span>
+      <strong class="summary-card__value">
+        {{ summary().totalAmount | currency: 'PEN' : 'S/ ' : '1.2-2' }}
       </strong>
-      <small>Pagos bancarios</small>
     </article>
-    <article class="summary-card summary-card--red">
-      <span>Anulados</span>
-      <strong>{{ summary().voidedAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
-      <small>No suman al total</small>
+
+    <article class="summary-card summary-card--blue">
+      <span class="summary-card__title">Total de Pagos</span>
+      <strong class="summary-card__value">{{ summary().totalPayments }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--sky">
+      <span class="summary-card__title">Efectivo en Caja</span>
+      <strong class="summary-card__value">
+        {{ summary().cashAmount | currency: 'PEN' : 'S/ ' : '1.2-2' }}
+      </strong>
+    </article>
+
+    <article class="summary-card summary-card--purple">
+      <span class="summary-card__title">Tarjetas POS</span>
+      <strong class="summary-card__value">
+        {{ summary().cardAmount | currency: 'PEN' : 'S/ ' : '1.2-2' }}
+      </strong>
+    </article>
+
+    <article class="summary-card summary-card--teal">
+      <span class="summary-card__title">Transferencias / Yape</span>
+      <strong class="summary-card__value">
+        {{ (summary().transferAmount + summary().digitalWalletAmount) | currency: 'PEN' : 'S/ ' : '1.2-2' }}
+      </strong>
     </article>
   </div>
 
-  <div class="search-bar">
+  <div class="toolbar">
     <input
-      class="search-input"
-      type="search"
-      placeholder="Buscar por pago, cita, cobrador, método u operación..."
+      type="text"
+      placeholder="Buscar por paciente, referencia..."
+      class="form-input search-input"
       [value]="searchText()"
       (input)="onSearchInput($event)"
     />
@@ -77,13 +82,13 @@
       >
         <ng-template appTableCell="payment" let-payment>
           <span class="payment-cell">
-            <strong>#{{ payment.id }}</strong>
-            <small>{{ payment.reference || 'Sin operación' }}</small>
+            <strong>#{{ payment.id.slice(0, 8) }}</strong>
+            <small>{{ payment.reference || 'Sin voucher' }}</small>
           </span>
         </ng-template>
 
-        <ng-template appTableCell="appointmentId" let-payment>
-          #{{ payment.appointmentId || '-' }}
+        <ng-template appTableCell="patientName" let-payment>
+          <strong style="color: #0f172a;">{{ resolvePatientName(payment) }}</strong>
         </ng-template>
 
         <ng-template appTableCell="cashierName" let-payment>
@@ -91,15 +96,17 @@
         </ng-template>
 
         <ng-template appTableCell="methodName" let-payment>
-          {{ payment.methodName || ('Método #' + payment.methodId) }}
+          {{ payment.methodName || payment.methodCode || 'Efectivo' }}
         </ng-template>
 
         <ng-template appTableCell="amount" let-payment>
-          <span class="amount">{{ payment.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</span>
+          <span class="amount" style="font-weight: 800; color: #0f172a;">
+            {{ payment.amount | currency: 'PEN' : 'S/ ' : '1.2-2' }}
+          </span>
         </ng-template>
 
         <ng-template appTableCell="paidAt" let-payment>
-          {{ payment.paidAt | date: 'short' }}
+          {{ payment.paidAt | date: 'dd/MM/yyyy HH:mm' }}
         </ng-template>
 
         <ng-template appTableCell="status" let-payment>
@@ -107,79 +114,119 @@
             {{ statusLabel(payment.status) }}
           </span>
         </ng-template>
+
+        <ng-template appTableCell="actions" let-payment>
+          <button
+            type="button"
+            class="btn-receipt"
+            (click)="generatePdfBoleta(payment)"
+            title="Generar y descargar Boleta de Pago en PDF"
+          >
+            📄 Generar Boleta PDF
+          </button>
+        </ng-template>
       </app-table>
     }
   </article>
 
-  <app-modal
-    title="Agregar pago"
-    size="lg"
-    [visible]="showForm()"
-    (close)="closeForm()"
-  >
-    <p class="modal-intro muted">
-      Registra el pago de una cita. Se enviará al backend como citaId,
-      usuarioCobradorId, metodoPagoId y montoPagado.
-    </p>
+  <!-- FORMULARIO DE NUEVO PAGO -->
+  @if (showForm()) {
+    <app-modal title="Registrar Pago" [visible]="true" (close)="closeForm()">
+      <p class="modal-intro muted">
+        Selecciona el paciente y la cita pendiente para registrar el cobro. La cita cambiará automáticamente a estado completado.
+      </p>
 
-    <form class="payment-form" [formGroup]="form" (ngSubmit)="savePayment()">
-      <label class="field">
-        <span>Cita</span>
-        <select formControlName="appointmentId">
-          <option value="">Selecciona una cita</option>
-          @for (appointment of appointments(); track appointment.id) {
-            <option [value]="appointment.id">{{ appointmentLabel(appointment) }}</option>
-          }
-        </select>
-      </label>
+      <form class="payment-form" [formGroup]="form" (ngSubmit)="savePayment()">
+        <label class="field" style="grid-column: 1 / -1; position: relative;">
+          <span>Paciente (Búsqueda)</span>
+          <div style="position: relative;">
+            <input
+              type="text"
+              [placeholder]="selectedPatientId() ? getPatientName(selectedPatientId()) : 'Escribe nombre o DNI para buscar…'"
+              class="form-input"
+              autocomplete="off"
+              [value]="patientSearchQuery()"
+              (input)="patientSearchQuery.set($any($event.target).value); showDropdown.set(true)"
+              (focus)="showDropdown.set(true)"
+              (blur)="hideDropdown()"
+            />
+            @if (showDropdown() && filteredPatients().length > 0) {
+              <div class="custom-dropdown">
+                @for (p of filteredPatients(); track p.id) {
+                  <div class="custom-dropdown-item" (mousedown)="selectPatient(p)">
+                    {{ p.firstName }} {{ p.lastName }} — {{ p.documentNumber }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </label>
 
-      <label class="field">
-        <span>Cobrador</span>
-        <input formControlName="cashierId" type="number" readonly />
-        <small>{{ cashierName() }}</small>
-      </label>
+        <label class="field">
+          <span>Cita a Cobrar (Solo Pendientes)</span>
+          <select class="form-select" formControlName="appointmentId" (change)="onAppointmentSelected($event)">
+            @if (!selectedPatientId()) {
+              <option value="">Primero busca y selecciona un paciente…</option>
+            } @else if (filteredAppointments().length === 0) {
+              <option value="">No hay citas pendientes de cobro para este paciente</option>
+            } @else {
+              <option value="">Selecciona la cita a cobrar…</option>
+              @for (appointment of filteredAppointments(); track appointment.id) {
+                <option [value]="appointment.id">{{ appointmentLabel(appointment) }}</option>
+              }
+            }
+          </select>
+        </label>
 
-      <label class="field">
-        <span>Método de pago</span>
-        <select formControlName="methodId">
-          <option value="">Selecciona un método</option>
-          @for (method of paymentMethods(); track method.id) {
-            <option [value]="method.id">{{ method.name }}</option>
-          }
-        </select>
-        @if (paymentMethods().length === 0) {
-          <small>No hay métodos activos registrados en el backend.</small>
-        }
-      </label>
+        <label class="field">
+          <span>Método de pago</span>
+          <select class="form-select" formControlName="methodId">
+            <option value="">Selecciona un método</option>
+            @for (method of paymentMethods(); track method.id) {
+              <option [value]="method.id">{{ method.name }}</option>
+            }
+          </select>
+        </label>
 
-      <label class="field">
-        <span>Monto pagado</span>
-        <input formControlName="amount" min="0.01" step="0.01" type="number" />
-      </label>
+        <label class="field">
+          <span>Monto pagado (S/)</span>
+          <input class="form-input" formControlName="amount" min="0.01" step="0.01" type="number" />
+        </label>
 
-      <label class="field">
-        <span>Número de operación</span>
-        <input formControlName="reference" maxlength="100" placeholder="YAPE-00012345" />
-      </label>
+        <label class="field">
+          <span>Fecha de pago</span>
+          <input class="form-input" formControlName="paidAt" type="datetime-local" />
+        </label>
 
-      <label class="field">
-        <span>Fecha de pago</span>
-        <input formControlName="paidAt" type="datetime-local" />
-      </label>
+        <label class="field">
+          <span>N° Operación / Voucher</span>
+          <input
+            class="form-input"
+            formControlName="reference"
+            placeholder="Ej: POS-98432 o Yape 0984"
+            type="text"
+          />
+        </label>
 
-      <label class="field field--wide">
-        <span>Observación</span>
-        <textarea formControlName="notes" rows="3" placeholder="Pago parcial de la cita"></textarea>
-      </label>
+        <label class="field" style="grid-column: 1 / -1;">
+          <span>Observación / Tratamiento</span>
+          <input
+            class="form-input"
+            formControlName="notes"
+            placeholder="Ej: Curación de resina fotocurable molar 36"
+            type="text"
+          />
+        </label>
 
-      <div class="form-actions">
-        <button class="button button--ghost" type="button" (click)="closeForm()">
-          Cancelar
-        </button>
-        <button class="button" type="submit" [disabled]="saving()">
-          {{ saving() ? 'Guardando...' : 'Registrar pago' }}
-        </button>
-      </div>
-    </form>
-  </app-modal>
+        <div class="form-actions">
+          <button class="btn btn--secondary" type="button" (click)="closeForm()">
+            Cancelar
+          </button>
+          <button class="btn btn--primary" [disabled]="saving()" type="submit">
+            {{ saving() ? 'Guardando...' : 'Confirmar Cobro' }}
+          </button>
+        </div>
+      </form>
+    </app-modal>
+  }
 </section>

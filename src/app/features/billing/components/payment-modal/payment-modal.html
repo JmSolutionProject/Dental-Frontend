@@ -12,15 +12,15 @@
       </div>
       <div class="summary-row">
         <span class="label">Total</span>
-        <span class="value">{{ invoice().total | currency }}</span>
+        <span class="value">{{ invoice().total | currency:'PEN':'S/ ':'1.2-2' }}</span>
       </div>
       <div class="summary-row">
         <span class="label">Paid</span>
-        <span class="value">{{ paidSoFar() | currency }}</span>
+        <span class="value">{{ paidSoFar() | currency:'PEN':'S/ ':'1.2-2' }}</span>
       </div>
       <div class="summary-row summary-row--highlight">
         <span class="label">Outstanding</span>
-        <span class="value">{{ outstanding() | currency }}</span>
+        <span class="value">{{ outstanding() | currency:'PEN':'S/ ':'1.2-2' }}</span>
       </div>
     </div>
 
@@ -28,7 +28,7 @@
       <div class="field">
         <label for="amount">Amount</label>
         <div class="input-wrapper">
-          <span class="currency-prefix">$</span>
+          <span class="currency-prefix">S/</span>
           <input
             id="amount"
             type="number"

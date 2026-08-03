@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'dental-backend-1evg6m07n-app-brennis-projects.vercel.app/api',
 };

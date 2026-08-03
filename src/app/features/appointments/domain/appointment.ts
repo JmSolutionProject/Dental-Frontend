@@ -1,3 +1,10 @@
+export interface AppointmentService {
+  id: string;
+  cantidad: number;
+  descuento: number;
+  servicio: { id: string; nombreServicio: string; precio: number };
+}
+
 export interface Appointment {
   id: string;
   patientId: string;
@@ -9,6 +16,7 @@ export interface Appointment {
   status: AppointmentStatus;
   cancelReason?: string;
   planServicioId?: string;
+  servicios?: AppointmentService[];
 }
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled';

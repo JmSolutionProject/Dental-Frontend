@@ -1,13 +1,15 @@
 import { Component, inject, signal, OnInit, computed, ElementRef, viewChild, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { take, catchError, of, finalize } from 'rxjs';
+import { take, catchError, of, finalize, map, switchMap } from 'rxjs';
 import { API_URL } from '../../../../core/config/api.config';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { User, SaveUserRequest } from '../../domain/user';
+import { SaveUserRequest, UpdateUserRequest, User } from '../../domain/user';
 import { UserRepository } from '../../infrastructure/user-api.repository';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { heroClipboardDocumentList, heroHeart, heroShieldCheck, heroUsers } from '@ng-icons/heroicons/outline';
 
 interface Role { id: number; nombreRol: string; estado?: boolean; }
 interface DropdownPos { top: number; left: number; width: number; }
@@ -15,7 +17,8 @@ interface DropdownPos { top: number; left: number; width: number; }
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [ReactiveFormsModule, Modal, Table, TableCell],
+  imports: [ReactiveFormsModule, Modal, Table, TableCell, NgIcon],
+  providers: [provideIcons({ heroClipboardDocumentList, heroHeart, heroShieldCheck, heroUsers })],
   templateUrl: './user-list.html',
   styleUrl: './user-list.css',
 })
@@ -214,14 +217,24 @@ export class UserList implements OnInit {
     }
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const request: SaveUserRequest = {
-      nombreCompleto: raw.nombreCompleto,
-      email: raw.email,
-      password: raw.password || undefined,
+    const password = String(raw.password ?? '').trim();
+    const isEditing = this.editingUser() !== null;
+    const request: SaveUserRequest | UpdateUserRequest = {
+      nombreCompleto: String(raw.nombreCompleto ?? '').trim(),
+      email: String(raw.email ?? '').trim(),
+      ...(isEditing ? {} : { password }),
       roleIds: [this.selectedRoleId()!],
       porcentajeComision: this.isMedicoSelected() ? Number(raw.porcentajeComision) || 0 : 0,
     };
-    const call = this.editingUser() ? this.repo.update(this.editingUser()!.id, request) : this.repo.save(request);
+    const editingUser = this.editingUser();
+    const call = editingUser
+      ? this.repo.update(editingUser.id, request).pipe(
+        switchMap((user) => password
+          ? this.repo.changePassword(editingUser.id, { password }).pipe(map(() => user))
+          : of(user)
+        )
+      )
+      : this.repo.save(request as SaveUserRequest);
     call.pipe(
       take(1),
       catchError((err) => {

@@ -139,10 +139,15 @@ export class ToothChart {
 
     const surfaceShapes = this.surfaceShapes(y);
     const surfaces = this.draw.group().addClass('tooth-surfaces');
+    const hasSurfaceConditions = Boolean(
+      tooth.surfaceConditions && Object.keys(tooth.surfaceConditions).length > 0,
+    );
+    const defaultSurfaceColors = hasSurfaceConditions ? CONDITION_COLORS.healthy : colors;
+
     for (const shape of surfaceShapes) {
       const isSelectedSurface = selectedSurface === shape.surface;
       const surfaceCondition = tooth.surfaceConditions?.[shape.surface];
-      const surfaceColors = surfaceCondition ? CONDITION_COLORS[surfaceCondition] : colors;
+      const surfaceColors = surfaceCondition ? CONDITION_COLORS[surfaceCondition] : defaultSurfaceColors;
       const surfaceElement = surfaces
         .path(shape.path)
         .addClass('tooth-surface')

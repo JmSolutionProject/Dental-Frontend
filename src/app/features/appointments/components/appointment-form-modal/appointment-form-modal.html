@@ -14,7 +14,19 @@
         <input type="date" formControlName="date" class="appt-form-input" />
       </app-form-field>
       <app-form-field label="Hora" [control]="form.get('time')!" [required]="true">
-        <input type="time" formControlName="time" class="appt-form-input" />
+        <div class="appt-time-wrapper">
+          <input type="time" formControlName="time" class="appt-form-input" />
+          <div class="appt-shift-btns">
+            <button type="button"
+              class="appt-shift-btn"
+              [class.appt-shift-btn--active]="selectedShift() === 'morning'"
+              (click)="setShift('morning')">Mañana</button>
+            <button type="button"
+              class="appt-shift-btn"
+              [class.appt-shift-btn--active]="selectedShift() === 'afternoon'"
+              (click)="setShift('afternoon')">Tarde</button>
+          </div>
+        </div>
       </app-form-field>
     </div>
 

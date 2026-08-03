@@ -46,6 +46,27 @@
   align-content: start;
   min-height: 0;
   overflow-y: auto;
+  padding-right: 0.35rem;
+  scrollbar-color: color-mix(in srgb, var(--color-slate-500) 70%, transparent) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.nav::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-slate-500) 55%, transparent);
+  border-radius: 999px;
+}
+
+.nav::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-slate-500) 80%, transparent);
 }
 
 .user-settings {
@@ -110,6 +131,13 @@
     grid-template-columns: repeat(7, minmax(max-content, 1fr));
     overflow-x: auto;
     overflow-y: visible;
+    padding-bottom: 0.35rem;
+    padding-right: 0;
+  }
+
+  .nav::-webkit-scrollbar {
+    height: 0.4rem;
+    width: auto;
   }
 
   .user-settings {

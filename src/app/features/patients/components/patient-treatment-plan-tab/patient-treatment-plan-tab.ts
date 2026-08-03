@@ -200,9 +200,10 @@ export class PatientTreatmentPlanTab {
   loadOdontogramSuggestions() {
     const pid = this.patientId();
     if (!pid) return;
-    this.http.get<any[]>(`${this.apiUrl}/odontogram/details?patientId=${pid}`)
+    this.http.get<{ details: any[] }>(`${this.apiUrl}/odontogram/details/by-patient/${pid}`)
       .pipe(take(1), catchError(() => of([])))
-      .subscribe((details) => {
+      .subscribe((response) => {
+        const details = Array.isArray(response) ? response : response.details ?? [];
         const budgetedIds = new Set<string>();
         this.treatmentPlans().forEach(plan => {
           (plan.items || []).forEach(item => {

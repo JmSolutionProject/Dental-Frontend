@@ -1,156 +1,191 @@
 <div class="tab-wrapper">
-  <!-- ANTECEDENTES MÉDICOS (AT THE BEGINNING) -->
-  @if (patient().medicalHistory; as mh) {
-    <article class="card">
-      <header class="card__header">
-        <h2>Antecedentes Médicos</h2>
-        <p>Alergias, enfermedades y condiciones registradas.</p>
-      </header>
-
-      <div class="history-grid">
-        <!-- Alergias -->
-        <div class="history-block">
-          <div class="history-block__header">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Alergias Conocidas</span>
-          </div>
-          @if ((mh.allergies || []).length > 0) {
-            <div class="tag-list">
-              @for (a of mh.allergies; track a) {
-                <span class="tag tag--red">{{ a }}</span>
-              }
-            </div>
-          } @else {
-            <span class="history-empty">Ninguna registrada</span>
-          }
-        </div>
-
-        <!-- Enfermedades -->
-        <div class="history-block">
-          <div class="history-block__header">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Enfermedades Sistémicas</span>
-          </div>
-          @if ((mh.conditions || []).length > 0) {
-            <div class="tag-list">
-              @for (c of mh.conditions; track c) {
-                <span class="tag tag--amber">{{ c }}</span>
-              }
-            </div>
-          } @else {
-            <span class="history-empty">Ninguna registrada</span>
-          }
-        </div>
-
-        <!-- Condiciones Especiales -->
-        <div class="history-block">
-          <div class="history-block__header">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Condiciones Especiales</span>
-          </div>
-          @if ((mh.specialConditions || []).length > 0) {
-            <div class="tag-list">
-              @for (s of mh.specialConditions; track s) {
-                <span class="tag tag--purple">{{ s }}</span>
-              }
-            </div>
-          } @else {
-            <span class="history-empty">Ninguna registrada</span>
-          }
-        </div>
-
-        <!-- Antecedentes Odontológicos -->
-        <div class="history-block">
-          <div class="history-block__header">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
-            <span>Antecedentes Odontológicos</span>
-          </div>
-          @if ((mh.dentalHistory || []).length > 0) {
-            <div class="tag-list">
-              @for (d of mh.dentalHistory; track d) {
-                <span class="tag tag--teal">{{ d }}</span>
-              }
-            </div>
-          } @else {
-            <span class="history-empty">Ninguno registrado</span>
-          }
-        </div>
-
-        <!-- Medicamentos -->
-        <div class="history-block">
-          <div class="history-block__header">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v8m-4-4h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <span>Medicamentos Actuales</span>
-          </div>
-          @if ((mh.medications || []).length > 0) {
-            <div class="tag-list">
-              @for (m of mh.medications; track m) {
-                <span class="tag tag--blue">{{ m }}</span>
-              }
-            </div>
-          } @else {
-            <span class="history-empty">No toma medicamentos</span>
-          }
-        </div>
-      </div>
-    </article>
-  }
-
-  <!-- KPIs RÁPIDOS -->
+  <!-- KPIs ROW -->
   <div class="kpi-row">
     <div class="kpi-card">
-      <span class="kpi-label">Tratamientos Pendientes</span>
-      <strong class="kpi-value">2 Procedimientos</strong>
-      <span class="kpi-sub">Endodoncia y Corona Pieza 36</span>
+      <ng-icon name="heroCalendarDays" size="18" class="kpi-icon kpi-icon--blue" />
+      <div class="kpi-body">
+        <span class="kpi-label">Próxima Cita</span>
+        <strong class="kpi-value kpi-value--accent">{{ nextAppointmentDate() || 'Ninguna programada' }}</strong>
+      </div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Saldo Pendiente</span>
-      <strong class="kpi-value kpi-value--danger">S/ {{ budgetPending() }}</strong>
-      <span class="kpi-sub">De un total de S/ {{ budgetTotal() }}</span>
+      <ng-icon name="heroClock" size="18" class="kpi-icon kpi-icon--teal" />
+      <div class="kpi-body">
+        <span class="kpi-label">Última Visita</span>
+        <strong class="kpi-value">{{ lastVisitDate() || 'Sin visitas' }}</strong>
+      </div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Última Radiografía</span>
-      <strong class="kpi-value">15/07/2026</strong>
-      <span class="kpi-sub">Panorámica e Intraoral</span>
+      <ng-icon name="heroUsers" size="18" class="kpi-icon kpi-icon--purple" />
+      <div class="kpi-body">
+        <span class="kpi-label">Odontólogo</span>
+        <strong class="kpi-value">{{ assignedDoctor() }}</strong>
+      </div>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Próxima Cita</span>
-      <strong class="kpi-value kpi-value--accent">{{ nextAppointmentDate() }}</strong>
-      <span class="kpi-sub">Con {{ assignedDoctor() }}</span>
+      <ng-icon name="heroCheckCircle" size="18" class="kpi-icon kpi-icon--green" />
+      <div class="kpi-body">
+        <span class="kpi-label">Citas Atendidas</span>
+        <strong class="kpi-value">{{ completedAppointments() }} <small class="kpi-sub">/ {{ totalAppointments() }} total</small></strong>
+      </div>
     </div>
   </div>
 
-  <!-- RESUMEN DEL EXPEDIENTE CLÍNICO -->
-  <article class="card">
-    <header class="card__header">
-      <h2>Resumen del Expediente Clínico</h2>
-      <p>Visión general condensada del paciente para la consulta activa.</p>
-    </header>
-    <div class="data-grid">
-      <div class="data-item">
-        <span class="data-label">Nombre Completo</span>
-        <strong>{{ patient().firstName }} {{ patient().lastName }}</strong>
-      </div>
-      <div class="data-item">
-        <span class="data-label">Número de DNI</span>
-        <strong>{{ patient().documentNumber || 'Sin DNI' }}</strong>
-      </div>
-      <div class="data-item">
-        <span class="data-label">Fecha de Nacimiento</span>
-        <strong>{{ patient().birthDate || 'No registrada' }}</strong>
-      </div>
-      <div class="data-item">
-        <span class="data-label">Teléfono de Contacto</span>
-        <strong>{{ patient().phone || 'Sin registrar' }}</strong>
-      </div>
-      <div class="data-item">
-        <span class="data-label">Última Visita</span>
-        <strong>{{ lastVisitDate() }}</strong>
-      </div>
-      <div class="data-item">
-        <span class="data-label">Odontólogo Asignado</span>
-        <strong>{{ assignedDoctor() }}</strong>
-      </div>
+  <!-- MAIN 2-COLUMN GRID -->
+  <div class="summary-columns">
+
+    <!-- LEFT: INFO GENERAL + ANTECEDENTES -->
+    <div class="summary-left">
+      <!-- INFORMACIÓN GENERAL -->
+      <article class="card">
+        <header class="card__header">
+          <h2>Información General</h2>
+        </header>
+        <div class="data-grid">
+          <div class="data-item">
+            <span class="data-label">Paciente</span>
+            <strong>{{ patient().firstName }} {{ patient().lastName }}</strong>
+          </div>
+          <div class="data-item">
+            <span class="data-label">DNI / Doc</span>
+            <strong>{{ patient().documentNumber || 'Sin DNI' }}</strong>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Nacimiento</span>
+            <strong>{{ patient().birthDate || 'No registrada' }}</strong>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Teléfono</span>
+            <strong>{{ patient().phone || 'Sin registrar' }}</strong>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Saldo Pendiente</span>
+            <strong [class.text-danger]="budgetPending() > 0">
+              S/ {{ budgetPending() }} <small class="text-muted">(de S/ {{ budgetTotal() }})</small>
+            </strong>
+          </div>
+          @if (patient().email) {
+            <div class="data-item">
+              <span class="data-label">Email</span>
+              <strong>{{ patient().email }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+
+      <!-- ANTECEDENTES MÉDICOS -->
+      @if (patient().medicalHistory; as mh) {
+        <article class="card">
+          <header class="card__header">
+            <h2>Antecedentes Médicos</h2>
+          </header>
+          <div class="history-grid-compact">
+            <div class="history-block-compact" [class.has-data]="(mh.allergies || []).length > 0">
+              <div class="history-block__header">
+                <ng-icon name="heroExclamationTriangle" size="14" class="icon-red" />
+                <span>Alergias</span>
+              </div>
+              @if ((mh.allergies || []).length > 0) {
+                <div class="tag-list">
+                  @for (a of mh.allergies; track a) { <span class="tag tag--red">{{ a }}</span> }
+                </div>
+              } @else {
+                <span class="history-empty">Ninguna</span>
+              }
+            </div>
+
+            <div class="history-block-compact" [class.has-data]="(mh.conditions || []).length > 0">
+              <div class="history-block__header">
+                <ng-icon name="heroArrowTrendingUp" size="14" class="icon-amber" />
+                <span>Enfermedades</span>
+              </div>
+              @if ((mh.conditions || []).length > 0) {
+                <div class="tag-list">
+                  @for (c of mh.conditions; track c) { <span class="tag tag--amber">{{ c }}</span> }
+                </div>
+              } @else {
+                <span class="history-empty">Ninguna</span>
+              }
+            </div>
+
+            <div class="history-block-compact" [class.has-data]="(mh.specialConditions || []).length > 0">
+              <div class="history-block__header">
+                <ng-icon name="heroUsers" size="14" class="icon-purple" />
+                <span>Especiales</span>
+              </div>
+              @if ((mh.specialConditions || []).length > 0) {
+                <div class="tag-list">
+                  @for (s of mh.specialConditions; track s) { <span class="tag tag--purple">{{ s }}</span> }
+                </div>
+              } @else {
+                <span class="history-empty">Ninguna</span>
+              }
+            </div>
+
+            <div class="history-block-compact" [class.has-data]="(mh.dentalHistory || []).length > 0">
+              <div class="history-block__header">
+                <ng-icon name="heroCheckCircle" size="14" class="icon-teal" />
+                <span>Odontológicos</span>
+              </div>
+              @if ((mh.dentalHistory || []).length > 0) {
+                <div class="tag-list">
+                  @for (d of mh.dentalHistory; track d) { <span class="tag tag--teal">{{ d }}</span> }
+                </div>
+              } @else {
+                <span class="history-empty">Ninguno</span>
+              }
+            </div>
+
+            <div class="history-block-compact" [class.has-data]="(mh.medications || []).length > 0">
+              <div class="history-block__header">
+                <ng-icon name="heroSquaresPlus" size="14" class="icon-blue" />
+                <span>Medicamentos</span>
+              </div>
+              @if ((mh.medications || []).length > 0) {
+                <div class="tag-list">
+                  @for (m of mh.medications; track m) { <span class="tag tag--blue">{{ m }}</span> }
+                </div>
+              } @else {
+                <span class="history-empty">Ninguno</span>
+              }
+            </div>
+          </div>
+        </article>
+      }
     </div>
-  </article>
+
+    <!-- RIGHT: ÚLTIMA OBSERVACIÓN -->
+    <div class="summary-right">
+      <article class="card obs-card">
+        <header class="card__header">
+          <div class="obs-header-row">
+            <ng-icon name="heroClipboardDocumentList" size="18" class="icon-blue" />
+            <h2>Última Observación</h2>
+          </div>
+        </header>
+
+        @if (latestObservation; as obs) {
+          <div class="obs-body">
+            <div class="obs-meta">
+              <span class="obs-date">{{ formatDate(obs.date) }}</span>
+              <span class="obs-doctor">{{ obs.doctor }}</span>
+            </div>
+            <p class="obs-text">{{ obs.text }}</p>
+          </div>
+        } @else {
+          <div class="obs-body obs-body--empty">
+            <p class="history-empty">No hay observaciones registradas para este paciente.</p>
+          </div>
+        }
+
+        <footer class="obs-footer">
+          <button type="button" class="btn btn--outline btn--sm" (click)="viewAllObservations.emit()">
+            <ng-icon name="heroClipboardDocumentList" size="14" />
+            Ver todas las observaciones
+          </button>
+        </footer>
+      </article>
+    </div>
+
+  </div>
 </div>
