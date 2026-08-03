@@ -4,3 +4,8 @@
 
 [[plugins]]
   package = "@netlify/angular-runtime"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: http: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' http://localhost:* https://localhost:* https://dental-backend-omega.vercel.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
