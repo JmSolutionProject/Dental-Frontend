@@ -104,6 +104,19 @@
   padding: 1rem;
 }
 
+.template-picker {
+  background: linear-gradient(135deg, var(--color-white), var(--color-sky-50));
+  border: 1px solid var(--color-sky-200);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+}
+
+.template-picker p {
+  margin: 0;
+}
+
 .contact-results {
   background: var(--color-white);
   border: 1px solid var(--color-border);

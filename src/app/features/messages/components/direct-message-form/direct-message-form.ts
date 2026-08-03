@@ -29,6 +29,7 @@ export class DirectMessageForm {
     phone: new FormControl('', { nonNullable: true }),
     patientIds: new FormControl<string[]>([], { nonNullable: true }),
     service: new FormControl('', { nonNullable: true }),
+    templateId: new FormControl('', { nonNullable: true }),
     content: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(1)],
@@ -101,6 +102,7 @@ export class DirectMessageForm {
     }));
 
     const resetForm = () => {
+      this.sendForm.controls.templateId.reset();
       this.sendForm.controls.content.reset();
       this.attachment.set(null);
     };
@@ -156,6 +158,16 @@ export class DirectMessageForm {
 
   clearPatientSelection() {
     this.sendForm.controls.patientIds.setValue([]);
+  }
+
+  applySelectedTemplate() {
+    const templateId = Number(this.sendForm.controls.templateId.value);
+    const template = this.store.templates().find((item) => item.id === templateId);
+
+    if (!template) return;
+
+    this.sendForm.controls.content.setValue(template.content);
+    this.attachment.set(template.attachment ?? null);
   }
 
   selectedPatients(): Patient[] {

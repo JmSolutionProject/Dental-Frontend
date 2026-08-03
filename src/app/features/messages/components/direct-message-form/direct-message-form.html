@@ -85,6 +85,19 @@
         <input type="text" [formControl]="sendForm.controls.service" placeholder="Ej. Limpieza dental, ortodoncia, control" />
       </app-form-field>
 
+      <section class="template-picker">
+        <label class="field">
+          <span>Plantilla de mensaje</span>
+          <select [formControl]="sendForm.controls.templateId" (change)="applySelectedTemplate()">
+            <option value="">Seleccionar plantilla guardada</option>
+            @for (template of store.templates(); track template.id) {
+              <option [value]="template.id">{{ template.name }} · {{ template.category }}</option>
+            }
+          </select>
+        </label>
+        <p class="muted">Al elegir una plantilla se cargará el mensaje y la imagen asociada, si existe.</p>
+      </section>
+
       <app-form-field label="Mensaje" [control]="sendForm.controls.content">
         <textarea rows="8" [formControl]="sendForm.controls.content" [placeholder]="'Ej. Hola {{nombre}}, tu cita está confirmada.'"></textarea>
       </app-form-field>
