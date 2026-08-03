@@ -69,21 +69,13 @@
     @if (showToothProgressModal() && selectedTooth(); as selTooth) {
       <app-modal [title]="'Historial Clínico - Pieza ' + selTooth.fdiNumber" [visible]="true" (close)="closeToothProgressModal()">
         <div class="tooth-progress-modal-body">
-          
-          <div class="tooth-current-state mb-4">
-            <strong>Estado Actual:</strong>
-            <span class="badge" [class.badge-healthy]="selTooth.condition === 'healthy'">
-              {{ conditionLabel(selTooth.condition) }}
-            </span>
-            @if (selectedSurface(); as surface) {
-              <span class="badge">Superficie: {{ surfaceLabel(surface) }}</span>
-            }
-          </div>
+
+
 
           <div class="tooth-history-list mb-4">
             <h4>Historial de Tratamientos y Diagnósticos</h4>
             @if (!selTooth.history || selTooth.history.length === 0) {
-              <p class="muted">No hay registros históricos para esta pieza en el frontend (Backend Mock).</p>
+              <p class="muted">No hay registros históricos</p>
             } @else {
               <ul class="history-timeline">
                 @for (record of selTooth.history; track record.id) {
@@ -104,12 +96,14 @@
 
           <div class="tooth-add-treatment-form">
             <h4>Registrar Nuevo Diagnóstico / Tratamiento</h4>
-            
+
             <div class="treatment-grid">
               @for (cond of conditionOptions; track cond) {
                 <button
-                  class="btn btn--outline"
+                  class="btn btn--outline treatment-option"
                   [class.btn--primary]="selectedCondition() === cond"
+                  [class.treatment-option--active]="selectedCondition() === cond"
+                  [attr.aria-pressed]="selectedCondition() === cond"
                   [disabled]="savingTooth()"
                   (click)="selectCondition(cond)"
                 >
@@ -120,9 +114,9 @@
 
             <div class="mt-3">
               <label>Observaciones Adicionales (Opcional):</label>
-              <textarea 
-                class="form-input" 
-                rows="2" 
+              <textarea
+                class="form-input"
+                rows="2"
                 placeholder="Ej. Curación con resina compuesta en cara oclusal..."
                 (input)="progressNotes.set($any($event.target).value)"
                 [value]="progressNotes()">

@@ -68,6 +68,11 @@
               </button>
             }
           </div>
+          @if (selectedPatients().length > 1) {
+            <p class="broadcast-note">
+              Se creará una campaña persistente. El backend enviará de a un WhatsApp cada 30 segundos.
+            </p>
+          }
         </section>
       }
 
@@ -80,21 +85,48 @@
         <input type="text" [formControl]="sendForm.controls.service" placeholder="Ej. Limpieza dental, ortodoncia, control" />
       </app-form-field>
 
+      <section class="template-picker">
+        <label class="field">
+          <span>Plantilla de mensaje</span>
+          <select [formControl]="sendForm.controls.templateId" (change)="applySelectedTemplate()">
+            <option value="">Seleccionar plantilla guardada</option>
+            @for (template of store.templates(); track template.id) {
+              <option [value]="template.id">{{ template.name }} · {{ template.category }}</option>
+            }
+          </select>
+        </label>
+        <p class="muted">Al elegir una plantilla se cargará el mensaje y la imagen asociada, si existe.</p>
+      </section>
+
       <app-form-field label="Mensaje" [control]="sendForm.controls.content">
         <textarea rows="8" [formControl]="sendForm.controls.content" [placeholder]="'Ej. Hola {{nombre}}, tu cita está confirmada.'"></textarea>
       </app-form-field>
 
       <div class="composer-tools">
         <div class="attachment-actions" aria-label="Adjuntos">
-          <button type="button" class="tool-btn" (click)="addAttachment('Imagen')">Imagen</button>
+          <label class="tool-btn tool-btn--file">
+            {{ uploadingAttachment() ? 'Subiendo imagen...' : 'Imagen' }}
+            <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="uploadingAttachment()" />
+          </label>
           <button type="button" class="tool-btn" (click)="addAttachment('PDF')">PDF</button>
           <button type="button" class="tool-btn" (click)="addAttachment('Nota de voz')">Nota de voz</button>
         </div>
         <span class="character-count">{{ directCharacterCount() }} caracteres</span>
       </div>
 
-      <button class="button button--primary send-now" type="submit" [disabled]="store.sending()">
-        {{ store.sending() ? 'Enviando...' : 'Enviar ahora' }}
+      @if (attachment(); as file) {
+        <div class="attachment-preview">
+          <span>Imagen adjunta: {{ file.originalName }}</span>
+          <button type="button" class="tool-btn" (click)="removeAttachment()">Quitar</button>
+        </div>
+      }
+
+      <button class="button button--primary send-now" type="submit" [disabled]="store.sending() || store.broadcastBusy()">
+        @if (store.broadcastBusy()) {
+          Preparando campaña...
+        } @else {
+          {{ selectedPatients().length > 1 ? 'Crear campaña masiva' : (store.sending() ? 'Enviando...' : 'Enviar ahora') }}
+        }
       </button>
     </form>
   </article>
@@ -120,5 +152,44 @@
         <button type="button" class="tool-btn" (click)="insertVariable(sendForm.controls.content, 'servicio')">{{ '{' }}{{ '{' }}servicio{{ '}' }}{{ '}' }}</button>
       </div>
     </div>
+
+    @if (store.currentBroadcast(); as campaign) {
+      <section class="broadcast-card">
+        <div>
+          <p class="eyebrow">Campaña activa</p>
+          <h3>{{ campaign.name }}</h3>
+          <span class="broadcast-status">{{ campaign.processStatus }}</span>
+        </div>
+
+        <div class="broadcast-metrics">
+          <span><strong>{{ broadcastTotal('Pendiente') }}</strong>Pendientes</span>
+          <span><strong>{{ broadcastTotal('Enviando') }}</strong>Enviando</span>
+          <span><strong>{{ broadcastTotal('Enviado') }}</strong>Enviados</span>
+          <span><strong>{{ broadcastTotal('Fallido') }}</strong>Fallidos</span>
+        </div>
+
+        <p class="muted">Total de destinatarios: {{ broadcastTotalCount() }}</p>
+
+        <div class="broadcast-actions">
+          <button class="button button--ghost button--sm" type="button" (click)="store.refreshBroadcastCampaign()" [disabled]="store.broadcastBusy()">
+            Actualizar
+          </button>
+          @if (campaign.processStatus === 'paused') {
+            <button class="button button--primary button--sm" type="button" (click)="store.startBroadcastCampaign()" [disabled]="store.broadcastBusy()">
+              Reanudar
+            </button>
+          } @else if (campaign.processStatus === 'running') {
+            <button class="button button--ghost button--sm" type="button" (click)="store.pauseBroadcastCampaign()" [disabled]="store.broadcastBusy()">
+              Pausar
+            </button>
+          }
+          @if (campaign.processStatus !== 'cancelled' && campaign.processStatus !== 'completed') {
+            <button class="button button--danger button--sm" type="button" (click)="store.cancelBroadcastCampaign()" [disabled]="store.broadcastBusy()">
+              Cancelar
+            </button>
+          }
+        </div>
+      </section>
+    }
   </aside>
 </section>

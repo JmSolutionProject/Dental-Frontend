@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { take, catchError, finalize, forkJoin, map, of, switchMap } from 'rxjs';
+import { take, catchError, finalize, of } from 'rxjs';
 
 import { GetOdontogramUseCase } from '../../application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../application/update-tooth-condition.usecase';
@@ -128,19 +128,19 @@ export class OdontogramChart {
         .pipe(
           take(1),
           catchError(() => of(null)),
-          switchMap((odontogramData) => this.ensureOdontogram(id, odontogramData)),
           finalize(() => this.loading.set(false)),
         )
         .subscribe((odontogramData) => {
           if (odontogramData) {
-            this.odontogram.set(odontogramData);
-            this.quadrant.set(odontogramData.quadrant);
+            const completeOdontogram = this.ensureOdontogram(id, odontogramData);
+            this.odontogram.set(completeOdontogram);
+            this.quadrant.set(completeOdontogram.quadrant);
           }
         });
     });
   }
 
-  private ensureOdontogram(patientId: string, odontogram: Odontogram | null) {
+  private ensureOdontogram(patientId: string, odontogram: Odontogram | null): Odontogram {
     const quadrant = odontogram?.quadrant ?? this.quadrant();
     const requiredFdi = fdiTeethForQuadrant(quadrant);
     const existingTeeth = new Map<number, FdiTooth>();
@@ -149,28 +149,13 @@ export class OdontogramChart {
       existingTeeth.set(tooth.fdiNumber, tooth);
     }
 
-    const missingTeeth: FdiTooth[] = requiredFdi
-      .filter((fdiNumber) => !existingTeeth.has(fdiNumber))
-      .map((fdiNumber) => ({ fdiNumber, condition: 'healthy', notes: '' }));
-
-    const completeOdontogram: Odontogram = {
+    return {
       patientId,
       quadrant,
       teeth: requiredFdi.map(
         (fdiNumber) => existingTeeth.get(fdiNumber) ?? ({ fdiNumber, condition: 'healthy', notes: '' } as FdiTooth),
       ),
     };
-
-    if (missingTeeth.length === 0) {
-      return of(completeOdontogram);
-    }
-
-    return forkJoin(
-      missingTeeth.map((tooth) => this.updateToothCondition.execute(patientId, tooth).pipe(take(1))),
-    ).pipe(
-      map((responses) => responses.at(-1) ?? completeOdontogram),
-      catchError(() => of(completeOdontogram)),
-    );
   }
 
   selectTooth(tooth: FdiTooth) {

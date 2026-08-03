@@ -16,6 +16,8 @@ import { FormField } from '../../../../shared/components/form-field/form-field';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { API_URL } from '../../../../core/config/api.config';
+import { UserRepository } from '../../../users/infrastructure/user-api.repository';
+import { User } from '../../../users/domain/user';
 
 interface DoctorOption {
   id: string;
@@ -49,6 +51,7 @@ export class AppointmentFormModal implements OnChanges {
   private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly getPatients = inject(GetPatientsUseCase);
   private readonly toast = inject(ToastService);
+  private readonly userRepository = inject(UserRepository);
 
   @Input() visible = false;
   @Input() prefill?: { patientId?: string; dentistId?: string; reason?: string; planServicioId?: string; };
@@ -227,11 +230,22 @@ export class AppointmentFormModal implements OnChanges {
   }
 
   private loadDoctors(): void {
-    this.http.get<{ id: number; nombreCompleto: string }[]>(`${this.apiUrl}/users?role=MEDICO`)
+    this.userRepository.findAll()
       .pipe(take(1), catchError(() => of([])))
       .subscribe((users) => {
-        this.doctors.set(users.map((u) => ({ id: String(u.id), name: u.nombreCompleto })));
+        this.doctors.set(
+          users
+            .filter((user) => this.isDoctor(user))
+            .map((user) => ({ id: String(user.id), name: user.nombreCompleto })),
+        );
       });
+  }
+
+  private isDoctor(user: User): boolean {
+    return user.estado !== false && user.roles.some((role) => {
+      const roleName = role.nombreRol.toUpperCase();
+      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+    });
   }
 
   private loadPatients(): void {

@@ -14,16 +14,20 @@
   <!-- PESTAÑAS DE FILTRADO -->
   <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 0.5rem;">
     <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'all'" [class.btn--secondary]="activeTab() !== 'all'" (click)="setTab('all')">
+      <ng-icon name="heroUsers" aria-hidden="true" />
       Todos los Usuarios ({{ users().length }})
     </button>
     <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'medico'" [class.btn--secondary]="activeTab() !== 'medico'" (click)="setTab('medico')">
-      👨‍⚕️ Doctores / Médicos
+      <ng-icon name="heroHeart" aria-hidden="true" />
+      Doctores / Médicos
     </button>
     <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'secretaria'" [class.btn--secondary]="activeTab() !== 'secretaria'" (click)="setTab('secretaria')">
-      👩‍💼 Secretarias / Recepción
+      <ng-icon name="heroClipboardDocumentList" aria-hidden="true" />
+      Secretarias / Recepción
     </button>
     <button class="btn btn--xs" [class.btn--primary]="activeTab() === 'admin'" [class.btn--secondary]="activeTab() !== 'admin'" (click)="setTab('admin')">
-      👑 Administradores
+      <ng-icon name="heroShieldCheck" aria-hidden="true" />
+      Administradores
     </button>
   </div>
 

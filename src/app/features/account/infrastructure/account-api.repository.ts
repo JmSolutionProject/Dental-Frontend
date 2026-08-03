@@ -18,8 +18,8 @@ export class AccountRepository {
     return this.http.get<AccountProfile>(`${this.apiUrl}/users/${id}`);
   }
 
-  updateProfile(request: UpdateProfileRequest): Observable<AccountProfile> {
-    return this.http.put<AccountProfile>(`${this.apiUrl}/users/me`, request);
+  updateProfile(id: number, request: UpdateProfileRequest): Observable<AccountProfile> {
+    return this.http.put<AccountProfile>(`${this.apiUrl}/users/${id}`, request);
   }
 
   changePassword(request: ChangePasswordRequest): Observable<void> {

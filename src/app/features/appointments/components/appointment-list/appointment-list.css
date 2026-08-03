@@ -230,6 +230,84 @@
   gap: 0.65rem;
 }
 
+.appt-table-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0 1rem;
+}
+
+.appt-table-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--color-slate-200);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+.appt-search-field {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 28rem;
+  width: 100%;
+}
+
+.appt-search-field span {
+  color: var(--color-slate-500);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.appt-search-field input {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-300);
+  border-radius: 999px;
+  color: var(--color-slate-900);
+  font: inherit;
+  padding: 0.65rem 1rem;
+  width: 100%;
+}
+
+.appt-search-field input:focus {
+  border-color: var(--color-sky-600);
+  box-shadow: 0 0 0 3px var(--color-primary-a10, rgba(2, 132, 199, 0.1));
+  outline: none;
+}
+
+.appt-table-day {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.appt-table-day strong {
+  color: var(--color-slate-900);
+  font-weight: 800;
+}
+
+.appt-table-day span {
+  color: var(--color-slate-500);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.appt-table-time {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 4rem;
+}
+
+.appt-table-actions {
+  display: inline-flex;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
 .appt-card {
   display: grid;
   grid-template-columns: 85px 1px 2fr 2fr auto;

@@ -295,6 +295,30 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+html {
+  scrollbar-color: color-mix(in srgb, var(--color-slate-500) 70%, transparent) var(--color-bg);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  height: 0.55rem;
+  width: 0.55rem;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-slate-500) 55%, transparent);
+  border: 2px solid var(--color-bg);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-slate-500) 80%, transparent);
+}
+
 a {
   color: inherit;
   text-decoration-thickness: 1px;

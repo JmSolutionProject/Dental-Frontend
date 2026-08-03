@@ -18,6 +18,9 @@
             <span class="template-category">{{ template.category }}</span>
             <h3>{{ template.name }}</h3>
             <p>{{ excerpt(template.content, 120) }}</p>
+            @if (template.attachment) {
+              <small class="muted">Imagen: {{ template.attachment.originalName }}</small>
+            }
           </div>
           <div class="template-card__actions">
             <button class="button button--ghost button--sm" type="button" (click)="useTemplate(template, 'scheduled')">Usar programado</button>
@@ -87,6 +90,27 @@
           <span>WhatsApp del contacto</span>
         </button>
       </div>
+    </section>
+
+    <section class="variables-panel">
+      <div class="variables-panel__header">
+        <div>
+          <strong>Imagen de la plantilla</strong>
+          <p class="muted">Se reutiliza al aplicar la plantilla en envío directo o programado.</p>
+        </div>
+        <label class="variable-chip variable-chip--file">
+          <strong>{{ uploadingAttachment() ? 'Subiendo...' : 'Adjuntar imagen' }}</strong>
+          <span>PNG, JPG, WEBP o GIF</span>
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" [disabled]="uploadingAttachment()" />
+        </label>
+      </div>
+
+      @if (attachment(); as file) {
+        <div class="attachment-preview">
+          <span>Imagen adjunta: {{ file.originalName }}</span>
+          <button type="button" class="button button--ghost button--sm" (click)="removeAttachment()">Quitar</button>
+        </div>
+      }
     </section>
 
     <div class="modal-actions-row">

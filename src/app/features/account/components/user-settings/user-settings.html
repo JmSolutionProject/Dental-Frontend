@@ -55,10 +55,17 @@
         </div>
 
         <div class="form-actions">
-          <button class="btn btn--primary" type="submit" [disabled]="savingProfile()">
-            <ng-icon name="heroCheck" aria-hidden="true" />
-            {{ savingProfile() ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
+          @if (!editingProfile()) {
+            <button class="btn btn--outline" type="button" (click)="editProfile()">
+              <ng-icon name="heroPencilSquare" aria-hidden="true" />
+              Editar
+            </button>
+          } @else {
+            <button class="btn btn--primary" type="submit" [disabled]="savingProfile()">
+              <ng-icon name="heroCheck" aria-hidden="true" />
+              {{ savingProfile() ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          }
         </div>
       </form>
     </article>

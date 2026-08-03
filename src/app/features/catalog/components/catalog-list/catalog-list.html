@@ -43,39 +43,33 @@
           </header>
           <article class="dossier-card catalog-table-card">
             @if (group.services.length === 0) {
-              <div style="padding: 1.25rem 1rem; text-align: center;">
-                <p class="muted" style="margin-bottom: 0.5rem; font-size: 0.85rem;">Sin servicios registrados.</p>
+              <div class="catalog-empty-group">
+                <p class="muted">Sin servicios registrados.</p>
                 <button class="btn btn--outline btn--xs" (click)="openCreateModal(group.categoryId)">+ Agregar Servicio</button>
               </div>
             } @else {
-              <table class="clinical-table">
-                <thead>
-                  <tr>
-                    <th>Servicio</th>
-                    <th>Precio</th>
-                    <th style="text-align: right;">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (svc of group.services; track svc.id) {
-                    <tr>
-                      <td>
-                        <strong>{{ svc.name }}</strong>
+              <div class="service-card-list">
+                @for (svc of group.services; track svc.id) {
+                  <article class="service-card">
+                    <div class="service-card-main">
+                      <div>
+                        <p class="service-name">{{ svc.name }}</p>
                         @if (svc.description) {
-                          <br /><small class="muted" style="font-size: 0.75rem;">{{ svc.description }}</small>
+                          <p class="service-description">{{ svc.description }}</p>
+                        } @else {
+                          <p class="service-description">Sin descripción registrada.</p>
                         }
-                      </td>
-                      <td class="catalog-price" style="white-space: nowrap;">{{ svc.price | currency:'PEN':'symbol':'1.2-2' }}</td>
-                      <td style="text-align: right;">
-                        <div class="catalog-actions" style="justify-content: flex-end;">
-                          <button class="btn btn--outline btn--xs" (click)="openEditModal(svc)">Editar</button>
-                          <button class="btn btn--danger-outline btn--xs" (click)="confirmDeleteService(svc)">Eliminar</button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                      </div>
+                      <span class="catalog-price">{{ svc.price | currency:'PEN':'symbol':'1.2-2' }}</span>
+                    </div>
+
+                    <div class="service-card-footer">
+                      <button class="btn btn--outline btn--xs" (click)="openEditModal(svc)">Editar</button>
+                      <button class="btn btn--danger-outline btn--xs" (click)="confirmDeleteService(svc)">Eliminar</button>
+                    </div>
+                  </article>
+                }
+              </div>
             }
           </article>
         </section>

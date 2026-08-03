@@ -89,6 +89,12 @@ export class PatientApiRepository implements PatientRepository {
     return this.http.delete<Patient>(`${this.apiUrl}/patients/${id}`);
   }
 
+  createFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<File>(`${this.apiUrl}/files/upload`, formData);
+  }
+
   private toBackendPatientDto(data: CreatePatientRequest | UpdatePatientRequest) {
     let alergiasCriticas: string | undefined = undefined;
     if ('medicalHistory' in data && data.medicalHistory) {

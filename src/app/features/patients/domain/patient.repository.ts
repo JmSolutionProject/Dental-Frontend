@@ -23,4 +23,6 @@ export abstract class PatientRepository {
   abstract create(patient: CreatePatientRequest): Observable<Patient | null>;
   abstract update(id: string, data: UpdatePatientRequest): Observable<Patient>;
   abstract softDelete(id: string): Observable<Patient>;
+
+  abstract createFile(file: File): Observable<File>;
 }

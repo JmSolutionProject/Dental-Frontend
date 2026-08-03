@@ -80,69 +80,88 @@
     </div>
   }
 
-  <!-- DATE GROUPS -->
-  <div class="appt-groups">
-    @for (group of groupedAppointments(); track group.key) {
-      <section class="appt-group">
-        <header class="appt-group-header">
-          <ng-icon name="heroCalendarDays" size="18" />
-          <h2>{{ group.label }}</h2>
-          <span class="appt-group-count">({{ group.count }} {{ group.count === 1 ? 'cita' : 'citas' }})</span>
-        </header>
+  <section class="appt-table-card">
+    <div class="appt-table-toolbar">
+      <label class="appt-search-field">
+        <span>Buscar cita</span>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          (input)="setSearchTerm($event)"
+          placeholder="Buscar por paciente, encargado, servicio, estado o fecha"
+        />
+      </label>
+    </div>
 
-        <div class="appt-list">
-          @for (appt of group.appointments; track appt.id) {
-            <article
-              class="appt-card"
-              [class.appt-card--completed]="appt.status === 'completed'"
-              [class.appt-card--cancelled]="appt.status === 'cancelled'"
-            >
-              <div class="appt-card-time">
-                <span class="appt-time">{{ getTimeDisplay(appt.scheduledAt).time }}</span>
-                <span class="appt-period">{{ getTimeDisplay(appt.scheduledAt).period }}</span>
-              </div>
-
-              <div class="appt-card-divider"></div>
-
-              <div class="appt-card-patient">
-                <div class="appt-avatar">{{ getInitials(appt.patientName) }}</div>
-                <div class="appt-patient-info">
-                  <strong class="appt-patient-name">{{ appt.patientName }}</strong>
-                  @if (appt.status === 'cancelled') {
-                    <span class="appt-patient-cancelled">Cita cancelada</span>
-                  }
-                </div>
-              </div>
-
-              <div class="appt-card-service">
-                <span class="appt-service">{{ appt.reason }}</span>
-                @if (appt.dentistName) {
-                  <span class="appt-doctor">{{ appt.dentistName }}</span>
-                }
-              </div>
-
-              <div class="appt-card-status">
-                <span
-                  class="appt-status"
-                  [class.appt-status--scheduled]="appt.status === 'scheduled'"
-                  [class.appt-status--completed]="appt.status === 'completed'"
-                  [class.appt-status--cancelled]="appt.status === 'cancelled'"
-                >
-                  {{ getStatusLabel(appt.status) }}
-                </span>
-                <button type="button" class="appt-more-btn" aria-label="Editar Cita" (click)="openEditModal(appt)">
-                  <ng-icon name="heroPencil" size="16" />
-                </button>
-                <button type="button" class="appt-more-btn appt-more-btn--danger" aria-label="Eliminar Definitivamente" (click)="openDeleteModal(appt)">
-                  <ng-icon name="heroTrash" size="16" />
-                </button>
-              </div>
-            </article>
-          }
+    <app-table
+      [columns]="appointmentColumns"
+      [data]="pagedAppointments()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      [totalItems]="tableAppointments().length"
+      [showPagination]="true"
+      (pageChange)="setPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+      emptyMessage="No hay citas para los filtros seleccionados."
+    >
+      <ng-template appTableCell="day" let-appt>
+        <div class="appt-table-day">
+          <strong>{{ getDayDisplay(appt.scheduledAt) }}</strong>
+          <span>{{ getDateDisplay(appt.scheduledAt) }}</span>
         </div>
-      </section>
-    }
-  </div>
+      </ng-template>
+
+      <ng-template appTableCell="time" let-appt>
+        <div class="appt-table-time">
+          <span class="appt-time">{{ getTimeDisplay(appt.scheduledAt).time }}</span>
+          <span class="appt-period">{{ getTimeDisplay(appt.scheduledAt).period }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template appTableCell="patient" let-appt>
+        <div class="appt-card-patient">
+          <div class="appt-avatar">{{ getInitials(appt.patientName) }}</div>
+          <div class="appt-patient-info">
+            <strong class="appt-patient-name">{{ appt.patientName }}</strong>
+            @if (appt.status === 'cancelled') {
+              <span class="appt-patient-cancelled">Cita cancelada</span>
+            }
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template appTableCell="dentist" let-appt>
+        {{ appt.dentistName || 'Sin asignar' }}
+      </ng-template>
+
+      <ng-template appTableCell="service" let-appt>
+        <span class="appt-service">{{ appt.reason }}</span>
+      </ng-template>
+
+      <ng-template appTableCell="status" let-appt>
+        <span
+          class="appt-status"
+          [class.appt-status--scheduled]="appt.status === 'scheduled'"
+          [class.appt-status--completed]="appt.status === 'completed'"
+          [class.appt-status--cancelled]="appt.status === 'cancelled'"
+        >
+          {{ getStatusLabel(appt.status) }}
+        </span>
+      </ng-template>
+
+      <ng-template appTableCell="actions" let-appt>
+        <div class="table-actions appt-table-actions">
+          <button type="button" class="appt-more-btn" aria-label="Editar Cita" (click)="openEditModal(appt)">
+            <ng-icon name="heroPencil" size="16" />
+          </button>
+          <button type="button" class="appt-more-btn appt-more-btn--danger" aria-label="Eliminar Definitivamente" (click)="openDeleteModal(appt)">
+            <ng-icon name="heroTrash" size="16" />
+          </button>
+        </div>
+      </ng-template>
+    </app-table>
+  </section>
 
   <app-appointment-form-modal
     [visible]="showCreateModal()"

@@ -28,6 +28,8 @@ import {
   CalendarSlot,
   Dentist,
 } from '../../domain/appointment';
+import { User } from '../../../users/domain/user';
+import { UserRepository } from '../../../users/infrastructure/user-api.repository';
 
 type CalendarView = 'day' | 'week' | 'month';
 
@@ -60,6 +62,7 @@ export class Calendar {
   private readonly updateAppointment = inject(UpdateAppointmentUseCase);
   private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly toast = inject(ToastService);
+  private readonly userRepository = inject(UserRepository);
 
   readonly view = signal<CalendarView>('week');
   readonly currentDate = signal(new Date());
@@ -68,6 +71,7 @@ export class Calendar {
   readonly endHour = signal(20);
   readonly appointmentDuration = signal(30);
   readonly appointments = signal<Appointment[]>([]);
+  readonly availableDentists = signal<Dentist[]>([]);
   readonly loading = signal(false);
 
   readonly modalVisible = signal(false);
@@ -114,6 +118,9 @@ export class Calendar {
 
   readonly dentists = computed<Dentist[]>(() => {
     const seen = new Map<string, Dentist>();
+    for (const dentist of this.availableDentists()) {
+      seen.set(dentist.id, dentist);
+    }
     for (const a of this.appointments()) {
       if (a.dentistId && !seen.has(a.dentistId)) {
         seen.set(a.dentistId, {
@@ -236,8 +243,21 @@ export class Calendar {
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
+      this.loadDoctors();
       this.loadAppointments();
     }
+  }
+
+  loadDoctors() {
+    this.userRepository.findAll()
+      .pipe(catchError(() => of([])))
+      .subscribe((users) => {
+        this.availableDentists.set(
+          users
+            .filter((user) => this.isDoctor(user))
+            .map((user) => ({ id: String(user.id), name: user.nombreCompleto })),
+        );
+      });
   }
 
   loadAppointments() {
@@ -514,5 +534,12 @@ export class Calendar {
     const d = new Date(isoString);
     d.setMinutes(d.getMinutes() + minutes);
     return d.toISOString();
+  }
+
+  private isDoctor(user: User): boolean {
+    return user.estado !== false && user.roles.some((role) => {
+      const roleName = role.nombreRol.toUpperCase();
+      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+    });
   }
 }

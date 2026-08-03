@@ -48,9 +48,63 @@ export interface WhatsAppQrResponse {
 
 export interface SendWhatsAppMessageRequest {
   content: string;
+  mediaKey?: string;
+  mediaName?: string;
+  mediaMimeType?: string;
 }
 
 export interface SendWhatsAppMessageResponse {
   success: boolean;
   message?: string;
+}
+
+export interface CreateWhatsAppBroadcastCampaignRequest {
+  nombreCampana: string;
+  descripcion?: string;
+  pacienteIds: number[];
+  contenido: string;
+  mediaKey?: string;
+  mediaName?: string;
+  mediaMimeType?: string;
+  tipoEnvio?: 'custom-message';
+  maxIntentos?: number;
+}
+
+export interface WhatsAppMediaAttachment {
+  key: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url?: string;
+}
+
+export interface WhatsAppBroadcastRecipient {
+  id: string;
+  patientId: string;
+  patientName: string;
+  phone: string | null;
+  status: string;
+  attempts: number;
+  maxAttempts: number;
+  sentAt: string | null;
+  error: string | null;
+  whatsappMessageId: string | null;
+  mediaKey?: string | null;
+  mediaName?: string | null;
+  mediaMimeType?: string | null;
+}
+
+export interface WhatsAppBroadcastCampaign {
+  id: string;
+  name: string;
+  description: string | null;
+  processStatus: 'pending' | 'running' | 'paused' | 'cancelled' | 'completed' | string;
+  senderType: string;
+  createdAt: string;
+  startedAt: string | null;
+  pausedAt: string | null;
+  cancelledAt: string | null;
+  completedAt: string | null;
+  totals: Record<string, number>;
+  recipients: WhatsAppBroadcastRecipient[];
 }

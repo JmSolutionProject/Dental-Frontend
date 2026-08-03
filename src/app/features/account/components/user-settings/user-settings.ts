@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { heroCheck, heroKey } from '@ng-icons/heroicons/outline';
+import { heroCheck, heroKey, heroPencilSquare } from '@ng-icons/heroicons/outline';
 import { catchError, finalize, of, take } from 'rxjs';
 
 import { AuthService } from '../../../../core/services/auth';
@@ -12,7 +12,7 @@ import { AccountRepository } from '../../infrastructure/account-api.repository';
 @Component({
   selector: 'app-user-settings',
   imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({ heroCheck, heroKey })],
+  providers: [provideIcons({ heroCheck, heroKey, heroPencilSquare })],
   templateUrl: './user-settings.html',
   styleUrl: './user-settings.css',
 })
@@ -23,6 +23,7 @@ export class UserSettings implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly loading = signal(true);
+  readonly editingProfile = signal(false);
   readonly savingProfile = signal(false);
   readonly savingPassword = signal(false);
   readonly profile = signal<AccountProfile | null>(null);
@@ -48,8 +49,14 @@ export class UserSettings implements OnInit {
   });
 
   ngOnInit() {
+    this.profileForm.disable();
     this.hydrateFromToken();
     this.loadProfile();
+  }
+
+  editProfile() {
+    this.editingProfile.set(true);
+    this.profileForm.enable();
   }
 
   loadProfile() {
@@ -90,13 +97,21 @@ export class UserSettings implements OnInit {
       return;
     }
 
+    const profile = this.profile();
+    if (!profile) {
+      this.toast.error('No se pudo identificar el perfil a actualizar');
+      return;
+    }
+
     this.savingProfile.set(true);
     const raw = this.profileForm.getRawValue();
+    const roleIds = profile.roles.map((role) => role.id).filter((id): id is number => typeof id === 'number');
 
     this.accountRepository
-      .updateProfile({
+      .updateProfile(profile.id, {
         nombreCompleto: raw.nombreCompleto ?? '',
         email: raw.email ?? '',
+        roleIds,
       })
       .pipe(
         take(1),
@@ -112,6 +127,8 @@ export class UserSettings implements OnInit {
         }
 
         this.profile.set(profile);
+        this.editingProfile.set(false);
+        this.profileForm.disable();
         this.toast.success('Perfil actualizado');
       });
   }

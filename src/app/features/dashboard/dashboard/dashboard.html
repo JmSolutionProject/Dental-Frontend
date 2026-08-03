@@ -55,11 +55,20 @@
 
         <article class="kpi-card kpi-card--teal">
           <div class="kpi-card-header">
-            <span class="kpi-label">Total Pacientes</span>
+            <span class="kpi-label">Total Clientes</span>
             <div class="kpi-icon-wrap"><ng-icon name="heroUsers" /></div>
           </div>
           <strong class="kpi-value">{{ kpis.totals.patients || (patientsTotal$ | async) }}</strong>
           <span class="kpi-badge kpi-badge--teal">Registrados</span>
+        </article>
+
+        <article class="kpi-card kpi-card--indigo">
+          <div class="kpi-card-header">
+            <span class="kpi-label">Total Trabajadores</span>
+            <div class="kpi-icon-wrap"><ng-icon name="heroUserGroup" /></div>
+          </div>
+          <strong class="kpi-value">{{ workersTotal$ | async }}</strong>
+          <span class="kpi-badge kpi-badge--indigo">Activos</span>
         </article>
 
         <article class="kpi-card kpi-card--indigo">

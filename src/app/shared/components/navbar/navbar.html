@@ -7,12 +7,12 @@
     <button
       class="theme-toggle"
       type="button"
-      [attr.aria-label]="isDarkMode() ? 'Activar modo claro' : 'Activar modo oscuro'"
-      [title]="isDarkMode() ? 'Modo claro' : 'Modo oscuro'"
+      [attr.aria-label]="theme.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'"
+      [title]="theme.isDark() ? 'Modo claro' : 'Modo oscuro'"
       (click)="toggleTheme()"
     >
-      <ng-icon [name]="isDarkMode() ? 'heroSun' : 'heroMoon'" aria-hidden="true" />
-      <span>{{ isDarkMode() ? 'Claro' : 'Oscuro' }}</span>
+      <ng-icon [name]="theme.isDark() ? 'heroSun' : 'heroMoon'" aria-hidden="true" />
+      <span>{{ theme.isDark() ? 'Claro' : 'Oscuro' }}</span>
     </button>
     <button class="logout" type="button" (click)="logout()">
       <ng-icon name="heroArrowRightStartOnRectangle" class="logout-icon" aria-hidden="true" />

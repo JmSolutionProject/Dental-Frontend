@@ -36,7 +36,7 @@ import {
   heroShieldCheck,
   heroTag,
 } from '@ng-icons/heroicons/outline';
-import { Chart, registerables } from 'chart.js';
+import { Chart, registerables, type TooltipItem } from 'chart.js';
 
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
 import { GetPatientsUseCase } from '../../../patients/application/get-patients.usecase';
@@ -326,7 +326,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
               legend: { display: false },
               tooltip: {
                 callbacks: {
-                  label: (ctx) => ` Ingresos: S/ ${Number(ctx.raw).toFixed(2)}`,
+                  label: (ctx: TooltipItem<'line'>) => ` Ingresos: S/ ${Number(ctx.raw).toFixed(2)}`,
                 },
               },
             },
@@ -335,7 +335,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
                 beginAtZero: true,
                 grid: { color: '#f1f5f9' },
                 ticks: {
-                  callback: (val) => `S/ ${val}`,
+                  callback: (val: string | number) => `S/ ${val}`,
                 },
               },
               x: { grid: { display: false } },
@@ -369,7 +369,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
               legend: { display: false },
               tooltip: {
                 callbacks: {
-                  label: (ctx) => ` S/ ${Number(ctx.raw).toFixed(2)}`,
+                  label: (ctx: TooltipItem<'bar'>) => ` S/ ${Number(ctx.raw).toFixed(2)}`,
                 },
               },
             },
@@ -377,7 +377,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
               y: {
                 beginAtZero: true,
                 grid: { color: '#f1f5f9' },
-                ticks: { callback: (val) => `S/ ${val}` },
+                ticks: { callback: (val: string | number) => `S/ ${val}` },
               },
               x: { grid: { display: false } },
             },
@@ -410,7 +410,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
               legend: { position: 'bottom' },
               tooltip: {
                 callbacks: {
-                  label: (ctx) => ` ${ctx.label}: S/ ${Number(ctx.raw).toFixed(2)}`,
+                  label: (ctx: TooltipItem<'doughnut'>) => ` ${ctx.label}: S/ ${Number(ctx.raw).toFixed(2)}`,
                 },
               },
             },
