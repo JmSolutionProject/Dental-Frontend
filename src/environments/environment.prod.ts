@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://dental-backend-omega.vercel.app/api',
+  apiUrl: 'https://dental-backend-56fv.onrender.com/api',
 };
