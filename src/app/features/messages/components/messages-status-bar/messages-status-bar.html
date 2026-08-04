@@ -20,6 +20,35 @@
 
 <app-modal title="Ver QR" size="md" [visible]="showQrModal()" (close)="closeQrModal()">
   <div class="qr-modal-content">
+    <section class="pairing-card">
+      <strong>Conectar con código</strong>
+      <p class="muted">Ingresá el número con código de país y vinculalo desde WhatsApp.</p>
+      <div class="pairing-form">
+        <input
+          type="tel"
+          [value]="pairingPhone()"
+          (input)="updatePairingPhone($event)"
+          placeholder="51999999999"
+        />
+        <button
+          class="button button--primary"
+          type="button"
+          (click)="requestPairingCode()"
+          [disabled]="store.loadingPairingCode()"
+        >
+          {{ store.loadingPairingCode() ? 'Generando...' : 'Generar código' }}
+        </button>
+      </div>
+
+      @if (store.pairingCode(); as code) {
+        <div class="pairing-code">
+          <span>Código de vinculación</span>
+          <strong>{{ code }}</strong>
+        </div>
+        <p class="muted">En WhatsApp: Dispositivos vinculados > Vincular dispositivo > Vincular con número.</p>
+      }
+    </section>
+
     @if (store.qrImage(); as qrSrc) {
       <img [src]="qrSrc" alt="Código QR para conectar WhatsApp" />
       <p class="muted">Escaneá este código desde WhatsApp para vincular la sesión de la clínica.</p>

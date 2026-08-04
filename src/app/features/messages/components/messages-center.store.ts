@@ -8,6 +8,7 @@ import { GetMessagesUseCase } from '../application/get-messages.usecase';
 import { GetWhatsAppQrUseCase } from '../application/get-whatsapp-qr.usecase';
 import { GetWhatsAppStatusUseCase } from '../application/get-whatsapp-status.usecase';
 import { ManageWhatsAppBroadcastUseCase } from '../application/manage-whatsapp-broadcast.usecase';
+import { RequestWhatsAppPairingCodeUseCase } from '../application/request-whatsapp-pairing-code.usecase';
 import { SendWhatsAppMessageUseCase } from '../application/send-whatsapp-message.usecase';
 import {
   Message,
@@ -52,6 +53,7 @@ export class MessageCenterStore {
   private readonly getWhatsAppStatus = inject(GetWhatsAppStatusUseCase);
   private readonly getWhatsAppQr = inject(GetWhatsAppQrUseCase);
   private readonly manageWhatsAppBroadcast = inject(ManageWhatsAppBroadcastUseCase);
+  private readonly requestWhatsAppPairingCode = inject(RequestWhatsAppPairingCodeUseCase);
   private readonly sendWhatsAppMessage = inject(SendWhatsAppMessageUseCase);
   private readonly toast = inject(ToastService);
 
@@ -61,11 +63,13 @@ export class MessageCenterStore {
   readonly whatsappStatus = signal<WhatsAppStatus | null>(null);
   readonly qr = signal<string | null>(null);
   readonly qrImage = signal<string | null>(null);
+  readonly pairingCode = signal<string | null>(null);
 
   readonly loadingMessages = signal(false);
   readonly loadingPatients = signal(false);
   readonly loadingStatus = signal(false);
   readonly loadingQr = signal(false);
+  readonly loadingPairingCode = signal(false);
   readonly sending = signal(false);
   readonly broadcastBusy = signal(false);
   readonly currentBroadcast = signal<WhatsAppBroadcastCampaign | null>(null);
@@ -186,6 +190,31 @@ export class MessageCenterStore {
       .subscribe((response) => {
         this.qr.set(response.qr);
         void this.renderQr(response.qr);
+      });
+  }
+
+  requestPairingCode(phone: string) {
+    const normalizedPhone = phone.replace(/\D/g, '');
+
+    if (normalizedPhone.length < 10) {
+      this.toast.error('Ingresá el número con código de país. Ejemplo: 51999999999.');
+      return;
+    }
+
+    this.loadingPairingCode.set(true);
+    this.requestWhatsAppPairingCode
+      .execute(normalizedPhone)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('No se pudo generar el código de vinculación.');
+          return of({ code: null });
+        }),
+        finalize(() => this.loadingPairingCode.set(false)),
+      )
+      .subscribe((response) => {
+        this.pairingCode.set(response.code);
+        if (response.code) this.toast.success('Código de vinculación generado.');
       });
   }
 

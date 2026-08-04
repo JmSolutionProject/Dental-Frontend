@@ -11,6 +11,7 @@ import { MessageCenterStore } from '../messages-center.store';
 export class MessagesStatusBar {
   readonly store = inject(MessageCenterStore);
   readonly showQrModal = signal(false);
+  readonly pairingPhone = signal('51');
 
   readonly statusLabel = computed(() => {
     const status = this.store.whatsappStatus();
@@ -45,5 +46,13 @@ export class MessagesStatusBar {
 
   loadQr() {
     this.store.loadQr();
+  }
+
+  requestPairingCode() {
+    this.store.requestPairingCode(this.pairingPhone());
+  }
+
+  updatePairingPhone(event: Event) {
+    this.pairingPhone.set((event.target as HTMLInputElement).value);
   }
 }

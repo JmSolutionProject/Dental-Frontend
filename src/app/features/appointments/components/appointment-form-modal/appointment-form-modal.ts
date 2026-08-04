@@ -244,7 +244,7 @@ export class AppointmentFormModal implements OnChanges {
   private isDoctor(user: User): boolean {
     return user.estado !== false && user.roles.some((role) => {
       const roleName = role.nombreRol.toUpperCase();
-      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+      return ['MEDICO', 'DENTISTA', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
     });
   }
 

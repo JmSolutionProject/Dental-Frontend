@@ -46,6 +46,11 @@ export interface WhatsAppQrResponse {
   qr: string | null;
 }
 
+export interface WhatsAppPairingCodeResponse {
+  code: string;
+  status: string;
+}
+
 export interface SendWhatsAppMessageRequest {
   content: string;
   mediaKey?: string;

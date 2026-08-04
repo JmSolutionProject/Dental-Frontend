@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, take, catchError, of, Observable } from 'rxjs';
+import { map, take, catchError, of, Observable, shareReplay, switchMap } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import {
@@ -25,11 +25,23 @@ export class AppointmentApiRepository implements AppointmentRepository {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
 
-  private defaultStatusId = 1;
+  private defaultStatusId: number | undefined;
   private statuses: { id: number; nombre: string }[] = [];
+  private readonly statuses$ = this.http
+    .get<{ id: number; nombre: string }[]>(`${this.apiUrl}/appointments/statuses`)
+    .pipe(
+      take(1),
+      catchError(() => of([])),
+      map((statuses: { id: number; nombre: string }[]) => {
+        this.statuses = statuses;
+        this.defaultStatusId = this.findScheduledStatusId(statuses);
+        return statuses;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
 
   constructor() {
-    this.loadStatuses();
+    this.statuses$.subscribe();
   }
 
   findAll(): Observable<Appointment[]> {
@@ -49,21 +61,23 @@ export class AppointmentApiRepository implements AppointmentRepository {
   }
 
   create(appointment: CreateAppointmentRequest): Observable<Appointment> {
-    return this.http
-      .post<any>(
+    return this.statuses$.pipe(
+      switchMap(() => this.http.post<any>(
         `${this.apiUrl}/appointments`,
         this.toBackendAppointmentDto(appointment),
-      )
-      .pipe(map((response: any) => this.toDomainAppointment(response)));
+      )),
+      map((response: any) => this.toDomainAppointment(response)),
+    );
   }
 
   update(id: string, data: UpdateAppointmentRequest): Observable<Appointment> {
-    return this.http
-      .put<any>(
+    return this.statuses$.pipe(
+      switchMap(() => this.http.put<any>(
         `${this.apiUrl}/appointments/${id}`,
         this.toBackendAppointmentDto(data),
-      )
-      .pipe(map((response: any) => this.toDomainAppointment(response)));
+      )),
+      map((response: any) => this.toDomainAppointment(response)),
+    );
   }
 
   cancel(id: string, reason: string): Observable<Appointment> {
@@ -87,17 +101,6 @@ export class AppointmentApiRepository implements AppointmentRepository {
       `${this.apiUrl}/appointments/availability`,
       { params },
     );
-  }
-
-  private loadStatuses(): void {
-    this.http.get<{ id: number; nombre: string }[]>(`${this.apiUrl}/appointments/statuses`)
-      .pipe(take(1), catchError(() => of([])))
-      .subscribe((statuses: { id: number; nombre: string }[]) => {
-        this.statuses = statuses;
-        if (statuses.length > 0) {
-          this.defaultStatusId = statuses[0].id;
-        }
-      });
   }
 
   private toDomainAppointment(raw: any): Appointment {
@@ -170,14 +173,18 @@ export class AppointmentApiRepository implements AppointmentRepository {
     if ('status' in data && data.status) {
       if (data.status === 'completed') {
         const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('atend') || s.nombre.toLowerCase().includes('complet'));
-        estadoCitaId = found ? found.id : 2;
+          estadoCitaId = found ? found.id : estadoCitaId;
       } else if (data.status === 'cancelled') {
         const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('cancel'));
-        estadoCitaId = found ? found.id : 3;
+          estadoCitaId = found ? found.id : estadoCitaId;
       } else {
         const found = this.statuses.find((s) => s.nombre.toLowerCase().includes('pendient') || s.nombre.toLowerCase().includes('program'));
-        estadoCitaId = found ? found.id : 1;
+          estadoCitaId = found ? found.id : estadoCitaId;
       }
+    }
+
+    if (!estadoCitaId) {
+      throw new Error('No appointment statuses are available.');
     }
 
     return {
@@ -197,5 +204,14 @@ export class AppointmentApiRepository implements AppointmentRepository {
     const date = new Date(isoString);
     date.setMinutes(date.getMinutes() + minutes);
     return date.toISOString();
+  }
+
+  private findScheduledStatusId(statuses: { id: number; nombre: string }[]): number | undefined {
+    const scheduled = statuses.find((s) => {
+      const name = s.nombre.toLowerCase();
+      return name.includes('program') || name.includes('pendient') || name.includes('confirm');
+    });
+
+    return scheduled?.id ?? statuses[0]?.id;
   }
 }

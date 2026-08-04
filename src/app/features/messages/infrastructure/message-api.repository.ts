@@ -18,6 +18,7 @@ import {
   WhatsAppQrResponse,
   WhatsAppBroadcastCampaign,
   WhatsAppMediaAttachment,
+  WhatsAppPairingCodeResponse,
   WhatsAppStatus,
 } from '../domain/messages';
 
@@ -106,6 +107,13 @@ export class MessageApiRepository implements MessageRepository {
     return this.http
       .get<{ qr?: string | null }>(`${this.apiUrl}/whatsapp/qr`)
       .pipe(map((response) => ({ qr: response.qr ?? null })));
+  }
+
+  requestWhatsAppPairingCode(phone: string): Observable<WhatsAppPairingCodeResponse> {
+    return this.http.post<WhatsAppPairingCodeResponse>(
+      `${this.apiUrl}/whatsapp/pairing-code`,
+      { phone },
+    );
   }
 
   sendWhatsAppMessage(

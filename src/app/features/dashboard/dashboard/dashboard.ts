@@ -62,11 +62,18 @@ export class Dashboard {
   private readonly userRepository = inject(UserRepository);
 
   protected readonly rawRole = this.auth.role;
-  protected readonly currentRole = computed(() => (this.rawRole() || 'admin').toLowerCase());
+  protected readonly currentRole = computed(() => (this.rawRole() || '').toLowerCase());
+  protected readonly currentRoles = computed(() => {
+    const roles = [this.currentRole(), ...this.auth.roles()]
+      .map((role) => role.toLowerCase())
+      .filter(Boolean);
+
+    return new Set(roles);
+  });
   
-  protected readonly isAdmin = computed(() => this.currentRole() === 'admin' || this.currentRole() === 'administrador');
-  protected readonly isReceptionist = computed(() => this.currentRole() === 'receptionist' || this.currentRole() === 'recepcionista');
-  protected readonly isDentist = computed(() => this.currentRole() === 'dentist' || this.currentRole() === 'odontologo' || this.currentRole() === 'medico');
+  protected readonly isAdmin = computed(() => this.hasAnyRole('admin', 'administrador'));
+  protected readonly isReceptionist = computed(() => this.hasAnyRole('receptionist', 'recepcionista', 'secretaria'));
+  protected readonly isDentist = computed(() => this.hasAnyRole('dentist', 'odontologo', 'odontólogo', 'medico', 'médico'));
 
   protected readonly userName = this.auth.user()?.name ?? 'Administrador';
 
@@ -120,6 +127,11 @@ export class Dashboard {
     if (typeof window !== 'undefined') {
       window.print();
     }
+  }
+
+  private hasAnyRole(...roles: string[]): boolean {
+    const currentRoles = this.currentRoles();
+    return roles.some((role) => currentRoles.has(role.toLowerCase()));
   }
 }
 

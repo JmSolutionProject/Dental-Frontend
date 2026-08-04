@@ -9,6 +9,7 @@ import {
   SendWhatsAppMessageRequest,
   SendWhatsAppMessageResponse,
   UpdateMessageRequest,
+  WhatsAppPairingCodeResponse,
   WhatsAppQrResponse,
   WhatsAppBroadcastCampaign,
   WhatsAppMediaAttachment,
@@ -23,6 +24,9 @@ export abstract class MessageRepository {
   abstract delete(id: string): Observable<Message>;
   abstract getWhatsAppStatus(): Observable<WhatsAppStatus>;
   abstract getWhatsAppQr(): Observable<WhatsAppQrResponse>;
+  abstract requestWhatsAppPairingCode(
+    phone: string,
+  ): Observable<WhatsAppPairingCodeResponse>;
   abstract sendWhatsAppMessage(
     patientId: string,
     data: SendWhatsAppMessageRequest,
