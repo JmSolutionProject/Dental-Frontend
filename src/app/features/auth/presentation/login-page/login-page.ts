@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
+import { finalize } from 'rxjs';
 import {
   heroArrowRight,
   heroEnvelope,
@@ -48,6 +49,18 @@ export class LoginPage {
   submitting = false;
   showPassword = false;
 
+  constructor() {
+    this.form.valueChanges.subscribe(() => {
+      if (!this.serverError) {
+        return;
+      }
+
+      this.serverError = null;
+      this.clearServerError(this.form.controls.email);
+      this.clearServerError(this.form.controls.password);
+    });
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -58,22 +71,48 @@ export class LoginPage {
     }
 
     this.serverError = null;
+    this.clearServerError(this.form.controls.email);
+    this.clearServerError(this.form.controls.password);
     this.submitting = true;
 
     const { email, password } = this.form.value;
 
-    this.auth.login(email!, password!).subscribe({
-      next: () => {
+    this.auth.login(email!, password!).pipe(
+      finalize(() => {
         this.submitting = false;
+      }),
+    ).subscribe({
+      next: () => {
         void this.router.navigateByUrl('/dashboard');
       },
       error: (err: unknown) => {
-        this.submitting = false;
         const errorObj = err as { error?: { message?: string } } | undefined;
-        this.serverError =
-          errorObj?.error?.message || 'Credenciales inválidas. Por favor verifica tus datos e intenta nuevamente.';
+        const message =
+          errorObj?.error?.message || 'El email o la contraseña son incorrectos.';
+
+        this.serverError = message;
+        this.form.controls.email.setErrors({
+          ...this.form.controls.email.errors,
+          serverError: message,
+        });
+        this.form.controls.password.setErrors({
+          ...this.form.controls.password.errors,
+          serverError: message,
+        });
+        this.form.controls.email.markAsTouched();
+        this.form.controls.password.markAsTouched();
       },
     });
+  }
+
+  private clearServerError(control: FormControl): void {
+    const errors = control.errors;
+    if (!errors?.['serverError']) {
+      return;
+    }
+
+    const { serverError, ...remainingErrors } = errors;
+    control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 }
 

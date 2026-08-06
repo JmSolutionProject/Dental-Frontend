@@ -48,7 +48,14 @@ export class AuthService {
   login(email: string, password: string): Observable<void> {
     const url = `${this.apiUrl}/auth/login`;
     return this.http.post<LoginResponse>(url, { email, password }).pipe(
-      tap((response) => this.setToken(this.extractToken(response))),
+      tap((response) => {
+        const token = this.extractToken(response);
+        if (!token) {
+          throw new Error('Credenciales inválidas.');
+        }
+
+        this.setToken(token);
+      }),
       map(() => undefined),
     );
   }
