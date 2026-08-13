@@ -132,6 +132,7 @@ export class PatientApiRepository implements PatientRepository {
       telefonoWhatsapp: this.pickString(data.phone),
       alergiasCriticas,
       numeroDocumento: documentNumber,
+      observaciones: this.pickString(data.observaciones),
       estado,
     };
   }
@@ -247,6 +248,7 @@ export class PatientApiRepository implements PatientRepository {
       status,
       medicalHistory,
       notes: this.pickString(data.notes) ?? this.pickString(data.observaciones) ?? '',
+      observaciones: this.pickString(data.observaciones) ?? this.pickString(data.notes) ?? '',
     };
   }
 
