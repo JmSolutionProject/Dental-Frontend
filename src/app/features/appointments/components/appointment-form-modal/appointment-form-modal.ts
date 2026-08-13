@@ -54,7 +54,7 @@ export class AppointmentFormModal implements OnChanges {
   private readonly userRepository = inject(UserRepository);
 
   @Input() visible = false;
-  @Input() prefill?: { patientId?: string; dentistId?: string; reason?: string; planServicioId?: string; };
+  @Input() prefill?: { patientId?: string; dentistId?: string; reason?: string; planServicioId?: string; serviceId?: string; };
 
   readonly closed = output<void>();
   readonly saved = output<void>();
@@ -66,6 +66,7 @@ export class AppointmentFormModal implements OnChanges {
   readonly saving = signal(false);
   readonly selectedCategoryId = signal<string>('');
   readonly selectedShift = signal<'morning' | 'afternoon'>('morning');
+  private pendingPrefillServiceId: string | null = null;
 
   readonly categories = computed<CategoryOption[]>(() => {
     const map = new Map<string, string>();
@@ -101,9 +102,12 @@ export class AppointmentFormModal implements OnChanges {
           patientId: this.prefill.patientId ?? '',
           dentistId: this.prefill.dentistId ?? '',
           reason: this.prefill.reason ?? '',
-          serviceId: '',
+          serviceId: this.prefill.serviceId ?? '',
         });
+        this.pendingPrefillServiceId = this.prefill.serviceId ?? null;
+        this.applyPrefillCategory();
       } else {
+        this.pendingPrefillServiceId = null;
         this.form.reset({
           patientId: '',
           date: this.todayString(),
@@ -269,7 +273,20 @@ export class AppointmentFormModal implements OnChanges {
   private loadCatalog(): void {
     this.http.get<{ data: CatalogServiceItem[] }>(`${this.apiUrl}/catalog/services?limit=100`)
       .pipe(take(1), catchError(() => of({ data: [] })))
-      .subscribe((res) => this.catalogServices.set(res.data));
+      .subscribe((res) => {
+        this.catalogServices.set(res.data);
+        this.applyPrefillCategory();
+      });
+  }
+
+  private applyPrefillCategory(): void {
+    const serviceId = this.pendingPrefillServiceId;
+    if (!serviceId) return;
+    const svc = this.catalogServices().find((s) => s.id === serviceId);
+    if (svc) {
+      this.selectedCategoryId.set(svc.categoryId);
+      this.pendingPrefillServiceId = null;
+    }
   }
 
   private todayString(): string {

@@ -59,7 +59,11 @@ export class PatientOdontogramTab {
     const odo = this.odontogram();
     if (!odo) return [];
     return odo.teeth
-      .filter((t) => t.condition !== 'healthy')
+      .filter(
+        (t) =>
+          t.condition !== 'healthy' ||
+          Boolean(t.notes && t.notes.trim().length > 0),
+      )
       .map((t) => ({
         ...t,
         conditionLabel: toothConditionLabel(t.condition),

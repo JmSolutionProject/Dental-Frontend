@@ -231,8 +231,10 @@ export class PatientDetail {
             id: String(p.id),
             name: p.observaciones || 'Plan de Tratamiento',
             date: new Date(p.fechaCreacion).toLocaleDateString('es-PE'),
+            doctorId: p.medicoId ? String(p.medicoId) : undefined,
             items: p.servicios.map((s: any) => ({
               id: String(s.id),
+              serviceId: s.servicio?.id ? String(s.servicio.id) : undefined,
               serviceName: s.servicio?.nombreServicio || 'Servicio',
               price: Number(s.servicio?.precioActual || s.servicio?.precio || 0),
               ejecutado: s.ejecutado,
