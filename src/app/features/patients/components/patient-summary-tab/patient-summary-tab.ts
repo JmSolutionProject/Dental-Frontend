@@ -36,6 +36,7 @@ export class PatientSummaryTab {
   systemMedicalAlerts = input<SystemMedicalAlert[]>([]);
   budgetPending = input<number>(0);
   budgetTotal = input<number>(0);
+  isDoctor = input<boolean>(false);
   nextAppointmentDate = input<string>('');
   assignedDoctor = input<string>('');
   lastVisitDate = input<string>('');
