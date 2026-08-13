@@ -44,8 +44,6 @@ export class PatientTreatmentPlanTab {
   readonly builderItems = signal<TreatmentPlanItem[]>([]);
   readonly builderServiceId = signal<string>('');
   readonly selectedCategoryId = signal<string>('');
-  readonly odontogramSuggestions = signal<any[]>([]);
-  readonly activeImportingSuggestionId = signal<string | null>(null);
   readonly showAppointmentModal = signal(false);
   readonly appointmentPrefill = signal<any>(null);
   readonly showEditModal = signal(false);
@@ -152,9 +150,6 @@ export class PatientTreatmentPlanTab {
     this.builderItems.set([]);
     this.builderServiceId.set('');
     this.selectedCategoryId.set('');
-    this.odontogramSuggestions.set([]);
-    this.activeImportingSuggestionId.set(null);
-    this.loadOdontogramSuggestions();
     this.showPlanBuilderModal.set(true);
   }
 
@@ -172,22 +167,12 @@ export class PatientTreatmentPlanTab {
     const svc = this.availableServices().find((s) => s.id === serviceId);
     if (!svc) return;
 
-    const suggestionId = this.activeImportingSuggestionId();
-    const sug = suggestionId ? this.odontogramSuggestions().find(item => item.id === suggestionId) : null;
-    const suffix = sug ? ` (Pieza ${sug.fdiNumber})` : '';
-
     this.builderItems.update((items) => [...items, {
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       serviceId: svc.id,
-      serviceName: svc.name + suffix,
+      serviceName: svc.name,
       price: svc.basePrice,
-      odontogramaDetalleId: suggestionId || undefined,
     }]);
-
-    if (suggestionId) {
-      this.odontogramSuggestions.update((list) => list.filter(item => item.id !== suggestionId));
-      this.activeImportingSuggestionId.set(null);
-    }
 
     this.builderServiceId.set('');
     serviceSelect.value = '';
@@ -195,98 +180,6 @@ export class PatientTreatmentPlanTab {
 
   removeServiceFromBuilder(id: string) {
     this.builderItems.update((items) => items.filter((i) => i.id !== id));
-  }
-
-  loadOdontogramSuggestions() {
-    const pid = this.patientId();
-    if (!pid) return;
-    this.http.get<{ details: any[] }>(`${this.apiUrl}/odontogram/details/by-patient/${pid}`)
-      .pipe(take(1), catchError(() => of([])))
-      .subscribe((response) => {
-        const details = Array.isArray(response) ? response : response.details ?? [];
-        const budgetedIds = new Set<string>();
-        this.treatmentPlans().forEach(plan => {
-          (plan.items || []).forEach(item => {
-            if (item.odontogramaDetalleId) {
-              budgetedIds.add(String(item.odontogramaDetalleId));
-            }
-          });
-        });
-        
-        const pending = details.filter((d: any) => 
-          d.condition !== 'healthy' && !budgetedIds.has(String(d.id))
-        );
-        this.odontogramSuggestions.set(pending);
-      });
-  }
-
-  conditionLabel(cond: string): string {
-    const labels: Record<string, string> = {
-      caries: 'Caries',
-      restoration: 'Curación',
-      extraction: 'Extracción',
-      crown: 'Corona',
-      missing: 'Ausente',
-      endodontics: 'Endodoncia',
-      implant: 'Implante',
-      sealant: 'Sellante',
-      fracture: 'Fractura',
-    };
-    return labels[cond] || cond;
-  }
-
-  importOdontogramSuggestion(sug: any) {
-    const cond = sug.condition.toLowerCase();
-    let matchWord = '';
-    if (cond.includes('carie') || cond.includes('restor')) matchWord = 'resina';
-    else if (cond.includes('endo')) matchWord = 'endodoncia';
-    else if (cond.includes('extract') || cond.includes('cirug')) matchWord = 'extrac';
-    else if (cond.includes('crown') || cond.includes('coron')) matchWord = 'corona';
-    else if (cond.includes('implan')) matchWord = 'implante';
-    else if (cond.includes('seal') || cond.includes('sell')) matchWord = 'sellante';
-
-    const matchedSvc = matchWord 
-      ? this.catalogServices().find(s => s.name.toLowerCase().includes(matchWord))
-      : null;
-
-    if (matchedSvc) {
-      this.builderItems.update((items) => [...items, {
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-        serviceId: matchedSvc.id,
-        serviceName: `${matchedSvc.name} (Pieza ${sug.fdiNumber})`,
-        price: matchedSvc.price,
-        odontogramaDetalleId: sug.id,
-      }]);
-      this.odontogramSuggestions.update((list) => list.filter(item => item.id !== sug.id));
-      this.toast.success(`Se importó ${matchedSvc.name} para Pieza ${sug.fdiNumber}`);
-    } else {
-      this.activeImportingSuggestionId.set(sug.id);
-      this.toast.info(`Selecciona el servicio para la Pieza ${sug.fdiNumber} en el catálogo.`);
-      const catMatch = this.categories().find(c => c.name.toLowerCase().includes(cond) || cond.includes(c.name.toLowerCase()));
-      if (catMatch) {
-        this.selectedCategoryId.set(catMatch.id);
-      }
-    }
-  }
-
-  createTestDiagnostic() {
-    const pid = Number(this.patientId());
-    if (!pid) return;
-
-    this.http.post(`${this.apiUrl}/odontogram/details`, {
-      patientId: pid,
-      fdiNumber: 36,
-      condition: 'caries',
-      notes: 'Caries detectada en examen inicial.',
-    }).pipe(take(1), catchError((err) => {
-      this.toast.error('Error al generar diagnóstico de prueba');
-      return of(null);
-    })).subscribe((res) => {
-      if (res) {
-        this.toast.success('Diagnóstico de prueba generado en la pieza 36!');
-        this.loadOdontogramSuggestions();
-      }
-    });
   }
 
   saveTreatmentPlan() {
@@ -304,7 +197,6 @@ export class PatientTreatmentPlanTab {
       servicioId: Number(item.serviceId),
       cantidad: 1,
       descuento: 0,
-      odontogramaDetalleId: item.odontogramaDetalleId ? Number(item.odontogramaDetalleId) : undefined,
     }));
 
     this.http.post(`${this.apiUrl}/treatment-plans`, {
@@ -324,7 +216,6 @@ export class PatientTreatmentPlanTab {
           serviceName: s.servicio?.nombreServicio || 'Servicio',
           price: Number(s.servicio?.precioActual || s.servicio?.precio || 0),
           ejecutado: false,
-          odontogramaDetalleId: s.odontogramaDetalleId ? String(s.odontogramaDetalleId) : undefined,
         }));
 
         const newPlan: TreatmentPlan = {

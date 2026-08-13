@@ -23,6 +23,7 @@ export class PaymentApiRepository implements PaymentRepository {
       .set('limit', String(params?.limit ?? 10));
 
     if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.patientId) httpParams = httpParams.set('patientId', params.patientId);
     if (params?.cashierId) httpParams = httpParams.set('cashierId', params.cashierId);
     if (params?.cashRegisterId) httpParams = httpParams.set('cashRegisterId', params.cashRegisterId);
     if (params?.methodId) httpParams = httpParams.set('methodId', params.methodId);
