@@ -260,11 +260,20 @@
   margin: 0;
 }
 
-.finding-card__treatment {
-  font-size: 0.8rem;
+.tooth-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tooth-detail-condition {
+  font-size: 1rem;
   margin: 0;
 }
 
-.finding-card__treatment strong {
-  color: var(--color-primary-dark);
+.tooth-detail-notes {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
 }
