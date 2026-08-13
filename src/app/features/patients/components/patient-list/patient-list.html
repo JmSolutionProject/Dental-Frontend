@@ -81,6 +81,9 @@
               } @else {
                 <button type="button" class="btn btn--success-outline btn--xs" (click)="reactivatePatient(p, $event)">Activar</button>
               }
+              @if (isAdmin()) {
+                <button type="button" class="btn btn--danger btn--xs" (click)="openPermanentDeleteConfirm(p, $event)">Eliminar</button>
+              }
             </div>
           </ng-template>
         </app-table>
@@ -184,6 +187,26 @@
         <button class="btn btn--secondary" type="button" (click)="closeDeleteConfirmModal()">Cancelar</button>
         <button class="btn btn--danger" type="button" [disabled]="deletingState()" (click)="executeDelete()">
           {{ deletingState() ? 'Procesando…' : 'Sí, Dar de Baja' }}
+        </button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Confirm Permanent Delete Modal -->
+  <app-modal title="Eliminar paciente permanentemente" [visible]="showPermanentDeleteModal()" (close)="closePermanentDeleteModal()">
+    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0;">
+      <p style="margin: 0; font-size: 0.95rem; color: var(--text-primary);">
+        ¿Está seguro de que desea eliminar <strong>PERMANENTEMENTE</strong> al paciente
+        <strong>{{ patientToDeletePermanent()?.firstName }} {{ patientToDeletePermanent()?.lastName }}</strong>?
+      </p>
+      <p class="muted" style="margin: 0; font-size: 0.85rem;">
+        Esta acción eliminará todos sus registros: citas, pagos, odontograma, planes de tratamiento,
+        archivos adjuntos y mensajes. Esta operación no se puede deshacer.
+      </p>
+      <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button class="btn btn--secondary" type="button" (click)="closePermanentDeleteModal()">Cancelar</button>
+        <button class="btn btn--danger" type="button" [disabled]="deletingPermanent()" (click)="executePermanentDelete()">
+          {{ deletingPermanent() ? 'Eliminando…' : 'Sí, Eliminar Todo' }}
         </button>
       </div>
     </div>
