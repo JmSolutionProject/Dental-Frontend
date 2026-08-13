@@ -21,7 +21,7 @@ import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
 import { DeletePatientUseCase } from '../../application/delete-patient.usecase';
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
-import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, BudgetItemRecord, PaymentRecord, InstallmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
+import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
 
 import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
 import { Modal as ModalComponent } from '../../../../shared/components/modal/modal';
@@ -132,17 +132,8 @@ export class PatientDetail {
     this.treatmentPlans().reduce((acc, p) => acc + p.totalCost, 0)
   );
 
-  readonly budgetPaid = computed(() => {
-    return this.treatmentPlans().reduce((acc, p) => {
-      if (p.paymentType === 'A Cuotas' && p.installments) {
-        return acc + p.installments.filter(i => i.status === 'Pagado').reduce((sum, i) => sum + i.amount, 0);
-      }
-      return acc;
-    }, 0);
-  });
-
   readonly budgetPending = computed(() => {
-    return this.budgetTotal() - this.budgetPaid();
+    return this.budgetTotal();
   });
 
   // Form Binding
@@ -240,7 +231,6 @@ export class PatientDetail {
               ejecutado: s.ejecutado,
             })),
             totalCost: totalCost,
-            paymentType: 'Al Contado',
             estado: p.estado || 'Activo',
             observaciones: p.observaciones || ''
           } as TreatmentPlan;

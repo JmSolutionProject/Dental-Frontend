@@ -69,10 +69,6 @@
           </div>
           <div class="plan-section">
             <span class="plan-label">Total: <strong>S/ {{ plan.totalCost }}</strong></span>
-            <span class="plan-label">Modalidad: {{ plan.paymentType }}</span>
-            @if (plan.paymentType === 'A Cuotas' && plan.installments) {
-              <span class="plan-label">Cuotas: {{ plan.installments.length - 1 }}</span>
-            }
           </div>
         </div>
       </article>
@@ -143,65 +139,14 @@
       </div>
 
       <div class="builder-col">
-        <h3 class="builder-section-title">2. Financiamiento</h3>
+        <h3 class="builder-section-title">2. Total</h3>
 
-        <div class="totals-grid" [class.two-cols]="isAQuotas()">
+        <div class="totals-grid">
           <div class="builder-total-box">
-            <span class="total-label">Subtotal</span>
+            <span class="total-label">Total a Pagar</span>
             <span class="total-val">S/ {{ builderSubtotal() }}</span>
           </div>
-
-          @if (isAQuotas()) {
-            <div class="builder-total-box highlight-box">
-              <span class="total-label">Saldo a Financiar</span>
-              <span class="total-val">S/ {{ remainingAfterAdvance() }}</span>
-            </div>
-          }
         </div>
-
-        <div class="financing-grid mt-2" [style.grid-template-columns]="isAQuotas() ? '1fr 1fr' : '1fr'">
-          <app-form-field label="Modalidad de Pago" [control]="planBuilderForm.get('paymentType')!">
-            <select formControlName="paymentType" class="form-input">
-              <option value="Al Contado">Al Contado</option>
-              <option value="A Cuotas">A Cuotas</option>
-            </select>
-          </app-form-field>
-
-          @if (isAQuotas()) {
-            <app-form-field label="Adelanto (S/)" [control]="planBuilderForm.get('advancePayment')!">
-              <input type="number" formControlName="advancePayment" class="form-input" min="0" />
-            </app-form-field>
-          }
-        </div>
-
-        @if (isAQuotas()) {
-          <div class="financing-grid mt-2">
-            <app-form-field label="N° de Cuotas" [control]="planBuilderForm.get('installmentsCount')!">
-              <input type="number" formControlName="installmentsCount" class="form-input" min="1" max="24" />
-            </app-form-field>
-            <app-form-field label="Frecuencia" [control]="planBuilderForm.get('frequency')!">
-              <select formControlName="frequency" class="form-input">
-                <option value="Quincenal">Quincenal</option>
-                <option value="Mensual">Mensual</option>
-              </select>
-            </app-form-field>
-          </div>
-
-          @if (generatedInstallments().length > 0) {
-            <div class="mt-2">
-              <label class="detail-label">Cronograma</label>
-              <div class="schedule-mini-list mt-1">
-                @for (inst of generatedInstallments(); track inst.id) {
-                  <div class="schedule-mini-item">
-                    <span>{{ inst.id === 'advance' ? 'Adelanto' : 'Cuota ' + inst.id.replace('inst-', '') }}</span>
-                    <span class="muted">{{ inst.date }}</span>
-                    <strong>S/ {{ inst.amount }}</strong>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        }
       </div>
     </div>
 
