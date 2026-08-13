@@ -16,6 +16,7 @@ interface PaymentRow {
   concept: string;
   method: string;
   amount: number;
+  planServicioId?: string | null;
 }
 
 @Component({
@@ -47,22 +48,22 @@ export class PatientPaymentsTab {
     this.history().reduce((sum, row) => sum + row.amount, 0)
   );
 
-  readonly pending = computed(() =>
-    Math.max(0, this.budgetTotal() - this.realTotal())
+  readonly planPaid = computed(() =>
+    this.history()
+      .filter((row) => row.planServicioId)
+      .reduce((sum, row) => sum + row.amount, 0)
   );
 
-  readonly selectedMethodNotCash = computed(() => {
-    const mid = this.paymentForm.get('methodId')?.value;
-    if (!mid) return true;
-    const method = this.paymentMethods().find((m) => String(m.id) === String(mid));
-    return !method || (method.name?.toLowerCase() !== 'efectivo');
-  });
+  readonly pending = computed(() =>
+    Math.max(0, this.budgetTotal() - this.planPaid())
+  );
 
-  isNotCash(): boolean {
+  needsReference(): boolean {
     const mid = this.paymentForm.get('methodId')?.value;
-    if (!mid) return true;
+    if (!mid) return false;
     const method = this.paymentMethods().find((m) => String(m.id) === String(mid));
-    return !method || (method.name?.toLowerCase() !== 'efectivo');
+    const name = (method?.name ?? '').toUpperCase();
+    return name.includes('YAPE') || name.includes('TRANSFERENCIA');
   }
 
   methodClass(method: string): string {
@@ -163,6 +164,7 @@ export class PatientPaymentsTab {
               concept: `${apt?.reason ?? 'Pago'} — ${apt?.patientName ?? ''}`,
               method: result.methodName || '—',
               amount: result.amount,
+              planServicioId: result.planServicioId,
             },
             ...list,
           ]);
@@ -191,6 +193,7 @@ export class PatientPaymentsTab {
             concept: p.notes || 'Pago',
             method: p.methodName || '—',
             amount: p.amount,
+            planServicioId: p.planServicioId,
           })));
       });
   }

@@ -39,6 +39,7 @@ export interface Payment {
   notes?: string;
   paidAt: string;
   status: PaymentStatus;
+  planServicioId?: string | null;
 }
 
 export interface PaymentSummary {
