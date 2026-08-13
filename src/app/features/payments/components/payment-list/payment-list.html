@@ -198,15 +198,17 @@
           <input class="form-input" formControlName="paidAt" type="datetime-local" />
         </label>
 
-        <label class="field">
-          <span>N° Operación / Voucher</span>
-          <input
-            class="form-input"
-            formControlName="reference"
-            placeholder="Ej: POS-98432 o Yape 0984"
-            type="text"
-          />
-        </label>
+        @if (needsReference()) {
+          <label class="field">
+            <span>N° Operación / Voucher</span>
+            <input
+              class="form-input"
+              formControlName="reference"
+              placeholder="Ej: POS-98432 o Yape 0984"
+              type="text"
+            />
+          </label>
+        }
 
         <label class="field" style="grid-column: 1 / -1;">
           <span>Observación / Tratamiento</span>
