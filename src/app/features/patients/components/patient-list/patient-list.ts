@@ -19,6 +19,7 @@ import { FormField } from '../../../../shared/components/form-field/form-field';
 import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { ReniecService } from '../../../../core/services/reniec.service';
+import { AuthService } from '../../../../core/services/auth';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPlus } from '@ng-icons/heroicons/outline';
 
@@ -39,6 +40,9 @@ export class PatientList {
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
   private readonly reniec = inject(ReniecService);
+  private readonly auth = inject(AuthService);
+
+  readonly isDoctor = computed(() => this.auth.roles().includes('dentist'));
 
   readonly searchText = signal('');
   readonly currentPage = signal(1);

@@ -5,7 +5,9 @@
       <h1>Expedientes Clínicos</h1>
       <p class="muted">Gestión de datos personales, historial médico y fichas de pacientes.</p>
     </div>
-    <button class="button" type="button" (click)="openCreateModal()"> <ng-icon name="heroPlus" /> Registrar Paciente</button>
+    @if (!isDoctor()) {
+      <button class="button" type="button" (click)="openCreateModal()"> <ng-icon name="heroPlus" /> Registrar Paciente</button>
+    }
   </header>
 
   <!-- Status filter tabs -->
