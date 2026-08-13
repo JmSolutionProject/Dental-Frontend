@@ -106,3 +106,99 @@
   color: #94a3b8;
   font-size: 0.9rem;
 }
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.pay-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 520px;
+}
+
+.pay-table th,
+.pay-table td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+.pay-table th {
+  background: var(--color-slate-50);
+  color: var(--color-slate-500);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pay-table tbody tr:hover {
+  background: var(--color-slate-50);
+}
+
+.pay-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.date-cell {
+  white-space: nowrap;
+  color: var(--color-slate-700);
+  font-weight: 600;
+}
+
+.concept-cell {
+  color: var(--color-slate-600);
+}
+
+.align-right {
+  text-align: right;
+}
+
+.amount {
+  font-weight: 800;
+  color: var(--color-teal-800);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.badge {
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  white-space: nowrap;
+}
+
+.badge--success {
+  background: var(--color-green-100);
+  color: var(--color-green-800);
+}
+
+.badge--primary {
+  background: var(--color-sky-100);
+  color: var(--color-sky-700);
+}
+
+.badge--warning {
+  background: var(--color-amber-50);
+  color: var(--color-amber-700);
+}
+
+.badge--muted {
+  background: var(--color-slate-100);
+  color: var(--color-slate-600);
+}
+
+.pay-table tfoot .total-row td {
+  border-bottom: none;
+  border-top: 2px solid var(--color-border);
+  padding-top: 0.85rem;
+  color: var(--color-slate-700);
+  font-weight: 700;
+}
