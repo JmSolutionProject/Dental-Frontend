@@ -49,29 +49,6 @@ export interface AppointmentRecord {
   status: 'Finalizada' | 'Programada' | 'Cancelada' | 'En atención';
 }
 
-export interface BudgetItemRecord {
-  id: string;
-  treatment: string;
-  toothPiece: string;
-  price: number;
-  status: 'Pagado' | 'Pendiente';
-}
-
-export interface PaymentRecord {
-  id: string;
-  date: string;
-  concept: string;
-  method: 'Efectivo' | 'Tarjeta de Crédito/Débito' | 'Yape / Plin' | 'Transferencia Bancaria';
-  amount: number;
-}
-
-export interface InstallmentRecord {
-  id: string;
-  date: string;
-  amount: number;
-  status: 'Pendiente' | 'Pagado';
-}
-
 export interface TreatmentPlanItem {
   id: string;
   serviceId?: string;
@@ -86,11 +63,9 @@ export interface TreatmentPlan {
   date: string;
   items: TreatmentPlanItem[];
   totalCost: number;
-  paymentType: 'Al Contado' | 'A Cuotas';
   doctorId?: string;
   estado?: string;
   observaciones?: string;
-  installments?: InstallmentRecord[];
 }
 
 export const ALLERGY_OPTIONS = [

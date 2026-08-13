@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { take, catchError, of } from 'rxjs';
-import { TreatmentPlan, TreatmentPlanItem, InstallmentRecord } from '../../domain/patient';
+import { TreatmentPlan, TreatmentPlanItem } from '../../domain/patient';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Modal } from '../../../../shared/components/modal/modal';
 import { FormField } from '../../../../shared/components/form-field/form-field';
@@ -51,10 +51,6 @@ export class PatientTreatmentPlanTab {
 
   readonly planBuilderForm: FormGroup = this.fb.group({
     planName: ['Plan de Tratamiento', Validators.required],
-    paymentType: ['Al Contado', Validators.required],
-    advancePayment: [0, [Validators.min(0)]],
-    installmentsCount: [1, [Validators.min(1), Validators.max(24)]],
-    frequency: ['Mensual'],
     doctorId: [0, [Validators.required, Validators.min(1)]],
   });
 
@@ -90,37 +86,6 @@ export class PatientTreatmentPlanTab {
     this.builderItems().reduce((sum, item) => sum + item.price, 0)
   );
 
-  readonly advanceAmount = computed(() => Number(this.formValue().advancePayment) || 0);
-  readonly remainingAfterAdvance = computed(() => Math.max(0, this.builderSubtotal() - this.advanceAmount()));
-  readonly isAQuotas = computed(() => this.formValue().paymentType === 'A Cuotas');
-
-  readonly generatedInstallments = computed<InstallmentRecord[]>(() => {
-    if (!this.isAQuotas()) return [];
-    const remaining = this.remainingAfterAdvance();
-    if (remaining <= 0) return [];
-    const count = Number(this.formValue().installmentsCount) || 1;
-    const freq = this.formValue().frequency || 'Mensual';
-    const amountPerInstallment = Number((remaining / count).toFixed(2));
-
-    const result: InstallmentRecord[] = [];
-    if (this.advanceAmount() > 0) {
-      result.push({ id: 'advance', date: new Date().toLocaleDateString('es-PE'), amount: this.advanceAmount(), status: 'Pagado' });
-    }
-    let currentDate = new Date();
-    for (let i = 1; i <= count; i++) {
-      if (freq === 'Quincenal') currentDate.setDate(currentDate.getDate() + 15);
-      else currentDate.setMonth(currentDate.getMonth() + 1);
-
-      let amount = amountPerInstallment;
-      if (i === count) {
-        amount = Number((remaining - (amountPerInstallment * (count - 1))).toFixed(2));
-      }
-
-      result.push({ id: `inst-${i}`, date: currentDate.toLocaleDateString('es-PE'), amount: amount, status: 'Pendiente' });
-    }
-    return result;
-  });
-
   constructor() {
     this.loadCatalog();
     this.loadDoctors();
@@ -141,10 +106,6 @@ export class PatientTreatmentPlanTab {
   openPlanBuilder() {
     this.planBuilderForm.reset({
       planName: 'Plan de Tratamiento',
-      paymentType: 'Al Contado',
-      advancePayment: 0,
-      installmentsCount: 1,
-      frequency: 'Mensual',
       doctorId: 0,
     });
     this.builderItems.set([]);
@@ -190,7 +151,7 @@ export class PatientTreatmentPlanTab {
     if (!patientIdNum) { this.toast.error('Paciente no encontrado'); return; }
 
     this.saving.set(true);
-    const { planName, paymentType, doctorId } = this.formValue();
+    const { planName, doctorId } = this.formValue();
     const medicoIdNum = Number(doctorId);
 
     const servicios = this.builderItems().map((item) => ({
@@ -226,8 +187,6 @@ export class PatientTreatmentPlanTab {
           doctorId: result.medicoId ? String(result.medicoId) : undefined,
           items: mappedItems.length > 0 ? mappedItems : this.builderItems().map(item => ({ ...item, ejecutado: false })),
           totalCost: this.builderSubtotal(),
-          paymentType,
-          installments: paymentType === 'A Cuotas' ? this.generatedInstallments() : undefined,
         };
         this.planAdded.emit(newPlan);
         this.toast.success('Plan guardado');
