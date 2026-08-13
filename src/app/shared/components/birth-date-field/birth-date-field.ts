@@ -91,14 +91,16 @@ export class BirthDateField implements OnInit, OnDestroy {
 
     let iso = '';
     if (y.length === 4 && m.length === 2 && d.length === 2) {
-      const candidate = `${y}-${m}-${d}`;
-      const test = new Date(candidate);
+      const yi = parseInt(y, 10);
+      const mi = parseInt(m, 10);
+      const di = parseInt(d, 10);
+      const test = new Date(yi, mi - 1, di);
       if (
-        test.getFullYear() === parseInt(y) &&
-        test.getMonth() === parseInt(m) - 1 &&
-        test.getDate() === parseInt(d)
+        test.getFullYear() === yi &&
+        test.getMonth() === mi - 1 &&
+        test.getDate() === di
       ) {
-        iso = candidate;
+        iso = `${y}-${m}-${d}`;
       }
     }
 
