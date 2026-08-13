@@ -65,8 +65,41 @@
       </section>
     </div>
 
-    <!-- Tooth Progress Modal -->
-    @if (showToothProgressModal() && selectedTooth(); as selTooth) {
+    <!-- Hallazgos del odontograma (tarjetas) -->
+    @if (toothCards().length > 0) {
+      <section class="tooth-findings">
+        <h3 class="findings-title">Hallazgos del Odontograma</h3>
+        @for (card of toothCards(); track card.fdiNumber) {
+          <article
+            class="finding-card"
+            [attr.data-condition]="card.condition"
+            [class.finding-card--clickable]="isDoctor()"
+            (click)="isDoctor() && selectTooth(card)"
+          >
+            <div class="finding-card__header">
+              <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
+              <span class="finding-card__condition">{{ card.conditionLabel }}</span>
+              @if (card.stateName === 'Curado') {
+                <span class="badge badge--healed">Curado</span>
+              }
+            </div>
+            @if (card.notes || card.diagnosis) {
+              <p class="finding-card__notes">
+                {{ card.diagnosis || card.notes }}
+              </p>
+            }
+            @if (card.recommendedTreatment) {
+              <p class="finding-card__treatment">
+                <strong>Tratamiento:</strong> {{ card.recommendedTreatment }}
+              </p>
+            }
+          </article>
+        }
+      </section>
+    }
+
+    <!-- Tooth Progress Modal: solo doctores -->
+    @if (isDoctor() && showToothProgressModal() && selectedTooth(); as selTooth) {
       <app-modal [title]="'Historial Clínico - Pieza ' + selTooth.fdiNumber" [visible]="true" (close)="closeToothProgressModal()">
         <div class="tooth-progress-modal-body">
 
