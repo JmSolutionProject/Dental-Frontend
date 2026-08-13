@@ -58,12 +58,14 @@
             <span class="data-label">Teléfono</span>
             <strong>{{ patient().phone || 'Sin registrar' }}</strong>
           </div>
-          <div class="data-item">
-            <span class="data-label">Saldo Pendiente</span>
-            <strong [class.text-danger]="budgetPending() > 0">
-              S/ {{ budgetPending() }} <small class="text-muted">(de S/ {{ budgetTotal() }})</small>
-            </strong>
-          </div>
+          @if (!isDoctor()) {
+            <div class="data-item">
+              <span class="data-label">Saldo Pendiente</span>
+              <strong [class.text-danger]="budgetPending() > 0">
+                S/ {{ budgetPending() }} <small class="text-muted">(de S/ {{ budgetTotal() }})</small>
+              </strong>
+            </div>
+          }
           @if (patient().email) {
             <div class="data-item">
               <span class="data-label">Email</span>

@@ -74,6 +74,7 @@ export class PatientDetail {
   private readonly getPayments = inject(GetPaymentsUseCase);
 
   readonly role = this.auth.role;
+  readonly isDoctor = computed(() => this.auth.roles().includes('dentist'));
   readonly patient = signal<Patient | null>(null);
   readonly patientAppointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
@@ -245,6 +246,10 @@ export class PatientDetail {
   }
 
   private loadPatientPayments(patientId: string) {
+    if (this.isDoctor()) {
+      return;
+    }
+
     this.getPayments
       .execute({ patientId, limit: 100 })
       .pipe(take(1), catchError(() => of({ data: [], total: 0, page: 1, limit: 10 })))
