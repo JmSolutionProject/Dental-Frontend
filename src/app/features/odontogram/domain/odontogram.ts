@@ -41,7 +41,6 @@ export interface FdiTooth {
   surfaceDetailIds?: Partial<Record<ToothSurface, string | number>>;
   stateName?: string;
   diagnosis?: string | null;
-  recommendedTreatment?: string | null;
   notes?: string;
   history?: ToothHistoryRecord[];
 }
