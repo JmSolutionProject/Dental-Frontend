@@ -10,6 +10,8 @@ import { take, catchError, of, finalize } from 'rxjs';
 import { UploadAttachmentUseCase } from '../../application/upload-attachment.usecase';
 import { validateAttachment } from '../../domain/attachment';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { GetCatalogUseCase } from '../../../catalog/application/get-catalog.usecase';
+import { CatalogService } from '../../../catalog/domain/catalog';
 
 @Component({
   selector: 'app-upload-dropzone',
@@ -19,6 +21,7 @@ import { ToastService } from '../../../../shared/components/toast/toast.service'
 })
 export class UploadDropzone {
   private readonly uploadUseCase = inject(UploadAttachmentUseCase);
+  private readonly getCatalog = inject(GetCatalogUseCase);
   private readonly toast = inject(ToastService);
 
   /** The patient to associate uploaded files with. */
@@ -31,6 +34,15 @@ export class UploadDropzone {
   readonly dragOver = signal(false);
   readonly selectedFile = signal<File | null>(null);
   readonly description = signal('');
+  readonly servicioId = signal('');
+  readonly servicios = signal<CatalogService[]>([]);
+
+  constructor() {
+    this.getCatalog
+      .execute()
+      .pipe(take(1), catchError(() => of([])))
+      .subscribe((services) => this.servicios.set(services));
+  }
 
   // ---- Drag-and-drop handlers -----------------------------------------------
 
@@ -77,11 +89,13 @@ export class UploadDropzone {
     }
     this.selectedFile.set(file);
     this.description.set('');
+    this.servicioId.set('');
   }
 
   clearSelection() {
     this.selectedFile.set(null);
     this.description.set('');
+    this.servicioId.set('');
   }
 
   // ---- Upload ---------------------------------------------------------------
@@ -97,6 +111,7 @@ export class UploadDropzone {
         this.patientId(),
         file,
         this.description() || undefined,
+        this.servicioId() || undefined,
       )
       .pipe(
         take(1),

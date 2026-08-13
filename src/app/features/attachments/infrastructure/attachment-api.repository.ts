@@ -1,77 +1,127 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
+import { API_URL } from '../../../core/config/api.config';
 import { Attachment } from '../domain/attachment';
 import { AttachmentRepository } from '../domain/attachment.repository';
 
+interface BackendAttachment {
+  id: string;
+  patientId: string;
+  servicioId: string | null;
+  servicioName: string | null;
+  fileName: string;
+  mimeType: string;
+  size: number;
+  description: string | null;
+  createdAt: string;
+  r2Key: string;
+  url: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AttachmentApiRepository implements AttachmentRepository {
-  private readonly storage = new Map<string, Attachment[]>();
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
 
   upload(
     patientId: string,
     file: File,
     description?: string,
+    servicioId?: string,
   ): Observable<Attachment> {
-    const list = this.storage.get(patientId) ?? [];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('patientId', patientId);
+    if (description) {
+      formData.append('description', description);
+    }
+    if (servicioId) {
+      formData.append('servicioId', servicioId);
+    }
 
-    // Create browser object URL for instant previewing
-    const objectUrl = URL.createObjectURL(file);
-
-    const newAttachment: Attachment = {
-      id: String(Date.now()),
-      patientId,
-      fileName: file.name,
-      mimeType: file.type || 'application/octet-stream',
-      size: file.size,
-      url: objectUrl,
-      description: description || file.name,
-      createdAt: new Date().toLocaleDateString('es-PE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      updatedAt: new Date().toISOString(),
-    };
-
-    list.unshift(newAttachment);
-    this.storage.set(patientId, list);
-
-    return of(newAttachment);
+    return this.http
+      .post<BackendAttachment>(`${this.apiUrl}/files/upload`, formData)
+      .pipe(switchMap((attachment) => this.resolveAttachment(attachment)));
   }
 
   findByPatientId(patientId: string): Observable<Attachment[]> {
-    const list = this.storage.get(patientId) ?? [];
-    return of(list);
+    return this.http
+      .get<BackendAttachment[]>(`${this.apiUrl}/files/patient/${patientId}`)
+      .pipe(
+        switchMap((list) =>
+          list.length === 0
+            ? of([])
+            : forkJoin(list.map((attachment) => this.resolveAttachment(attachment))),
+        ),
+      );
   }
 
   findById(id: string): Observable<Attachment> {
-    for (const list of this.storage.values()) {
-      const found = list.find((a) => a.id === id);
-      if (found) return of(found);
-    }
-    return of({
-      id,
-      patientId: '1',
-      fileName: 'Archivo',
-      mimeType: 'application/pdf',
-      size: 1024,
-      url: '#',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    return of(this.emptyAttachment(id));
   }
 
   delete(id: string): Observable<void> {
-    for (const [patientId, list] of this.storage.entries()) {
-      const filtered = list.filter((a) => a.id !== id);
-      if (filtered.length !== list.length) {
-        this.storage.set(patientId, filtered);
-        break;
-      }
+    return this.http.delete<void>(`${this.apiUrl}/files/${id}`);
+  }
+
+  private resolveAttachment(attachment: BackendAttachment): Observable<Attachment> {
+    const domain = this.toDomain(attachment);
+
+    return this.http
+      .get(`${this.apiUrl}/files/image?key=${encodeURIComponent(attachment.r2Key)}`, {
+        responseType: 'blob',
+      })
+      .pipe(
+        map((blob) => {
+          const url = URL.createObjectURL(blob);
+          return { ...domain, url, thumbnailUrl: url };
+        }),
+        catchError(() => of(domain)),
+      );
+  }
+
+  private toDomain(attachment: BackendAttachment): Attachment {
+    return {
+      id: attachment.id,
+      patientId: attachment.patientId,
+      servicioId: attachment.servicioId ?? undefined,
+      servicioName: attachment.servicioName ?? undefined,
+      fileName: attachment.fileName,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      description: attachment.description ?? undefined,
+      createdAt: this.formatDate(attachment.createdAt),
+      updatedAt: attachment.createdAt,
+      url: attachment.url,
+    };
+  }
+
+  private formatDate(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return iso;
     }
-    return of(undefined);
+    return date.toLocaleString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  private emptyAttachment(id: string): Attachment {
+    return {
+      id,
+      patientId: '',
+      fileName: '',
+      mimeType: 'application/octet-stream',
+      size: 0,
+      url: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   }
 }

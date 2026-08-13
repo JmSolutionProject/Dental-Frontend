@@ -1,4 +1,5 @@
-import { Component, input, output, signal, computed, inject } from '@angular/core';
+import { Component, input, output, signal, computed, inject, effect, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth';
 
@@ -20,6 +21,7 @@ const SEPARATOR = '\n---\n';
 export class ObservationsTab {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly form = input.required<FormGroup>();
   readonly saving = input(false);
@@ -32,33 +34,25 @@ export class ObservationsTab {
     text: ['', Validators.required],
   });
 
+  readonly rawObservations = signal('');
+
+  constructor() {
+    effect(() => {
+      const control = this.form().get('observations');
+      this.rawObservations.set(control?.value ?? '');
+      control?.valueChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((value) => this.rawObservations.set(value ?? ''));
+    });
+  }
+
   readonly entries = computed<ObservationEntry[]>(() => {
-    const raw = this.form().get('observations')?.value;
+    const raw = this.rawObservations();
     if (!raw || typeof raw !== 'string') return [];
     return this.parse(raw);
   });
 
   readonly hasEntries = computed(() => this.entries().length > 0);
-
-  addObservation(): void {
-    if (this.newObsForm.invalid) return;
-    const raw = this.newObsForm.getRawValue();
-    const doctor = this.auth.user()?.name ?? 'Odontólogo';
-    const text = (raw.text || '').trim();
-    const entry = `${raw.date}|${doctor}|${text}`;
-
-    const editIdx = this.editingIndex();
-    if (editIdx !== null) {
-      this.replaceEntry(editIdx, entry);
-      this.editingIndex.set(null);
-    } else {
-      const current = this.form().get('observations')?.value || '';
-      const updated = current ? `${current}${SEPARATOR}${entry}` : entry;
-      this.form().patchValue({ observations: updated }, { emitEvent: false });
-    }
-
-    this.newObsForm.reset({ date: this.todayString() });
-  }
 
   editEntry(index: number): void {
     const blocks = this.getRawBlocks();
@@ -82,6 +76,7 @@ export class ObservationsTab {
     blocks.splice(index, 1);
     const updated = blocks.join(SEPARATOR);
     this.form().patchValue({ observations: updated }, { emitEvent: false });
+    this.rawObservations.set(updated);
     if (this.editingIndex() === index) {
       this.editingIndex.set(null);
       this.newObsForm.reset({ date: this.todayString() });
@@ -109,11 +104,34 @@ export class ObservationsTab {
   }
 
   save(): void {
+    this.flushPendingObservation();
     this.saveRequested.emit();
   }
 
+  private flushPendingObservation(): void {
+    const text = (this.newObsForm.get('text')?.value || '').trim();
+    if (!text) return;
+
+    const raw = this.newObsForm.getRawValue();
+    const doctor = this.auth.user()?.name ?? 'Odontólogo';
+    const entry = `${raw.date}|${doctor}|${text}`;
+
+    const editIdx = this.editingIndex();
+    if (editIdx !== null) {
+      this.replaceEntry(editIdx, entry);
+      this.editingIndex.set(null);
+    } else {
+      const current = this.rawObservations();
+      const updated = current ? `${current}${SEPARATOR}${entry}` : entry;
+      this.form().patchValue({ observations: updated }, { emitEvent: false });
+      this.rawObservations.set(updated);
+    }
+
+    this.newObsForm.reset({ date: this.todayString() });
+  }
+
   private getRawBlocks(raw?: string): string[] {
-    const source = raw ?? this.form().get('observations')?.value ?? '';
+    const source = raw ?? this.rawObservations();
     if (!source || typeof source !== 'string') return [];
     return source.split(SEPARATOR).map((b) => b.trim()).filter(Boolean);
   }
@@ -123,6 +141,7 @@ export class ObservationsTab {
     blocks[index] = newBlock;
     const updated = blocks.join(SEPARATOR);
     this.form().patchValue({ observations: updated }, { emitEvent: false });
+    this.rawObservations.set(updated);
   }
 
   private todayString(): string {

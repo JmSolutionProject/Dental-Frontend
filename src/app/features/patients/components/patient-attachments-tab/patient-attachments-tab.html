@@ -6,24 +6,81 @@
     </div>
   </div>
 
-  <div
-    class="drop-zone"
-    [class.drop-zone--dragging]="isDraggingFile()"
-    (dragover)="onDragOver($event)"
-    (dragleave)="onDragLeave($event)"
-    (drop)="onFileDropped($event)"
-  >
-    <div class="drop-zone-content">
-      <p class="drop-zone-text">
-        <strong>Arrastre y suelte cualquier archivo o radiografía aquí</strong>
-      </p>
-      <p class="drop-zone-sub">o haga clic en el botón para explorar archivos en su dispositivo</p>
-      <label class="btn btn--primary upload-btn-label">
-        <span>Seleccionar Archivo / Imagen</span>
-        <input type="file" (change)="onFileSelected($event)" hidden />
-      </label>
+  @if (!pendingFile()) {
+    <div
+      class="drop-zone"
+      [class.drop-zone--dragging]="isDraggingFile()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onFileDropped($event)"
+    >
+      <div class="drop-zone-content">
+        <p class="drop-zone-text">
+          <strong>Arrastre y suelte cualquier archivo o radiografía aquí</strong>
+        </p>
+        <p class="drop-zone-sub">o haga clic en el botón para explorar archivos en su dispositivo</p>
+        <label class="btn btn--primary upload-btn-label">
+          <span>Seleccionar Archivo / Imagen</span>
+          <input type="file" (change)="onFileSelected($event)" hidden />
+        </label>
+      </div>
     </div>
-  </div>
+  }
+
+  @if (pendingFile(); as file) {
+    <div class="attach-form">
+      <div class="attach-form-file">
+        <strong class="att-card-name">{{ file.name }}</strong>
+        <span class="subtitle">
+          {{ (file.size / 1024).toFixed(0) }} KB &middot; {{ file.type || 'unknown' }}
+        </span>
+      </div>
+
+      <label class="attach-field">
+        <span class="attach-field-label">Descripción (opcional)</span>
+        <input
+          type="text"
+          class="attach-input"
+          placeholder="Ej. Radiografía panorámica inicial"
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+        />
+      </label>
+
+      <label class="attach-field">
+        <span class="attach-field-label">Servicio (opcional)</span>
+        <select
+          class="attach-input"
+          [value]="servicioId()"
+          (change)="servicioId.set($any($event.target).value)"
+        >
+          <option value="">Sin servicio</option>
+          @for (svc of servicios(); track svc.id) {
+            <option [value]="svc.id">{{ svc.name }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="attach-form-actions">
+        <button
+          class="btn btn--primary"
+          type="button"
+          [disabled]="uploadingFile()"
+          (click)="uploadPending()"
+        >
+          {{ uploadingFile() ? 'Subiendo…' : 'Subir archivo' }}
+        </button>
+        <button
+          class="btn btn--secondary"
+          type="button"
+          [disabled]="uploadingFile()"
+          (click)="cancelPending()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  }
 
   @if (loadingAttachments()) {
     <p class="muted mt-4">Cargando archivos adjuntos…</p>
@@ -47,8 +104,11 @@
 
           <div class="att-card-info">
             <strong class="att-card-name" [title]="att.fileName">{{ att.fileName }}</strong>
+            @if (att.description) {
+              <div class="att-card-desc" [title]="att.description">{{ att.description }}</div>
+            }
             <div class="att-card-meta">
-              <span>{{ att.createdAt }}</span>
+              <span>{{ att.servicioName ?? 'Sin servicio' }}</span>
               <span>{{ (att.size / 1024).toFixed(1) }} KB</span>
             </div>
             <a [href]="att.url" target="_blank" (click)="$event.stopPropagation()" class="btn btn--secondary btn--sm w-100">
@@ -72,7 +132,12 @@
           <a [href]="att.url" target="_blank" class="btn btn--primary">Descargar / Abrir Documento</a>
         </div>
       }
-      <p class="muted text-center mt-2">Fecha de registro: {{ att.createdAt }}</p>
+      @if (att.description) {
+        <p class="muted mt-2">{{ att.description }}</p>
+      }
+      <p class="muted text-center mt-2">
+        {{ att.servicioName ? 'Servicio: ' + att.servicioName + ' · ' : '' }}Fecha de registro: {{ att.createdAt }}
+      </p>
     </div>
   </app-modal>
 }

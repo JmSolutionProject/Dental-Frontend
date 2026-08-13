@@ -67,6 +67,11 @@
                   {{ att.description }}
                 </span>
               }
+              @if (att.servicioName) {
+                <span class="muted attachment-meta">
+                  Servicio: {{ att.servicioName }}
+                </span>
+              }
             </div>
 
             <!-- Actions -->

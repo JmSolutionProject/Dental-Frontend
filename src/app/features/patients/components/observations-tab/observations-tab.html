@@ -51,14 +51,9 @@
           placeholder="Describa hallazgos, indicaciones o notas relevantes..."
         ></textarea>
 
-        <div class="obs-form-btns">
-          <button type="button" class="btn btn--primary" (click)="addObservation()" [disabled]="newObsForm.invalid">
-            {{ editingIndex() !== null ? 'Guardar Cambios' : 'Agregar' }}
-          </button>
-          @if (editingIndex() !== null) {
-            <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
-          }
-        </div>
+        @if (editingIndex() !== null) {
+          <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
+        }
       </form>
 
       <button type="button" class="btn btn--success w-100 mt-2" [disabled]="saving()" (click)="save()">

@@ -1,5 +1,64 @@
 /* Patient Attachments Tab — Drop zone, file grid, preview modal */
 
+/* PENDING FILE FORM */
+.attach-form {
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.attach-form-file {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.attach-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.attach-field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+}
+
+.attach-input {
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+  color: var(--color-slate-900);
+  background: var(--color-white);
+}
+
+.attach-input:focus {
+  outline: none;
+  border-color: var(--color-sky-600);
+}
+
+.attach-form-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.att-card-desc {
+  font-size: 0.75rem;
+  color: var(--color-slate-600);
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* DROP ZONE */
 .drop-zone {
   border: 2px dashed var(--color-sky-600);
