@@ -41,11 +41,7 @@ export class PatientTreatmentPlanTab {
 
   readonly canManageAppointments = computed(() => {
     const roles = this.auth.roles();
-    return (
-      roles.includes('admin') ||
-      roles.includes('secretaria') ||
-      roles.includes('receptionist')
-    );
+    return roles.includes('admin') || roles.includes('receptionist');
   });
 
   readonly showPlanBuilderModal = signal(false);

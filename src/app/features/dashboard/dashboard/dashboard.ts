@@ -71,9 +71,9 @@ export class Dashboard {
     return new Set(roles);
   });
   
-  protected readonly isAdmin = computed(() => this.hasAnyRole('admin', 'administrador'));
-  protected readonly isReceptionist = computed(() => this.hasAnyRole('receptionist', 'recepcionista', 'secretaria'));
-  protected readonly isDentist = computed(() => this.hasAnyRole('dentist', 'odontologo', 'odontólogo', 'medico', 'médico'));
+  protected readonly isAdmin = computed(() => this.hasAnyRole('admin'));
+  protected readonly isReceptionist = computed(() => this.hasAnyRole('receptionist'));
+  protected readonly isDentist = computed(() => this.hasAnyRole('dentist'));
 
   protected readonly userName = this.auth.user()?.name ?? 'Administrador';
 

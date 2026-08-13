@@ -68,11 +68,7 @@ export class Calendar {
 
   readonly canManageAppointments = computed(() => {
     const roles = this.auth.roles();
-    return (
-      roles.includes('admin') ||
-      roles.includes('secretaria') ||
-      roles.includes('receptionist')
-    );
+    return roles.includes('admin') || roles.includes('receptionist');
   });
 
   readonly view = signal<CalendarView>('week');
@@ -553,8 +549,7 @@ export class Calendar {
 
   private isDoctor(user: User): boolean {
     return user.estado !== false && user.roles.some((role) => {
-      const roleName = role.nombreRol.toUpperCase();
-      return ['MEDICO', 'DENTIST', 'DOCTOR', 'ODONTOLOGO', 'ODONTÓLOGO'].includes(roleName);
+      return role.nombreRol.toUpperCase() === 'MEDICO';
     });
   }
 }

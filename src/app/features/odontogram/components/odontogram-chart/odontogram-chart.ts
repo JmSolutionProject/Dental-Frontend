@@ -59,7 +59,7 @@ export class OdontogramChart {
 
   readonly isDoctor = computed(() => {
     const roles = this.auth.roles();
-    return roles.includes('dentist') || roles.includes('medico');
+    return roles.includes('dentist');
   });
 
   readonly teeth = computed<FdiTooth[]>(() => {
