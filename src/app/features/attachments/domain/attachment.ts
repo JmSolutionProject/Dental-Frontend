@@ -28,6 +28,8 @@ export interface Attachment {
   url: string;
   thumbnailUrl?: string;
   description?: string;
+  servicioId?: string;
+  servicioName?: string;
   createdAt: string;
   updatedAt: string;
 }

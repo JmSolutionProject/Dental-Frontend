@@ -8,6 +8,7 @@ export abstract class AttachmentRepository {
     patientId: string,
     file: File,
     description?: string,
+    servicioId?: string,
   ): Observable<Attachment>;
 
   /** List all attachments for a patient. */

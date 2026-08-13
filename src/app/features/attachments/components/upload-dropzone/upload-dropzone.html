@@ -50,6 +50,23 @@
         />
       </div>
 
+      <div class="file-description">
+        <label class="field-label" for="attachment-service">
+          Servicio (optional)
+        </label>
+        <select
+          id="attachment-service"
+          class="field-input"
+          [value]="servicioId()"
+          (change)="servicioId.set($any($event.target).value)"
+        >
+          <option value="">Sin servicio</option>
+          @for (svc of servicios(); track svc.id) {
+            <option [value]="svc.id">{{ svc.name }}</option>
+          }
+        </select>
+      </div>
+
       <div class="file-actions">
         <button
           class="button"

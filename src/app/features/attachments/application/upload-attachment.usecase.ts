@@ -12,7 +12,8 @@ export class UploadAttachmentUseCase {
     patientId: string,
     file: File,
     description?: string,
+    servicioId?: string,
   ): Observable<Attachment> {
-    return this.repo.upload(patientId, file, description);
+    return this.repo.upload(patientId, file, description, servicioId);
   }
 }
