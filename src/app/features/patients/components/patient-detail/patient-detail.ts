@@ -413,6 +413,33 @@ export class PatientDetail {
       });
   }
 
+  saveObservations() {
+    const p = this.patient();
+    if (!p) return;
+
+    this.saving.set(true);
+
+    const observaciones = this.form.get('observations')?.value || '';
+
+    this.updatePatient
+      .execute(p.id, { observaciones: observaciones || undefined })
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.toast.error('Error al guardar observaciones.');
+          return of(null);
+        }),
+        finalize(() => this.saving.set(false)),
+      )
+      .subscribe((updated) => {
+        if (updated) {
+          this.patient.set(updated);
+          this.populateForm(updated);
+          this.toast.success('Observaciones guardadas correctamente.');
+        }
+      });
+  }
+
   private buildUpdateRequest(): UpdatePatientRequest {
     const raw = this.form.getRawValue();
     const emergencyRelationship = (raw.emergencyRelationship || '').trim();
