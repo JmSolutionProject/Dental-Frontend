@@ -130,7 +130,7 @@
               <span class="kpi-label">Ingresos Recaudados</span>
               <div class="kpi-icon-wrap"><ng-icon name="heroCurrencyDollar" /></div>
             </div>
-            <strong class="kpi-value">{{ overview.currentRevenue | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+            <strong class="kpi-value">{{ overview.periodRevenue | currency:'PEN':'S/ ':'1.2-2' }}</strong>
             <div class="kpi-foot">
               @if (overview.isGrowth) {
                 <span class="kpi-trend kpi-trend--up">
