@@ -16,7 +16,6 @@ interface OdontogramDetailResponse {
   surfaceName?: string;
   stateName?: string;
   diagnosis?: string;
-  recommendedTreatment?: string;
   notes?: string;
 }
 
@@ -128,7 +127,6 @@ export class OdontogramApiRepository implements OdontogramRepository {
         current.condition = condition;
         current.stateName = detail.stateName;
         current.diagnosis = detail.diagnosis ?? null;
-        current.recommendedTreatment = detail.recommendedTreatment ?? null;
         current.notes = detail.notes;
       }
 

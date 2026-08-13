@@ -71,8 +71,9 @@
         <h3 class="findings-title">Hallazgos del Odontograma</h3>
         @for (card of toothCards(); track card.fdiNumber) {
           <article
-            class="finding-card"
+            class="finding-card finding-card--clickable"
             [attr.data-condition]="card.condition"
+            (click)="viewToothDetails(card)"
           >
             <div class="finding-card__header">
               <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
@@ -84,11 +85,6 @@
             @if (card.notes) {
               <p class="finding-card__notes">
                 {{ card.notes }}
-              </p>
-            }
-            @if (card.recommendedTreatment) {
-              <p class="finding-card__treatment">
-                <strong>Tratamiento:</strong> {{ card.recommendedTreatment }}
               </p>
             }
           </article>
@@ -164,6 +160,40 @@
             </div>
           </div>
 
+        </div>
+      </app-modal>
+    }
+
+    <!-- Detalle del hallazgo (solo lectura) -->
+    @if (showToothDetailsModal() && viewingTooth(); as vt) {
+      <app-modal [title]="'Detalle - Pieza ' + vt.fdiNumber" [visible]="true" (close)="closeToothDetailsModal()">
+        <div class="tooth-detail-body">
+          <p class="tooth-detail-condition">
+            <strong>Condición:</strong> {{ conditionLabel(vt.condition) }}
+          </p>
+          @if (vt.notes) {
+            <p class="tooth-detail-notes">
+              <strong>Observaciones:</strong> {{ vt.notes }}
+            </p>
+          } @else {
+            <p class="muted">Sin observaciones registradas.</p>
+          }
+          @if (vt.history && vt.history.length > 0) {
+            <div class="tooth-history-list mb-4">
+              <h4>Historial de Tratamientos y Diagnósticos</h4>
+              <ul class="history-timeline">
+                @for (record of vt.history; track record.id) {
+                  <li class="history-item">
+                    <span class="history-date">{{ record.date }}</span>
+                    <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
+                    @if (record.notes) {
+                      <p class="history-notes">{{ record.notes }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            </div>
+          }
         </div>
       </app-modal>
     }

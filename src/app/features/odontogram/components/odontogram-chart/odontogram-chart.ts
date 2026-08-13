@@ -240,7 +240,6 @@ export class OdontogramChart {
             detailId: persistedTooth.detailId ?? updatedTooth.detailId,
             stateName: persistedTooth.stateName,
             diagnosis: persistedTooth.diagnosis,
-            recommendedTreatment: persistedTooth.recommendedTreatment,
             surfaceDetailIds: {
               ...updatedTooth.surfaceDetailIds,
               ...persistedTooth.surfaceDetailIds,

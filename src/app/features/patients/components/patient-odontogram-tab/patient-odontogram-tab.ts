@@ -47,6 +47,8 @@ export class PatientOdontogramTab {
   readonly showToothProgressModal = signal(false);
   readonly progressNotes = signal('');
   readonly selectedCondition = signal<ToothCondition>('healthy');
+  readonly showToothDetailsModal = signal(false);
+  readonly viewingTooth = signal<FdiTooth | null>(null);
 
   readonly isDoctor = computed(() => {
     const roles = this.auth.roles();
@@ -170,6 +172,16 @@ export class PatientOdontogramTab {
     this.showToothProgressModal.set(false);
     this.selectedTooth.set(null);
     this.selectedSurface.set(null);
+  }
+
+  viewToothDetails(card: FdiTooth) {
+    this.viewingTooth.set(card);
+    this.showToothDetailsModal.set(true);
+  }
+
+  closeToothDetailsModal() {
+    this.showToothDetailsModal.set(false);
+    this.viewingTooth.set(null);
   }
 
   selectCondition(condition: ToothCondition) {
