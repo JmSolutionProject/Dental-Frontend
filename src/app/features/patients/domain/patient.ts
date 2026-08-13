@@ -78,7 +78,6 @@ export interface TreatmentPlanItem {
   serviceName: string;
   price: number;
   ejecutado?: boolean;
-  odontogramaDetalleId?: string | number;
 }
 
 export interface TreatmentPlan {

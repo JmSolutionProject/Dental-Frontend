@@ -236,7 +236,6 @@ export class PatientDetail {
               serviceName: s.servicio?.nombreServicio || 'Servicio',
               price: Number(s.servicio?.precioActual || s.servicio?.precio || 0),
               ejecutado: s.ejecutado,
-              odontogramaDetalleId: s.odontogramaDetalleId ? String(s.odontogramaDetalleId) : undefined
             })),
             totalCost: totalCost,
             paymentType: 'Al Contado',
