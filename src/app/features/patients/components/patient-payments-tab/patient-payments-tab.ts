@@ -1,4 +1,4 @@
-import { Component, inject, input, signal, computed } from '@angular/core';
+import { Component, inject, input, signal, computed, effect } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
@@ -35,13 +35,16 @@ export class PatientPaymentsTab {
 
   readonly appointments = input<Appointment[]>([]);
   readonly patientId = input<string>('');
-  readonly budgetPaid = input<number>(0);
   readonly budgetPending = input<number>(0);
 
   readonly paymentMethods = signal<PaymentMethod[]>([]);
   readonly history = signal<PaymentRow[]>([]);
   readonly savingPayment = signal(false);
   readonly showForm = signal(false);
+
+  readonly realTotal = computed(() =>
+    this.history().reduce((sum, row) => sum + row.amount, 0)
+  );
 
   readonly selectedMethodNotCash = computed(() => {
     const mid = this.paymentForm.get('methodId')?.value;
@@ -67,6 +70,11 @@ export class PatientPaymentsTab {
 
   constructor() {
     this.loadMethods();
+    effect(() => {
+      if (this.patientId()) {
+        this.loadHistory();
+      }
+    });
   }
 
   toggleForm(): void {
@@ -150,7 +158,7 @@ export class PatientPaymentsTab {
   private loadHistory(): void {
     const pid = this.patientId();
     if (!pid) return;
-    this.getPayments.execute({ search: pid, limit: 50 })
+    this.getPayments.execute({ patientId: pid, limit: 100 })
       .pipe(take(1), catchError(() => of({ data: [], total: 0, page: 1, limit: 10 })))
       .subscribe((res) => {
         this.history.set(res.data.map((p) => ({

@@ -63,6 +63,7 @@ export interface FindPaymentsParams {
   page?: number;
   limit?: number;
   search?: string;
+  patientId?: string;
   cashierId?: string;
   cashRegisterId?: string;
   methodId?: string;

@@ -171,7 +171,6 @@
 
     @if (role() !== 'dentist' && activeTab() === 'payments') {
       <app-patient-payments-tab 
-        [budgetPaid]="budgetPaid()" 
         [budgetPending]="budgetPending()" 
         [appointments]="patientAppointments()"
         [patientId]="p.id"
