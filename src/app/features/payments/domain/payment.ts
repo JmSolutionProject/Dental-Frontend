@@ -58,6 +58,7 @@ export interface PaginatedPaymentsResponse {
   page: number;
   limit: number;
   summary?: PaymentSummary;
+  paidAppointmentIds?: number[];
 }
 
 export interface FindPaymentsParams {

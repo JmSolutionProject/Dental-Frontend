@@ -21,6 +21,7 @@ import {
   createEmptyPaymentSummary,
   Payment,
   PaymentMethod,
+  PaymentSummary,
   paymentStatusLabel,
 } from '../../domain/payment';
 
@@ -79,10 +80,8 @@ export class PaymentList implements OnInit {
     { key: 'actions', label: 'Boleta PDF' },
   ];
 
-  readonly summary = computed(() => {
-    const payments = this.payments();
-    return payments.length ? calculatePaymentSummary(payments) : createEmptyPaymentSummary();
-  });
+  readonly summary = signal<PaymentSummary>(createEmptyPaymentSummary());
+  readonly paidAppointmentIds = signal<Set<string>>(new Set());
 
   readonly totalPages = computed(() => {
     if (this.total() <= 0 || this.pageSize() <= 0) return 1;
@@ -95,12 +94,7 @@ export class PaymentList implements OnInit {
     const pid = this.selectedPatientId();
     if (!pid) return [];
 
-    const paidAppointmentIds = new Set(
-      this.payments()
-        .filter((p) => p.status !== 'voided')
-        .map((p) => String(p.appointmentId || (p as any).citaId))
-        .filter(Boolean),
-    );
+    const paidAppointmentIds = this.paidAppointmentIds();
 
     return this.appointments()
       .filter((a) => {
@@ -136,6 +130,7 @@ export class PaymentList implements OnInit {
   });
 
   readonly isCash = signal(false);
+  readonly needsReference = signal(false);
 
   ngOnInit(): void {
     this.loadPayments();
@@ -145,7 +140,9 @@ export class PaymentList implements OnInit {
 
     this.form.get('methodId')?.valueChanges.subscribe((mid) => {
       const method = this.paymentMethods().find((m) => String(m.id) === String(mid));
-      this.isCash.set(method?.name?.toLowerCase() === 'efectivo');
+      const name = (method?.name ?? '').toUpperCase();
+      this.isCash.set(name === 'EFECTIVO');
+      this.needsReference.set(name.includes('YAPE') || name.includes('TRANSFERENCIA'));
     });
   }
 
@@ -161,13 +158,24 @@ export class PaymentList implements OnInit {
         take(1),
         catchError(() => {
           this.toast.error('No se pudieron cargar los pagos.');
-          return of({ data: [], total: 0, page: this.currentPage(), limit: this.pageSize() });
+          return of({
+            data: [],
+            total: 0,
+            page: this.currentPage(),
+            limit: this.pageSize(),
+            summary: createEmptyPaymentSummary(),
+            paidAppointmentIds: [],
+          });
         }),
         finalize(() => this.loading.set(false)),
       )
       .subscribe((res) => {
         this.payments.set(res.data);
         this.total.set(res.total);
+        this.summary.set(res.summary ?? calculatePaymentSummary(res.data));
+        this.paidAppointmentIds.set(
+          new Set((res.paidAppointmentIds ?? []).map(String)),
+        );
       });
   }
 

@@ -50,7 +50,7 @@
             <label>Monto S/</label>
             <input type="number" class="pay-input" formControlName="amount" min="0" step="0.01" />
           </div>
-          @if (isNotCash()) {
+          @if (needsReference()) {
             <div class="pay-field">
               <label>Referencia</label>
               <input type="text" class="pay-input" formControlName="reference" placeholder="N° operación, voucher…" />
