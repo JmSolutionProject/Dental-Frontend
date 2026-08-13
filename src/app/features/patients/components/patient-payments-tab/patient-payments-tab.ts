@@ -1,4 +1,4 @@
-import { Component, inject, input, signal, computed, effect } from '@angular/core';
+import { Component, inject, input, signal, computed, effect, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { take, catchError, of, finalize } from 'rxjs';
@@ -36,6 +36,7 @@ export class PatientPaymentsTab {
   readonly appointments = input<Appointment[]>([]);
   readonly patientId = input<string>('');
   readonly budgetTotal = input<number>(0);
+  readonly paymentAdded = output<void>();
 
   readonly paymentMethods = signal<PaymentMethod[]>([]);
   readonly history = signal<PaymentRow[]>([]);
@@ -139,6 +140,7 @@ export class PatientPaymentsTab {
           this.toast.success('Cobro registrado exitosamente.');
           this.paymentForm.reset({ amount: 0 });
           this.showForm.set(false);
+          this.paymentAdded.emit();
           this.history.update((list) => [
             {
               id: result.id,

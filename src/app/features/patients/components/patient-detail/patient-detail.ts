@@ -20,6 +20,7 @@ import { GetPatientUseCase } from '../../application/get-patient.usecase';
 import { UpdatePatientUseCase } from '../../application/update-patient.usecase';
 import { DeletePatientUseCase } from '../../application/delete-patient.usecase';
 import { GetAppointmentsUseCase } from '../../../appointments/application/get-appointments.usecase';
+import { GetPaymentsUseCase } from '../../../payments/application/get-payments.usecase';
 import { Appointment } from '../../../appointments/domain/appointment';
 import { Patient, UpdatePatientRequest, SystemMedicalAlert, AppointmentRecord, TreatmentPlanItem, TreatmentPlan, ALLERGY_OPTIONS, DISEASE_OPTIONS, SPECIAL_CONDITION_OPTIONS, DENTAL_HISTORY_OPTIONS } from '../../domain/patient';
 
@@ -70,6 +71,7 @@ export class PatientDetail {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
+  private readonly getPayments = inject(GetPaymentsUseCase);
 
   readonly role = this.auth.role;
   readonly patient = signal<Patient | null>(null);
@@ -127,14 +129,15 @@ export class PatientDetail {
 
   // Unified Treatment Plans
   readonly treatmentPlans = signal<TreatmentPlan[]>([]);
+  readonly totalPaid = signal(0);
 
   readonly budgetTotal = computed(() =>
     this.treatmentPlans().reduce((acc, p) => acc + p.totalCost, 0)
   );
 
-  readonly budgetPending = computed(() => {
-    return this.budgetTotal();
-  });
+  readonly budgetPending = computed(() =>
+    Math.max(0, this.budgetTotal() - this.totalPaid())
+  );
 
   // Form Binding
   readonly form: FormGroup = this.fb.group({
@@ -196,6 +199,7 @@ export class PatientDetail {
             this.populateForm(p);
             this.loadTreatmentPlans(p.id);
             this.loadPatientAppointments(p.id);
+            this.loadPatientPayments(p.id);
           }
         });
     });
@@ -215,7 +219,8 @@ export class PatientDetail {
         const mappedPlans = plans.map(p => {
           const totalCost = p.servicios.reduce((sum: number, s: any) => {
             const precio = Number(s.servicio?.precioActual || s.servicio?.precio || 0);
-            return sum + (precio * (s.cantidad || 1));
+            const descuento = Number(s.descuento || 0);
+            return sum + Math.max(0, precio * (s.cantidad || 1) - descuento);
           }, 0);
 
           return {
@@ -236,6 +241,16 @@ export class PatientDetail {
           } as TreatmentPlan;
         });
         this.treatmentPlans.set(mappedPlans);
+      });
+  }
+
+  private loadPatientPayments(patientId: string) {
+    this.getPayments
+      .execute({ patientId, limit: 100 })
+      .pipe(take(1), catchError(() => of({ data: [], total: 0, page: 1, limit: 10 })))
+      .subscribe((res) => {
+        const paid = res.data.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        this.totalPaid.set(paid);
       });
   }
 
@@ -289,6 +304,13 @@ export class PatientDetail {
   onPlanAdded(newPlan: TreatmentPlan) {
     this.treatmentPlans.update((plans) => [newPlan, ...plans]);
     this.reloadTreatmentPlans();
+  }
+
+  onPaymentAdded() {
+    const p = this.patient();
+    if (p) {
+      this.loadPatientPayments(p.id);
+    }
   }
 
   reloadTreatmentPlans() {
