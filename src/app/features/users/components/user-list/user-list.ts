@@ -65,7 +65,7 @@ export class UserList implements OnInit {
     const id = this.selectedRoleId();
     if (id === null) return false;
     const roleName = this.roles().find((r) => r.id === id)?.nombreRol?.toUpperCase();
-    return roleName === 'MEDICO' || roleName === 'DENTIST' || roleName === 'DOCTOR';
+    return roleName === 'MEDICO';
   });
 
   readonly selectedRoleLabel = computed(() => {
@@ -82,10 +82,10 @@ export class UserList implements OnInit {
     return list.filter((u) => {
       const userRolesUpper = u.roles.map((r) => r.nombreRol.toUpperCase());
       if (tab === 'medico') {
-        return userRolesUpper.includes('MEDICO') || userRolesUpper.includes('DENTIST') || userRolesUpper.includes('DOCTOR');
+        return userRolesUpper.includes('MEDICO');
       }
       if (tab === 'secretaria') {
-        return userRolesUpper.includes('SECRETARIA') || userRolesUpper.includes('RECEPTIONIST');
+        return userRolesUpper.includes('SECRETARIA');
       }
       if (tab === 'admin') {
         return userRolesUpper.includes('ADMIN');
@@ -148,8 +148,8 @@ export class UserList implements OnInit {
     if (roleType) {
       const found = this.roles().find((r) => {
         const name = r.nombreRol.toUpperCase();
-        if (roleType === 'medico') return name === 'MEDICO' || name === 'DENTIST';
-        if (roleType === 'secretaria') return name === 'SECRETARIA' || name === 'RECEPTIONIST';
+        if (roleType === 'medico') return name === 'MEDICO';
+        if (roleType === 'secretaria') return name === 'SECRETARIA';
         if (roleType === 'admin') return name === 'ADMIN';
         return false;
       });

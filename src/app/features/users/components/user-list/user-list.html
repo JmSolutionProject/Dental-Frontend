@@ -56,7 +56,7 @@
         </ng-template>
 
         <ng-template appTableCell="porcentajeComision" let-u>
-          @if (u.roles[0]?.nombreRol?.toUpperCase() === 'MEDICO' || u.roles[0]?.nombreRol?.toUpperCase() === 'DENTIST') {
+          @if (u.roles[0]?.nombreRol?.toUpperCase() === 'MEDICO') {
             <span class="table-pill table-pill--success" style="font-weight: 600;">
               {{ u.porcentajeComision || 0 }}% comisión
             </span>
