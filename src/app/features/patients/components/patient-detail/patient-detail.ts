@@ -249,7 +249,9 @@ export class PatientDetail {
       .execute({ patientId, limit: 100 })
       .pipe(take(1), catchError(() => of({ data: [], total: 0, page: 1, limit: 10 })))
       .subscribe((res) => {
-        const paid = res.data.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const paid = res.data
+          .filter((p) => p.planServicioId)
+          .reduce((sum, p) => sum + Number(p.amount || 0), 0);
         this.totalPaid.set(paid);
       });
   }
