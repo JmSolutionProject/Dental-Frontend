@@ -1,14 +1,15 @@
 export type ToothCondition =
   | 'healthy'
   | 'caries'
-  | 'restoration' // curación
-  | 'extraction' // extracción
-  | 'crown' // corona
-  | 'missing' // ausente
-  | 'endodontics' // endodoncia
-  | 'implant' // implante
-  | 'sealant' // sellante
-  | 'fracture'; // fractura
+  | 'restoration'
+  | 'extraction'
+  | 'crown'
+  | 'missing'
+  | 'endodontics'
+  | 'implant'
+  | 'sealant'
+  | 'fracture'
+  | 'healed';
 
 export type ToothSurface =
   | 'vestibular'
@@ -34,12 +35,15 @@ export interface FdiTooth {
   id?: string | number;
   detailId?: string | number;
   fdiNumber: number;
-  condition: ToothCondition; // current/latest condition
+  condition: ToothCondition;
   surface?: ToothSurface;
   surfaceConditions?: Partial<Record<ToothSurface, ToothCondition>>;
   surfaceDetailIds?: Partial<Record<ToothSurface, string | number>>;
+  stateName?: string;
+  diagnosis?: string | null;
+  recommendedTreatment?: string | null;
   notes?: string;
-  history?: ToothHistoryRecord[]; // frontend only for now
+  history?: ToothHistoryRecord[];
 }
 
 export interface Odontogram {
@@ -123,7 +127,7 @@ export function toothConditionLabel(condition: ToothCondition): string {
   const labels: Record<ToothCondition, string> = {
     healthy: 'Sano',
     caries: 'Caries',
-    restoration: 'Curación / Restauración',
+    restoration: 'Obturado / Restauración',
     extraction: 'Extracción Indicada',
     crown: 'Corona',
     missing: 'Ausente',
@@ -131,6 +135,7 @@ export function toothConditionLabel(condition: ToothCondition): string {
     implant: 'Implante',
     sealant: 'Sellante',
     fracture: 'Fractura',
+    healed: 'Curado',
   };
   return labels[condition];
 }
@@ -168,4 +173,5 @@ export const ALL_CONDITIONS: ToothCondition[] = [
   'implant',
   'sealant',
   'fracture',
+  'healed',
 ];

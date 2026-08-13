@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { take, catchError, finalize, of } from 'rxjs';
 
+import { AuthService } from '../../../../core/services/auth';
 import { GetOdontogramUseCase } from '../../application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../application/update-tooth-condition.usecase';
 import {
@@ -27,6 +28,11 @@ const ALL_CONDITIONS: ToothCondition[] = [
   'extraction',
   'crown',
   'missing',
+  'endodontics',
+  'implant',
+  'sealant',
+  'fracture',
+  'healed',
 ];
 
 @Component({
@@ -40,6 +46,7 @@ export class OdontogramChart {
   private readonly getOdontogram = inject(GetOdontogramUseCase);
   private readonly updateToothCondition = inject(UpdateToothConditionUseCase);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
 
   readonly patientId = signal<string | null>(null);
   readonly loading = signal(true);
@@ -50,6 +57,11 @@ export class OdontogramChart {
 
   readonly quadrant = signal<'adult' | 'child'>('adult');
 
+  readonly isDoctor = computed(() => {
+    const roles = this.auth.roles();
+    return roles.includes('dentist') || roles.includes('medico');
+  });
+
   readonly teeth = computed<FdiTooth[]>(() => {
     const o = this.odontogram();
     if (o) return o.teeth;
@@ -59,6 +71,15 @@ export class OdontogramChart {
   });
 
   readonly conditionOptions = ALL_CONDITIONS;
+
+  readonly toothCards = computed(() => {
+    return this.teeth()
+      .filter((t) => t.condition !== 'healthy')
+      .map((t) => ({
+        ...t,
+        conditionLabel: toothConditionLabel(t.condition),
+      }));
+  });
 
   /**
    * Returns teeth ordered by their grid position for the SVG chart.
@@ -209,18 +230,25 @@ export class OdontogramChart {
           const persistedTooth = updatedOdontogram.teeth.find(
             (t) => t.fdiNumber === tooth.fdiNumber,
           );
+          if (!persistedTooth) {
+            this.toast.error('No se pudo leer el diente actualizado del backend.');
+            return;
+          }
           const refreshed: FdiTooth = {
             ...updatedTooth,
-            id: persistedTooth?.id ?? updatedTooth.id,
-            detailId: persistedTooth?.detailId ?? updatedTooth.detailId,
+            id: persistedTooth.id ?? updatedTooth.id,
+            detailId: persistedTooth.detailId ?? updatedTooth.detailId,
+            stateName: persistedTooth.stateName,
+            diagnosis: persistedTooth.diagnosis,
+            recommendedTreatment: persistedTooth.recommendedTreatment,
             surfaceDetailIds: {
               ...updatedTooth.surfaceDetailIds,
-              ...persistedTooth?.surfaceDetailIds,
+              ...persistedTooth.surfaceDetailIds,
             },
           };
 
           this.mergeTooth(refreshed);
-          this.selectedTooth.set(refreshed ?? null);
+          this.selectedTooth.set(refreshed);
           this.toast.success(
             `Tooth ${tooth.fdiNumber} updated to ${toothConditionLabel(condition)}.`,
           );

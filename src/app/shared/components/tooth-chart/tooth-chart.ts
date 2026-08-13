@@ -32,6 +32,7 @@ const CONDITION_COLORS: Record<ToothCondition, { fill: string; stroke: string }>
   implant: { fill: '#dcfce7', stroke: '#22c55e' },
   sealant: { fill: '#f3e8ff', stroke: '#a855f7' },
   fracture: { fill: '#ffedd5', stroke: '#f97316' },
+  healed: { fill: '#d1fae5', stroke: '#10b981' },
 };
 
 const SURFACE_LABELS: Record<ToothSurface, string> = {

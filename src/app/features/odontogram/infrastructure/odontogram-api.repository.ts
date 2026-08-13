@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, throwError } from 'rxjs';
+import { catchError, map, of, switchMap, throwError } from 'rxjs';
 
 import { API_URL } from '../../../core/config/api.config';
 import { FdiTooth, Odontogram, ToothCondition, ToothSurface } from '../domain/odontogram';
@@ -16,6 +16,7 @@ interface OdontogramDetailResponse {
   surfaceName?: string;
   stateName?: string;
   diagnosis?: string;
+  recommendedTreatment?: string;
   notes?: string;
 }
 
@@ -37,14 +38,30 @@ export class OdontogramApiRepository implements OdontogramRepository {
   private readonly apiUrl = inject(API_URL);
 
   findByPatientId(patientId: string) {
-    return forkJoin({
-      response: this.http.get<DetailsByPatientResponse>(`${this.apiUrl}/odontogram/details/by-patient/${patientId}`),
-      surfaces: this.http.get<DentalSurfaceResponse[]>(`${this.apiUrl}/odontogram/surfaces`),
-    }).pipe(
-      map(({ response, surfaces }) =>
-        this.detailsToOdontogram(patientId, response.details ?? [], response.dentition, surfaces),
-      ),
-    );
+    return this.http
+      .get<DetailsByPatientResponse>(
+        `${this.apiUrl}/odontogram/details/by-patient/${patientId}`,
+      )
+      .pipe(
+        catchError(() =>
+          of({ patientId, dentition: 'adult' as const, details: [] }),
+        ),
+        switchMap((response) =>
+          this.http
+            .get<DentalSurfaceResponse[]>(`${this.apiUrl}/odontogram/surfaces`)
+            .pipe(
+              catchError(() => of([] as DentalSurfaceResponse[])),
+              map((surfaces) =>
+                this.detailsToOdontogram(
+                  patientId,
+                  response.details ?? [],
+                  response.dentition,
+                  surfaces,
+                ),
+              ),
+            ),
+        ),
+      );
   }
 
   updateTooth(patientId: string, tooth: FdiTooth) {
@@ -55,16 +72,20 @@ export class OdontogramApiRepository implements OdontogramRepository {
     }
 
     const conditionName = this.toApiCondition(tooth.condition);
-    const notes = tooth.notes ?? '';
-    const payload = {
+    const notes = (tooth.notes ?? '').trim();
+    const payload: Record<string, unknown> = {
       patientId: patientIdNumber,
       fdiNumber: tooth.fdiNumber,
-      ...(tooth.surface ? { surface: this.toApiSurface(tooth.surface) } : {}),
       condition: conditionName,
-      diagnostico: conditionName,
-      tratamientoRecomendado: conditionName,
-      observacion: notes,
     };
+
+    if (tooth.surface) {
+      payload['surface'] = this.toApiSurface(tooth.surface);
+    }
+
+    if (notes) {
+      payload['observacion'] = notes;
+    }
 
     return this.http
       .post<OdontogramDetailResponse>(`${this.apiUrl}/odontogram/details`, payload)
@@ -105,6 +126,9 @@ export class OdontogramApiRepository implements OdontogramRepository {
         current.id = detail.id;
         current.detailId = detail.detailId;
         current.condition = condition;
+        current.stateName = detail.stateName;
+        current.diagnosis = detail.diagnosis ?? null;
+        current.recommendedTreatment = detail.recommendedTreatment ?? null;
         current.notes = detail.notes;
       }
 
@@ -122,7 +146,7 @@ export class OdontogramApiRepository implements OdontogramRepository {
     const labels: Record<ToothCondition, string> = {
       healthy: 'Sano',
       caries: 'Caries',
-      restoration: 'Curación',
+      restoration: 'Obturado',
       extraction: 'Extracción',
       crown: 'Corona',
       missing: 'Ausente',
@@ -130,6 +154,7 @@ export class OdontogramApiRepository implements OdontogramRepository {
       implant: 'Implante',
       sealant: 'Sellante',
       fracture: 'Fractura',
+      healed: 'Curado',
     };
     return labels[condition];
   }
@@ -137,7 +162,7 @@ export class OdontogramApiRepository implements OdontogramRepository {
   private toToothCondition(value?: string): ToothCondition {
     const normalized = this.normalize(value);
     if (normalized.includes('caries')) return 'caries';
-    if (normalized.includes('curacion') || normalized.includes('restauracion')) return 'restoration';
+    if (normalized.includes('obturado') || normalized.includes('restauracion') || normalized.includes('curacion')) return 'restoration';
     if (normalized.includes('extraccion')) return 'extraction';
     if (normalized.includes('corona')) return 'crown';
     if (normalized.includes('ausente')) return 'missing';
@@ -145,6 +170,7 @@ export class OdontogramApiRepository implements OdontogramRepository {
     if (normalized.includes('implante')) return 'implant';
     if (normalized.includes('sellante')) return 'sealant';
     if (normalized.includes('fractura')) return 'fracture';
+    if (normalized.includes('curado')) return 'healed';
     return 'healthy';
   }
 

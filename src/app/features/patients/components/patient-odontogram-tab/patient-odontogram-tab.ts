@@ -16,6 +16,7 @@ import {
 } from '../../../odontogram/domain/odontogram';
 import { GetOdontogramUseCase } from '../../../odontogram/application/get-odontogram.usecase';
 import { UpdateToothConditionUseCase } from '../../../odontogram/application/update-tooth-condition.usecase';
+import { AuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { catchError, finalize, of, switchMap, take } from 'rxjs';
 import { ToothChart } from '../../../../shared/components/tooth-chart/tooth-chart';
@@ -34,6 +35,7 @@ export class PatientOdontogramTab {
   private readonly getOdontogram = inject(GetOdontogramUseCase);
   private readonly updateToothCondition = inject(UpdateToothConditionUseCase);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
 
   readonly odontogram = signal<Odontogram | null>(null);
   readonly loadingOdontogram = signal(false);
@@ -45,6 +47,22 @@ export class PatientOdontogramTab {
   readonly showToothProgressModal = signal(false);
   readonly progressNotes = signal('');
   readonly selectedCondition = signal<ToothCondition>('healthy');
+
+  readonly isDoctor = computed(() => {
+    const roles = this.auth.roles();
+    return roles.includes('dentist') || roles.includes('medico');
+  });
+
+  readonly toothCards = computed(() => {
+    const odo = this.odontogram();
+    if (!odo) return [];
+    return odo.teeth
+      .filter((t) => t.condition !== 'healthy')
+      .map((t) => ({
+        ...t,
+        conditionLabel: toothConditionLabel(t.condition),
+      }));
+  });
 
   readonly positionedTeeth = computed(() => {
     const odo = this.odontogram();
@@ -127,7 +145,7 @@ export class PatientOdontogramTab {
   }
 
   selectTooth(tooth: FdiTooth) {
-    if (this.savingTooth()) return;
+    if (!this.isDoctor() || this.savingTooth()) return;
     this.selectedTooth.set(tooth);
     this.selectedSurface.set(null);
     this.selectedCondition.set(tooth.condition);
@@ -136,7 +154,7 @@ export class PatientOdontogramTab {
   }
 
   selectSurface(selection: ToothSurfaceSelection) {
-    if (this.savingTooth()) return;
+    if (!this.isDoctor()) return;
 
     const tooth = this.positionedTeeth().find((item) => item.tooth.fdiNumber === selection.fdiNumber)?.tooth;
     if (!tooth) return;

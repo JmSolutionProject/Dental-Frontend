@@ -55,7 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'patients/:id/odontogram',
-        canActivate: [roleGuard(['dentist'])],
+        canActivate: [roleGuard(['ADMIN', 'dentist', 'receptionist'])],
         loadComponent: () =>
           import(
             './features/odontogram/components/odontogram-chart/odontogram-chart'

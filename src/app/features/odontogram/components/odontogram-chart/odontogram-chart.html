@@ -102,8 +102,8 @@
       </section>
     </article>
 
-    <!-- Condition editor popover -->
-    @if (selectedTooth(); as tooth) {
+    <!-- Condition editor popover: solo doctores -->
+    @if (isDoctor() && selectedTooth(); as tooth) {
       <article class="card condition-editor">
         <div class="condition-editor-header">
           <h2>Tooth {{ tooth.fdiNumber }}</h2>
@@ -136,6 +136,39 @@
           <p class="muted saving-msg">Saving…</p>
         }
       </article>
+    }
+
+    <!-- Hallazgos del odontograma (tarjetas) -->
+    @if (toothCards().length > 0) {
+      <section class="tooth-findings">
+        <h2 class="findings-title">Hallazgos del Odontograma</h2>
+        @for (card of toothCards(); track card.fdiNumber) {
+          <article
+            class="finding-card"
+            [attr.data-condition]="card.condition"
+            (click)="isDoctor() && selectTooth(card)"
+            [class.finding-card--clickable]="isDoctor()"
+          >
+            <div class="finding-card__header">
+              <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
+              <span class="finding-card__condition">{{ card.conditionLabel }}</span>
+              @if (card.stateName === 'Curado') {
+                <span class="badge badge--healed">Curado</span>
+              }
+            </div>
+            @if (card.notes || card.diagnosis) {
+              <p class="finding-card__notes">
+                {{ card.diagnosis || card.notes }}
+              </p>
+            }
+            @if (card.recommendedTreatment) {
+              <p class="finding-card__treatment">
+                <strong>Tratamiento:</strong> {{ card.recommendedTreatment }}
+              </p>
+            }
+          </article>
+        }
+      </section>
     }
   }
 </section>
