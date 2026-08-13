@@ -84,25 +84,31 @@
       </div>
     } @else {
       <div class="table-responsive">
-        <table class="table">
+        <table class="pay-table">
           <thead>
             <tr>
               <th>Fecha</th>
               <th>Concepto</th>
               <th>Método</th>
-              <th>Monto</th>
+              <th class="align-right">Monto</th>
             </tr>
           </thead>
           <tbody>
             @for (pay of history(); track pay.id) {
               <tr>
-                <td><strong>{{ pay.date }}</strong></td>
-                <td>{{ pay.concept }}</td>
-                <td><span class="badge badge--muted">{{ pay.method }}</span></td>
-                <td class="amount">{{ pay.amount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                <td class="date-cell">{{ pay.date }}</td>
+                <td class="concept-cell">{{ pay.concept }}</td>
+                <td><span class="badge" [class]="methodClass(pay.method)">{{ pay.method }}</span></td>
+                <td class="amount align-right">{{ pay.amount | currency: 'PEN' : 'S/ ' : '1.2-2' }}</td>
               </tr>
             }
           </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="3">Total cobrado</td>
+              <td class="amount align-right">{{ realTotal() | currency: 'PEN' : 'S/ ' : '1.2-2' }}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     }

@@ -65,6 +65,21 @@ export class PatientPaymentsTab {
     return !method || (method.name?.toLowerCase() !== 'efectivo');
   }
 
+  methodClass(method: string): string {
+    const m = (method || '').toUpperCase();
+    if (m.includes('EFECTIVO')) return 'badge--success';
+    if (m.includes('TARJETA') || m.includes('POS') || m.includes('VISA') || m.includes('MASTERCARD')) return 'badge--warning';
+    if (m.includes('YAPE') || m.includes('PLIN') || m.includes('TRANSFERENCIA') || m.includes('DEPOSITO') || m.includes('BILLETERA')) return 'badge--primary';
+    return 'badge--muted';
+  }
+
+  private formatDate(iso: string): string {
+    const d = new Date(iso);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  }
+
   readonly paymentForm = this.fb.group({
     appointmentId: ['', Validators.required],
     methodId: ['', Validators.required],
@@ -144,7 +159,7 @@ export class PatientPaymentsTab {
           this.history.update((list) => [
             {
               id: result.id,
-              date: new Date(result.paidAt).toLocaleDateString('es-PE'),
+              date: this.formatDate(result.paidAt),
               concept: `${apt?.reason ?? 'Pago'} — ${apt?.patientName ?? ''}`,
               method: result.methodName || '—',
               amount: result.amount,
@@ -167,13 +182,16 @@ export class PatientPaymentsTab {
     this.getPayments.execute({ patientId: pid, limit: 100 })
       .pipe(take(1), catchError(() => of({ data: [], total: 0, page: 1, limit: 10 })))
       .subscribe((res) => {
-        this.history.set(res.data.map((p) => ({
-          id: p.id,
-          date: new Date(p.paidAt).toLocaleDateString('es-PE'),
-          concept: p.notes || 'Pago',
-          method: p.methodName || '—',
-          amount: p.amount,
-        })));
+        this.history.set(res.data
+          .slice()
+          .sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime())
+          .map((p) => ({
+            id: p.id,
+            date: this.formatDate(p.paidAt),
+            concept: p.notes || 'Pago',
+            method: p.methodName || '—',
+            amount: p.amount,
+          })));
       });
   }
 }
