@@ -259,9 +259,8 @@
       <div>
         <p class="eyebrow">Consultorio Dental</p>
         <h1>Dr(a). {{ userName }}</h1>
-        <p class="muted">Tus citas de hoy, seguimiento de pacientes y tratamientos.</p>
+        <p class="muted">Tus citas del día, seguimiento de pacientes y comisiones.</p>
       </div>
-      <a class="btn btn--primary" routerLink="/patients"> <ng-icon name="heroMagnifyingGlass" /> Buscar Paciente</a>
     </header>
 
     @if (kpis$ | async; as kpis) {
@@ -298,10 +297,10 @@
     }
 
     <div class="quick-actions-grid" style="margin-top: 1.5rem;">
-      <a class="quick-action-card quick-action-card--blue" routerLink="/appointments">
+      <a class="quick-action-card quick-action-card--blue" routerLink="/agenda">
         <span class="quick-action-icon"><ng-icon name="heroCalendarDays" /></span>
         <span>
-          <strong>Mis Citas</strong>
+          <strong>Agenda del Día</strong>
           <small>Revisa tus próximas atenciones.</small>
         </span>
       </a>
@@ -310,13 +309,6 @@
         <span>
           <strong>Mis Pacientes</strong>
           <small>Historial clínico y seguimiento.</small>
-        </span>
-      </a>
-      <a class="quick-action-card quick-action-card--amber" routerLink="/appointments/calendar">
-        <span class="quick-action-icon"><ng-icon name="heroClipboardDocumentList" /></span>
-        <span>
-          <strong>Agenda</strong>
-          <small>Programación del día y turnos.</small>
         </span>
       </a>
     </div>
