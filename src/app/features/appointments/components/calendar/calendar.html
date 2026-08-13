@@ -55,9 +55,11 @@
           <option [value]="dentist.id">{{ dentist.name }}</option>
         }
       </select>
-      <button class="button button--primary button--sm" type="button" (click)="openCreateModal()">
-        + Nueva cita
-      </button>
+      @if (canManageAppointments()) {
+        <button class="button button--primary button--sm" type="button" (click)="openCreateModal()">
+          + Nueva cita
+        </button>
+      }
     </div>
   </div>
 

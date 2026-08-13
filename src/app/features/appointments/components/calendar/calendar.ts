@@ -30,6 +30,7 @@ import {
 } from '../../domain/appointment';
 import { User } from '../../../users/domain/user';
 import { UserRepository } from '../../../users/infrastructure/user-api.repository';
+import { AuthService } from '../../../../core/services/auth';
 
 type CalendarView = 'day' | 'week' | 'month';
 
@@ -63,6 +64,16 @@ export class Calendar {
   private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly toast = inject(ToastService);
   private readonly userRepository = inject(UserRepository);
+  private readonly auth = inject(AuthService);
+
+  readonly canManageAppointments = computed(() => {
+    const roles = this.auth.roles();
+    return (
+      roles.includes('admin') ||
+      roles.includes('secretaria') ||
+      roles.includes('receptionist')
+    );
+  });
 
   readonly view = signal<CalendarView>('week');
   readonly currentDate = signal(new Date());
@@ -314,6 +325,8 @@ export class Calendar {
   }
 
   openCreateModal(slotDate?: Date, slotTime?: string) {
+    if (!this.canManageAppointments()) return;
+
     this.editingAppointment.set(null);
     this.modalTitle.set('Nueva cita');
     this.form.reset();
@@ -488,6 +501,8 @@ export class Calendar {
   }
 
   onHourClick(date: Date, hour: number) {
+    if (!this.canManageAppointments()) return;
+
     const pad = (n: number) => String(n).padStart(2, '0');
     this.openCreateModal(date, `${pad(hour)}:00`);
   }

@@ -5,10 +5,12 @@
       <h1>Gestión de Citas</h1>
       <p class="appt-subtitle">Administra el calendario y las atenciones programadas.</p>
     </div>
-    <button type="button" class="btn btn--primary btn--lg" (click)="openCreateModal()">
-      <ng-icon name="heroPlus" size="16" strokeWidth="2.5" />
-      Nueva Cita
-    </button>
+    @if (canManageAppointments()) {
+      <button type="button" class="btn btn--primary btn--lg" (click)="openCreateModal()">
+        <ng-icon name="heroPlus" size="16" strokeWidth="2.5" />
+        Nueva Cita
+      </button>
+    }
   </header>
 
   <!-- FILTERS -->
@@ -94,7 +96,7 @@
     </div>
 
     <app-table
-      [columns]="appointmentColumns"
+      [columns]="appointmentColumns()"
       [data]="pagedAppointments()"
       [currentPage]="currentPage()"
       [pageSize]="pageSize()"
