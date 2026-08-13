@@ -73,8 +73,6 @@
           <article
             class="finding-card"
             [attr.data-condition]="card.condition"
-            [class.finding-card--clickable]="isDoctor()"
-            (click)="isDoctor() && selectTooth(card)"
           >
             <div class="finding-card__header">
               <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
@@ -83,9 +81,9 @@
                 <span class="badge badge--healed">Curado</span>
               }
             </div>
-            @if (card.notes || card.diagnosis) {
+            @if (card.notes) {
               <p class="finding-card__notes">
-                {{ card.diagnosis || card.notes }}
+                {{ card.notes }}
               </p>
             }
             @if (card.recommendedTreatment) {
@@ -160,11 +158,8 @@
               <button class="btn btn--outline" type="button" [disabled]="savingTooth()" (click)="closeToothProgressModal()">
                 Cancelar
               </button>
-              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || hasPersistedSelectedDetail()" (click)="saveToothProgress()">
+              <button class="btn btn--primary" type="button" [disabled]="savingTooth()" (click)="saveToothProgress()">
                 {{ savingTooth() ? 'Guardando...' : 'Guardar' }}
-              </button>
-              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || !hasPersistedSelectedDetail()" (click)="saveToothProgress()">
-                {{ savingTooth() ? 'Actualizando...' : 'Actualizar' }}
               </button>
             </div>
           </div>

@@ -435,6 +435,7 @@ export class PatientDetail {
         medications: mhData.takesMedication ? this.parseList(raw.medicationDetails) : [],
       },
       notes: [emergencyContact, raw.notes].filter(Boolean).join('\n'),
+      observaciones: raw.observations || undefined,
     };
   }
 

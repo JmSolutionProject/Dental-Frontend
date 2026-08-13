@@ -18,6 +18,7 @@ export interface Patient {
   status: PatientStatus;
   medicalHistory: MedicalHistory;
   notes: string;
+  observaciones?: string;
 }
 
 export type PatientStatus = 'active' | 'inactive' | 'deleted';
