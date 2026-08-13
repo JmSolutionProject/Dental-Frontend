@@ -73,8 +73,6 @@
           <article
             class="finding-card"
             [attr.data-condition]="card.condition"
-            [class.finding-card--clickable]="isDoctor()"
-            (click)="isDoctor() && selectTooth(card)"
           >
             <div class="finding-card__header">
               <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
