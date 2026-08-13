@@ -130,7 +130,7 @@ export class OdontogramApiRepository implements OdontogramRepository {
         current.condition = condition;
         current.stateName = detail.stateName;
         current.diagnosis = detail.diagnosis ?? null;
-        current.notes = detail.notes;
+        current.notes = detail.notes ?? current.notes;
       }
 
       teethByFdi.set(fdiNumber, current);
