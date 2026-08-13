@@ -188,18 +188,6 @@ export class PatientOdontogramTab {
     this.applyCondition(this.selectedCondition());
   }
 
-  hasPersistedSelectedDetail(): boolean {
-    const tooth = this.selectedTooth();
-    const surface = this.selectedSurface();
-    if (!tooth) return false;
-
-    if (surface) {
-      return Boolean(tooth.surfaceDetailIds?.[surface]);
-    }
-
-    return Boolean(tooth.detailId ?? tooth.id);
-  }
-
   applyCondition(condition: ToothCondition) {
     const tooth = this.selectedTooth();
     const pid = this.patientId();
@@ -255,16 +243,11 @@ export class PatientOdontogramTab {
           return;
         }
 
-        const refreshed: FdiTooth = {
-          ...persistedTooth,
-          history: updatedTooth.history,
-        };
-
         this.odontogram.set(completedOdontogram);
-        this.selectedTooth.set(refreshed);
         this.toast.success(
           `Pieza dental ${tooth.fdiNumber} marcada como: ${this.conditionLabel(condition)}.`,
         );
+        this.closeToothProgressModal();
         this.progressNotes.set('');
       });
   }

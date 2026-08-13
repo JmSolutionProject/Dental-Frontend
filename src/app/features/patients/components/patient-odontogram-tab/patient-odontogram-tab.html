@@ -160,11 +160,8 @@
               <button class="btn btn--outline" type="button" [disabled]="savingTooth()" (click)="closeToothProgressModal()">
                 Cancelar
               </button>
-              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || hasPersistedSelectedDetail()" (click)="saveToothProgress()">
+              <button class="btn btn--primary" type="button" [disabled]="savingTooth()" (click)="saveToothProgress()">
                 {{ savingTooth() ? 'Guardando...' : 'Guardar' }}
-              </button>
-              <button class="btn btn--primary" type="button" [disabled]="savingTooth() || !hasPersistedSelectedDetail()" (click)="saveToothProgress()">
-                {{ savingTooth() ? 'Actualizando...' : 'Actualizar' }}
               </button>
             </div>
           </div>
