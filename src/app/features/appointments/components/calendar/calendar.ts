@@ -71,6 +71,10 @@ export class Calendar {
     return roles.includes('admin') || roles.includes('receptionist');
   });
 
+  readonly isCurrentUserDoctor = computed(() =>
+    this.auth.roles().includes('dentist'),
+  );
+
   readonly view = signal<CalendarView>('week');
   readonly currentDate = signal(new Date());
   readonly selectedDentistId = signal<string | null>(null);
@@ -252,6 +256,13 @@ export class Calendar {
     if (isPlatformBrowser(this.platformId)) {
       this.loadDoctors();
       this.loadAppointments();
+    }
+
+    if (this.isCurrentUserDoctor()) {
+      const myId = this.auth.user()?.sub;
+      if (myId) {
+        this.selectedDentistId.set(myId);
+      }
     }
   }
 
