@@ -21,9 +21,32 @@
   box-shadow: 0 1px 3px var(--color-black-a05);
 }
 
+@media (max-width: 640px) {
+  .patient-dossier-page {
+    padding: 1rem;
+  }
+
+  .patient-hero {
+    padding: 1.25rem 1rem;
+  }
+
+  .patient-name {
+    font-size: 1.4rem;
+  }
+
+  .patient-quick-pills {
+    gap: 0.4rem;
+  }
+
+  .pill-badge {
+    font-size: 0.72rem;
+  }
+}
+
 .hero-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 0.4rem;
 }

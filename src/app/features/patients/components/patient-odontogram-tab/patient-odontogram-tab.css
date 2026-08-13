@@ -45,7 +45,9 @@
   border: 2px solid var(--color-slate-300);
   border-radius: 1rem;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   padding: 1.25rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .arch-grid-card {

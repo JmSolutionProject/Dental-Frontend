@@ -14,10 +14,10 @@
   position: relative;
   min-height: 100dvh;
   display: flex;
-  align-items: center;
-  justify-content: center;
   background: radial-gradient(circle at 50% 30%, var(--color-white) 0%, var(--color-slate-100) 100%);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 1.5rem;
 }
 
@@ -38,6 +38,7 @@
 .login-card-container {
   width: 100%;
   max-width: 440px;
+  margin: auto;
   position: relative;
   z-index: 2;
 }
@@ -272,6 +273,17 @@
   font-size: var(--text-xs);
   font-weight: 500;
   margin: 0;
+}
+
+/* Evita el auto-zoom de iOS al enfocar inputs con fuente menor a 16px */
+@media (max-width: 520px) {
+  .input-with-icon input {
+    font-size: 1rem !important;
+  }
+
+  .login-card {
+    padding: 2rem 1.25rem 1.5rem;
+  }
 }
 
 

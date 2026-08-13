@@ -128,8 +128,9 @@
   }
 
   .nav {
-    grid-template-columns: repeat(7, minmax(max-content, 1fr));
-    overflow-x: auto;
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: visible;
     overflow-y: visible;
     padding-bottom: 0.35rem;
     padding-right: 0;
@@ -146,7 +147,12 @@
     padding-top: 0;
   }
 
-  .nav a,
+  .nav a {
+    flex: 1 1 auto;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
   .settings-link {
     justify-content: center;
   }

@@ -21,6 +21,20 @@
   gap: 1rem;
 }
 
+@media (max-width: 520px) {
+  .appt-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .appt-form-footer {
+    flex-direction: column-reverse;
+  }
+
+  .appt-form-footer .btn {
+    width: 100%;
+  }
+}
+
 .appt-form-label {
   font-size: 0.72rem;
   font-weight: 700;
