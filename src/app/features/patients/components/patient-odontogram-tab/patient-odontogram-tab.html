@@ -81,9 +81,9 @@
                 <span class="badge badge--healed">Curado</span>
               }
             </div>
-            @if (card.notes || card.diagnosis) {
+            @if (card.notes) {
               <p class="finding-card__notes">
-                {{ card.diagnosis || card.notes }}
+                {{ card.notes }}
               </p>
             }
             @if (card.recommendedTreatment) {
