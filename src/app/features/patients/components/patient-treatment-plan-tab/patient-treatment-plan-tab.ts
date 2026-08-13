@@ -213,6 +213,7 @@ export class PatientTreatmentPlanTab {
       if (result) {
         const mappedItems: TreatmentPlanItem[] = (result.servicios || []).map((s: any) => ({
           id: String(s.id),
+          serviceId: s.servicio?.id ? String(s.servicio.id) : undefined,
           serviceName: s.servicio?.nombreServicio || 'Servicio',
           price: Number(s.servicio?.precioActual || s.servicio?.precio || 0),
           ejecutado: false,
@@ -222,6 +223,7 @@ export class PatientTreatmentPlanTab {
           id: String(result.id),
           name: planName,
           date: new Date().toLocaleDateString('es-PE'),
+          doctorId: result.medicoId ? String(result.medicoId) : undefined,
           items: mappedItems.length > 0 ? mappedItems : this.builderItems().map(item => ({ ...item, ejecutado: false })),
           totalCost: this.builderSubtotal(),
           paymentType,
@@ -251,8 +253,10 @@ export class PatientTreatmentPlanTab {
   scheduleAppointment(plan: TreatmentPlan, item: TreatmentPlanItem) {
     this.appointmentPrefill.set({
       patientId: this.patientId(),
-      reason: `${item.serviceName}`,
+      dentistId: plan.doctorId ?? '',
+      reason: item.serviceName,
       planServicioId: item.id,
+      serviceId: item.serviceId ?? '',
     });
     this.showAppointmentModal.set(true);
   }

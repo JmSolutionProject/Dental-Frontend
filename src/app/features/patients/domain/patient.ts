@@ -87,6 +87,7 @@ export interface TreatmentPlan {
   items: TreatmentPlanItem[];
   totalCost: number;
   paymentType: 'Al Contado' | 'A Cuotas';
+  doctorId?: string;
   estado?: string;
   observaciones?: string;
   installments?: InstallmentRecord[];
