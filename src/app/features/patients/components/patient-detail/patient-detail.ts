@@ -243,6 +243,7 @@ export class PatientDetail {
     this.http.get<{ data: Array<{
       id: string; patientId: string; patientName: string; dentistId: string; dentistName: string;
       scheduledAt: string; reason: string; status: string;
+      servicios?: Array<{ id: string | number; cantidad: number; descuento: number; servicio?: { id: string | number; nombreServicio: string; precio: number } }>;
     }> }>(`${this.apiUrl}/appointments?limit=100`)
       .pipe(take(1), catchError(() => of({ data: [] })))
       .subscribe((res) => {
@@ -256,6 +257,16 @@ export class PatientDetail {
           scheduledAt: a.scheduledAt,
           reason: a.reason,
           status: a.status as Appointment['status'],
+          servicios: (a.servicios ?? []).map((s) => ({
+            id: String(s.id),
+            cantidad: s.cantidad,
+            descuento: s.descuento,
+            servicio: {
+              id: String(s.servicio?.id ?? ''),
+              nombreServicio: s.servicio?.nombreServicio ?? '',
+              precio: Number(s.servicio?.precio ?? 0),
+            },
+          })),
         }));
         this.patientAppointments.set(raw);
 

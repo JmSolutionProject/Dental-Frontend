@@ -8,6 +8,7 @@ import { ToastService } from '../../../../shared/components/toast/toast.service'
 import { Modal } from '../../../../shared/components/modal/modal';
 import { FormField } from '../../../../shared/components/form-field/form-field';
 import { API_URL } from '../../../../core/config/api.config';
+import { AuthService } from '../../../../core/services/auth';
 import { AppointmentFormModal } from '../../../appointments/components/appointment-form-modal/appointment-form-modal';
 
 interface CatalogService {
@@ -36,6 +37,16 @@ export class PatientTreatmentPlanTab {
   private readonly apiUrl = inject(API_URL);
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+
+  readonly canManageAppointments = computed(() => {
+    const roles = this.auth.roles();
+    return (
+      roles.includes('admin') ||
+      roles.includes('secretaria') ||
+      roles.includes('receptionist')
+    );
+  });
 
   readonly showPlanBuilderModal = signal(false);
   readonly catalogServices = signal<CatalogService[]>([]);
@@ -210,6 +221,8 @@ export class PatientTreatmentPlanTab {
   }
 
   scheduleAppointment(plan: TreatmentPlan, item: TreatmentPlanItem) {
+    if (!this.canManageAppointments()) return;
+
     this.appointmentPrefill.set({
       patientId: this.patientId(),
       dentistId: plan.doctorId ?? '',

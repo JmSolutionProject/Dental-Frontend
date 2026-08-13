@@ -12,6 +12,7 @@ import { DeleteAppointmentUseCase } from '../../application/delete-appointment.u
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { UserRepository } from '../../../users/infrastructure/user-api.repository';
 import { User } from '../../../users/domain/user';
+import { AuthService } from '../../../../core/services/auth';
 import { Table, TableCell, TableColumn } from '../../../../shared/components/table/table';
 
 type StatusFilter = 'all' | AppointmentStatus;
@@ -51,6 +52,16 @@ export class AppointmentList {
   private readonly deleteAppointmentUseCase = inject(DeleteAppointmentUseCase);
   private readonly toast = inject(ToastService);
   private readonly userRepository = inject(UserRepository);
+  private readonly auth = inject(AuthService);
+
+  readonly canManageAppointments = computed(() => {
+    const roles = this.auth.roles();
+    return (
+      roles.includes('admin') ||
+      roles.includes('secretaria') ||
+      roles.includes('receptionist')
+    );
+  });
 
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
@@ -65,15 +76,22 @@ export class AppointmentList {
 
   readonly statusOptions: StatusOption[] = STATUS_OPTIONS;
   readonly dateRanges = DATE_RANGES;
-  readonly appointmentColumns: TableColumn[] = [
-    { key: 'day', label: 'Día / Fecha' },
-    { key: 'time', label: 'Hora' },
-    { key: 'patient', label: 'Paciente' },
-    { key: 'dentist', label: 'Encargado' },
-    { key: 'service', label: 'Servicio' },
-    { key: 'status', label: 'Estado', align: 'right' },
-    { key: 'actions', label: 'Acciones', align: 'right' },
-  ];
+  readonly appointmentColumns = computed<TableColumn[]>(() => {
+    const columns: TableColumn[] = [
+      { key: 'day', label: 'Día / Fecha' },
+      { key: 'time', label: 'Hora' },
+      { key: 'patient', label: 'Paciente' },
+      { key: 'dentist', label: 'Encargado' },
+      { key: 'service', label: 'Servicio' },
+      { key: 'status', label: 'Estado', align: 'right' },
+    ];
+
+    if (this.canManageAppointments()) {
+      columns.push({ key: 'actions', label: 'Acciones', align: 'right' });
+    }
+
+    return columns;
+  });
 
   readonly dentistOptions = signal<{ id: string; name: string }[]>([
     { id: 'all', name: 'Todos los especialistas' },
