@@ -35,7 +35,7 @@ export class PatientPaymentsTab {
 
   readonly appointments = input<Appointment[]>([]);
   readonly patientId = input<string>('');
-  readonly budgetPending = input<number>(0);
+  readonly budgetTotal = input<number>(0);
 
   readonly paymentMethods = signal<PaymentMethod[]>([]);
   readonly history = signal<PaymentRow[]>([]);
@@ -44,6 +44,10 @@ export class PatientPaymentsTab {
 
   readonly realTotal = computed(() =>
     this.history().reduce((sum, row) => sum + row.amount, 0)
+  );
+
+  readonly pending = computed(() =>
+    Math.max(0, this.budgetTotal() - this.realTotal())
   );
 
   readonly selectedMethodNotCash = computed(() => {
@@ -92,7 +96,7 @@ export class PatientPaymentsTab {
       const motivo = (apt.servicios ?? []).map((s) => s.servicio.nombreServicio).join(', ');
       this.paymentForm.patchValue({
         notes: motivo ? `${motivo} — ${apt.dentistName ?? ''}` : `${apt.reason} — ${apt.dentistName ?? ''}`,
-        amount: total > 0 ? total : this.budgetPending(),
+        amount: total > 0 ? total : this.pending(),
       }, { emitEvent: false });
     }
   }
