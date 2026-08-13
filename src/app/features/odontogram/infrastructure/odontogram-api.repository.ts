@@ -121,6 +121,9 @@ export class OdontogramApiRepository implements OdontogramRepository {
           [surface]: detail.detailId ?? detail.id,
         };
         current.condition = condition;
+        if (detail.notes) {
+          current.notes = current.notes || detail.notes;
+        }
       } else {
         current.id = detail.id;
         current.detailId = detail.detailId;
