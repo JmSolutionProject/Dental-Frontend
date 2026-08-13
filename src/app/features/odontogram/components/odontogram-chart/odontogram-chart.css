@@ -132,7 +132,9 @@
   background: var(--color-cloud-50);
   border: 2px solid var(--color-slate-300);
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   padding: 1.5rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .arch-grid-card {

@@ -149,9 +149,15 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
 
+      // Week start (Monday-based, computed once — no mutating `now`)
+      const dayOfWeek = now.getDay();
+      const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday);
+      weekStart.setHours(0, 0, 0, 0);
+
       // Filter payments based on selectedPeriod()
       const filteredPayments = payments.filter((p) => {
-        if (!p.paidAt || p.status === 'voided') return false;
+        if (!p.paidAt || p.status === 'voided' || p.status === 'inactive') return false;
         const d = new Date(p.paidAt);
         const period = this.selectedPeriod();
 
@@ -159,8 +165,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
           return d.toDateString() === now.toDateString();
         }
         if (period === 'week') {
-          const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 1));
-          return d >= firstDayOfWeek;
+          return d >= weekStart;
         }
         if (period === 'month') {
           return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
@@ -176,13 +181,13 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
 
       // Filter current month & previous month payments for MoM comparison
       const currentMonthPayments = payments.filter((p) => {
-        if (!p.paidAt || p.status === 'voided') return false;
+        if (!p.paidAt || p.status === 'voided' || p.status === 'inactive') return false;
         const d = new Date(p.paidAt);
         return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
       });
 
       const previousMonthPayments = payments.filter((p) => {
-        if (!p.paidAt || p.status === 'voided') return false;
+        if (!p.paidAt || p.status === 'voided' || p.status === 'inactive') return false;
         const d = new Date(p.paidAt);
         const prevDate = new Date(currentYear, currentMonth - 1, 1);
         return d.getFullYear() === prevDate.getFullYear() && d.getMonth() === prevDate.getMonth();
@@ -216,7 +221,7 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
         const targetDate = new Date(currentYear, currentMonth - i, 1);
         const monthName = targetDate.toLocaleString('es-PE', { month: 'short' }).toUpperCase();
         const monthPayments = payments.filter((p) => {
-          if (!p.paidAt || p.status === 'voided') return false;
+          if (!p.paidAt || p.status === 'voided' || p.status === 'inactive') return false;
           const d = new Date(p.paidAt);
           return d.getFullYear() === targetDate.getFullYear() && d.getMonth() === targetDate.getMonth();
         });
@@ -236,7 +241,8 @@ export class ReportOverview implements AfterViewInit, OnDestroy {
         appointmentsList: appointments,
         attendanceRate: appointments.length > 0 ? Math.round((completed / appointments.length) * 100) : 0,
         cancellationRate: appointments.length > 0 ? Math.round((cancelled / appointments.length) * 100) : 0,
-        currentRevenue: filteredRevenue || currentRevenue || paymentSummary.totalAmount,
+        periodRevenue: filteredRevenue,
+        currentRevenue,
         previousRevenue,
         revenueDiff,
         revenuePercent,
