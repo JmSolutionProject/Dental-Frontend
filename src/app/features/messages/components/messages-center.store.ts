@@ -18,6 +18,8 @@ import {
 } from '../domain/messages';
 import QRCode from 'qrcode';
 
+const CAMPAIGN_STORAGE_KEY = 'dental_clinic_active_campaign';
+
 export type MessageSection = 'direct' | 'scheduled' | 'templates';
 export type ScheduledStatus = 'pending' | 'sent' | 'failed';
 export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly';
@@ -125,6 +127,7 @@ export class MessageCenterStore {
     this.loadMessages();
     this.loadPatients();
     this.refreshWhatsApp();
+    this.restoreSavedCampaign();
   }
 
   loadMessages() {
@@ -275,6 +278,7 @@ export class MessageCenterStore {
           )
           .subscribe((startedCampaign) => {
             this.currentBroadcast.set(startedCampaign);
+            this.saveCampaignId(startedCampaign.id);
             this.toast.success('Campaña masiva iniciada. El backend enviará un mensaje cada 30 segundos.');
             onDone();
           });
@@ -327,6 +331,7 @@ export class MessageCenterStore {
           )
           .subscribe((startedCampaign) => {
             this.currentBroadcast.set(startedCampaign);
+            this.saveCampaignId(startedCampaign.id);
             this.toast.success('Campaña masiva iniciada. El backend enviará un mensaje cada 30 segundos.');
             onDone();
           });
@@ -363,6 +368,7 @@ export class MessageCenterStore {
 
   cancelBroadcastCampaign() {
     this.updateBroadcastCampaign('cancel', 'Campaña cancelada.');
+    this.clearSavedCampaign();
   }
 
   private updateBroadcastCampaign(action: 'start' | 'pause' | 'cancel', successMessage: string) {
@@ -591,6 +597,49 @@ export class MessageCenterStore {
 
   patientName(patient: Patient): string {
     return `${patient.firstName} ${patient.lastName}`.trim();
+  }
+
+  private saveCampaignId(id: string) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+    localStorage.setItem(CAMPAIGN_STORAGE_KEY, id);
+  }
+
+  private clearSavedCampaign() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+    localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
+  }
+
+  private restoreSavedCampaign() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+
+    const id = localStorage.getItem(CAMPAIGN_STORAGE_KEY);
+    if (!id) return;
+
+    this.broadcastBusy.set(true);
+    this.manageWhatsAppBroadcast
+      .findById(id)
+      .pipe(
+        take(1),
+        catchError(() => {
+          this.clearSavedCampaign();
+          return of(null);
+        }),
+        finalize(() => this.broadcastBusy.set(false)),
+      )
+      .subscribe((campaign) => {
+        if (!campaign) {
+          this.clearSavedCampaign();
+          return;
+        }
+
+        this.currentBroadcast.set(campaign);
+        if (
+          campaign.processStatus === 'completed' ||
+          campaign.processStatus === 'cancelled'
+        ) {
+          this.clearSavedCampaign();
+        }
+      });
   }
 
   private async renderQr(value: string | null) {
