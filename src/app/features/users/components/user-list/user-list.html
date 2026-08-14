@@ -75,6 +75,9 @@
           <div style="display: flex; gap: 0.35rem; justify-content: flex-end">
             <button class="btn btn--outline btn--sm" type="button" (click)="openEdit(u)">Editar</button>
             <button class="btn btn--danger-outline btn--sm" type="button" (click)="disableUser(u.id)">Desactivar</button>
+            @if (isAdmin()) {
+              <button class="btn btn--danger btn--sm" type="button" (click)="openPermanentDeleteConfirm(u)">Eliminar</button>
+            }
           </div>
         </ng-template>
       </app-table>
@@ -137,3 +140,22 @@
     }
   </div>
 }
+
+<app-modal title="Eliminar usuario permanentemente" [visible]="showPermanentDeleteModal()" (close)="closePermanentDeleteModal()">
+  <div style="display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0;">
+    <p style="margin: 0; font-size: 0.95rem; color: var(--text-primary);">
+      ¿Está seguro de que desea eliminar <strong>PERMANENTEMENTE</strong> al usuario
+      <strong>{{ userToDeletePermanent()?.nombreCompleto }}</strong>?
+    </p>
+    <p class="muted" style="margin: 0; font-size: 0.85rem;">
+      Esta acción eliminará también sus citas, pagos, planes de tratamiento y campañas asociadas.
+      Esta operación no se puede deshacer.
+    </p>
+    <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+      <button class="btn btn--secondary" type="button" (click)="closePermanentDeleteModal()">Cancelar</button>
+      <button class="btn btn--danger" type="button" [disabled]="deletingPermanent()" (click)="executePermanentDelete()">
+        {{ deletingPermanent() ? 'Eliminando…' : 'Sí, Eliminar Todo' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

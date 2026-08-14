@@ -28,4 +28,10 @@ export class UserRepository {
   disable(id: number): Observable<User> {
     return this.http.delete<User>(`${this.apiUrl}/users/${id}`);
   }
+
+  deletePermanent(id: number): Observable<{ id: number; deleted: boolean }> {
+    return this.http.delete<{ id: number; deleted: boolean }>(
+      `${this.apiUrl}/users/${id}/permanent`,
+    );
+  }
 }

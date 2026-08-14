@@ -156,6 +156,7 @@ export class PatientDetail {
     medicationDetails: ['Metformina 850mg diario, Losartán 50mg'],
     observations: [''],
     notes: [''],
+    acceptReminders: [false],
   });
 
   constructor() {
@@ -352,6 +353,7 @@ export class PatientDetail {
       medicationDetails: (mh.medications || []).join(', '),
       observations: p.notes || '',
       notes: p.notes,
+      acceptReminders: p.acceptReminders ?? false,
     });
   }
 
@@ -494,6 +496,7 @@ export class PatientDetail {
       },
       notes: [emergencyContact, raw.notes].filter(Boolean).join('\n'),
       observaciones: raw.observations || undefined,
+      acceptReminders: raw.acceptReminders === true,
     };
   }
 

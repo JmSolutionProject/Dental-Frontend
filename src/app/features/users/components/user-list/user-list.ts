@@ -8,6 +8,7 @@ import { Table, TableCell, TableColumn } from '../../../../shared/components/tab
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { SaveUserRequest, UpdateUserRequest, User } from '../../domain/user';
 import { UserRepository } from '../../infrastructure/user-api.repository';
+import { AuthService } from '../../../../core/services/auth';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroClipboardDocumentList, heroHeart, heroShieldCheck, heroUsers } from '@ng-icons/heroicons/outline';
 
@@ -28,6 +29,9 @@ export class UserList implements OnInit {
   private readonly apiUrl = inject(API_URL);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+
+  readonly isAdmin = computed(() => this.auth.roles().includes('admin'));
 
   readonly users = signal<User[]>([]);
   readonly roles = signal<Role[]>([]);
@@ -39,6 +43,10 @@ export class UserList implements OnInit {
   readonly activeTab = signal<'all' | 'medico' | 'secretaria' | 'admin'>('all');
   readonly currentPage = signal(1);
   readonly pageSize = signal(10);
+
+  readonly userToDeletePermanent = signal<User | null>(null);
+  readonly showPermanentDeleteModal = signal(false);
+  readonly deletingPermanent = signal(false);
 
   readonly dropdownOpen = signal(false);
   readonly dropdownPos = signal<DropdownPos>({ top: 0, left: 0, width: 0 });
@@ -256,6 +264,40 @@ export class UserList implements OnInit {
     this.repo.disable(id)
       .pipe(take(1), catchError(() => { this.toast.error('Error al desactivar'); return of(null); }))
       .subscribe(() => { this.toast.success('Usuario desactivado'); this.loadUsers(); });
+  }
+
+  openPermanentDeleteConfirm(user: User) {
+    this.userToDeletePermanent.set(user);
+    this.showPermanentDeleteModal.set(true);
+  }
+
+  closePermanentDeleteModal() {
+    this.showPermanentDeleteModal.set(false);
+    this.userToDeletePermanent.set(null);
+  }
+
+  executePermanentDelete() {
+    const user = this.userToDeletePermanent();
+    if (!user) return;
+
+    this.deletingPermanent.set(true);
+    this.repo.deletePermanent(user.id)
+      .pipe(
+        take(1),
+        catchError((err) => {
+          const msg = err?.error?.message;
+          this.toast.error(Array.isArray(msg) ? msg.join(', ') : (msg || 'Error al eliminar el usuario'));
+          return of(null);
+        }),
+        finalize(() => this.deletingPermanent.set(false)),
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.toast.success(`Usuario ${user.nombreCompleto} eliminado permanentemente.`);
+          this.closePermanentDeleteModal();
+          this.loadUsers();
+        }
+      });
   }
 
   private ensureValidPage() {

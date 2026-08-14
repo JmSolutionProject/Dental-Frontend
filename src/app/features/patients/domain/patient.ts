@@ -19,6 +19,7 @@ export interface Patient {
   medicalHistory: MedicalHistory;
   notes: string;
   observaciones?: string;
+  acceptReminders?: boolean;
 }
 
 export type PatientStatus = 'active' | 'inactive' | 'deleted';

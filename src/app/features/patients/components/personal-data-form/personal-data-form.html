@@ -40,6 +40,11 @@
         <input type="email" formControlName="email" [readonly]="!editing()" placeholder="ejemplo@correo.com" />
       </app-form-field>
     </div>
+
+    <label class="reminders-check">
+      <input type="checkbox" formControlName="acceptReminders" [disabled]="!editing()" />
+      <span>Acepta recordatorios por WhatsApp</span>
+    </label>
   </section>
 
   <section class="form-section form-section--emergency">

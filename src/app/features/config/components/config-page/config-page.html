@@ -1,0 +1,42 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Configuración</p>
+      <h1>Recordatorios de Citas</h1>
+      <p class="muted">Envía avisos automáticos por WhatsApp a tus pacientes antes de su cita.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="muted" style="text-align: center; padding: 2rem;">Cargando configuración…</p>
+  } @else {
+    <article class="card" style="max-width: 640px;">
+      <label class="config-row">
+        <span>
+          <strong>Activar recordatorios automáticos</strong>
+          <small class="muted" style="display: block;">El sistema enviará un WhatsApp a cada paciente antes de su cita.</small>
+        </span>
+        <input type="checkbox" [(ngModel)]="enabled" />
+      </label>
+
+      <label class="config-field">
+        <span class="field-label">Horas antes de la cita</span>
+        <input type="number" [(ngModel)]="horasAntes" min="1" max="72" />
+      </label>
+
+      <label class="config-field">
+        <span class="field-label">Plantilla del mensaje</span>
+        <textarea [(ngModel)]="plantilla" rows="4"></textarea>
+        <small class="muted" ngNonBindable>
+          Variables disponibles: {{nombre}}, {{fecha}}, {{hora}}, {{doctor}}
+        </small>
+      </label>
+
+      <div class="config-actions">
+        <button class="btn btn--primary" type="button" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </article>
+  }
+</section>
