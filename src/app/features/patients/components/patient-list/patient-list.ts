@@ -19,6 +19,7 @@ import { FormField } from '../../../../shared/components/form-field/form-field';
 import { BirthDateField } from '../../../../shared/components/birth-date-field/birth-date-field';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { ReniecService } from '../../../../core/services/reniec.service';
+import { AuthService } from '../../../../core/services/auth';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroPlus } from '@ng-icons/heroicons/outline';
 
@@ -39,6 +40,10 @@ export class PatientList {
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
   private readonly reniec = inject(ReniecService);
+  private readonly auth = inject(AuthService);
+
+  readonly isDoctor = computed(() => this.auth.roles().includes('dentist'));
+  readonly isAdmin = computed(() => this.auth.roles().includes('admin'));
 
   readonly searchText = signal('');
   readonly currentPage = signal(1);
@@ -53,6 +58,10 @@ export class PatientList {
   readonly patientToDelete = signal<Patient | null>(null);
   readonly showDeleteConfirmModal = signal(false);
   readonly deletingState = signal(false);
+
+  readonly patientToDeletePermanent = signal<Patient | null>(null);
+  readonly showPermanentDeleteModal = signal(false);
+  readonly deletingPermanent = signal(false);
 
   readonly columns: TableColumn[] = [
     { key: 'firstName', label: 'Nombre Completo', sortable: true },
@@ -211,6 +220,42 @@ export class PatientList {
         if (result) {
           this.toast.success(`Paciente ${p.firstName} ${p.lastName} dado de baja exitosamente.`);
           this.closeDeleteConfirmModal();
+          this.loadPatients();
+        }
+      });
+  }
+
+  openPermanentDeleteConfirm(patient: Patient, event?: Event) {
+    if (event) event.stopPropagation();
+    this.patientToDeletePermanent.set(patient);
+    this.showPermanentDeleteModal.set(true);
+  }
+
+  closePermanentDeleteModal() {
+    this.showPermanentDeleteModal.set(false);
+    this.patientToDeletePermanent.set(null);
+  }
+
+  executePermanentDelete() {
+    const p = this.patientToDeletePermanent();
+    if (!p) return;
+
+    this.deletingPermanent.set(true);
+    this.patientRepo
+      .deletePermanent(p.id)
+      .pipe(
+        take(1),
+        catchError((err) => {
+          console.error('Error al eliminar el paciente:', err);
+          this.toast.error('Error al eliminar el paciente');
+          return of(null);
+        }),
+        finalize(() => this.deletingPermanent.set(false)),
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.toast.success(`Paciente ${p.firstName} ${p.lastName} eliminado permanentemente.`);
+          this.closePermanentDeleteModal();
           this.loadPatients();
         }
       });

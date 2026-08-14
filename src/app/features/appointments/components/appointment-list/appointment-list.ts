@@ -59,6 +59,10 @@ export class AppointmentList {
     return roles.includes('admin') || roles.includes('receptionist');
   });
 
+  readonly isCurrentUserDoctor = computed(() =>
+    this.auth.roles().includes('dentist'),
+  );
+
   readonly appointments = signal<Appointment[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal(false);
@@ -161,6 +165,13 @@ export class AppointmentList {
   constructor() {
     this.loadAppointments();
     this.loadDoctors();
+
+    if (this.isCurrentUserDoctor()) {
+      const myId = this.auth.user()?.sub;
+      if (myId) {
+        this.dentistFilter.set(myId);
+      }
+    }
   }
 
   setStatusFilter(filter: StatusFilter): void {

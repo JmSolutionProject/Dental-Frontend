@@ -89,6 +89,10 @@ export class PatientApiRepository implements PatientRepository {
     return this.http.delete<Patient>(`${this.apiUrl}/patients/${id}`);
   }
 
+  deletePermanent(id: string) {
+    return this.http.delete<void>(`${this.apiUrl}/patients/${id}/permanent`);
+  }
+
   createFile(file: File) {
     const formData = new FormData();
     formData.append('file', file);
