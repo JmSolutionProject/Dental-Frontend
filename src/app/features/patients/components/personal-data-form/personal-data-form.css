@@ -97,3 +97,20 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+.reminders-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #555;
+  cursor: pointer;
+}
+
+.reminders-check input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0ea5e9;
+  cursor: pointer;
+}

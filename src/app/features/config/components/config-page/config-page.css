@@ -1,0 +1,53 @@
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  cursor: pointer;
+}
+
+.config-row input[type='checkbox'] {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 0;
+}
+
+.config-field .field-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.config-field input[type='number'],
+.config-field textarea {
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  max-width: 140px;
+}
+
+.config-field textarea {
+  max-width: 100%;
+  width: 100%;
+}
+
+.config-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}
+
+code {
+  background: var(--color-slate-100, #f1f5f9);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}

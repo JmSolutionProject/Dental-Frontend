@@ -174,6 +174,14 @@ export const routes: Routes = [
           ).then((m) => m.UserList),
       },
       {
+        path: 'config',
+        canActivate: [roleGuard(['ADMIN'])],
+        loadComponent: () =>
+          import(
+            './features/config/components/config-page/config-page'
+          ).then((m) => m.ConfigPage),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import(

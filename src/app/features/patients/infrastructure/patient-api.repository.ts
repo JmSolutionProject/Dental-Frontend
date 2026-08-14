@@ -21,6 +21,7 @@ interface BackendPatient extends Omit<Partial<Patient>, 'id'> {
   estado?: string;
   alergiasCriticas?: string;
   observaciones?: string;
+  aceptaRecordatorios?: boolean;
 }
 
 interface BackendPaginatedPatientsResponse {
@@ -137,6 +138,7 @@ export class PatientApiRepository implements PatientRepository {
       alergiasCriticas,
       numeroDocumento: documentNumber,
       observaciones: this.pickString(data.observaciones),
+      aceptaRecordatorios: 'acceptReminders' in data ? data.acceptReminders : undefined,
       estado,
     };
   }
@@ -253,6 +255,7 @@ export class PatientApiRepository implements PatientRepository {
       medicalHistory,
       notes: this.pickString(data.notes) ?? this.pickString(data.observaciones) ?? '',
       observaciones: this.pickString(data.observaciones) ?? this.pickString(data.notes) ?? '',
+      acceptReminders: data.aceptaRecordatorios ?? false,
     };
   }
 

@@ -73,6 +73,12 @@ export class MenuService {
       iconName: 'heroUserGroup',
       roles: ['ADMIN'],
     },
+    {
+      label: 'Configuración',
+      route: '/config',
+      iconName: 'heroCog6Tooth',
+      roles: ['ADMIN'],
+    },
   ];
 
   get items(): MenuItem[] {

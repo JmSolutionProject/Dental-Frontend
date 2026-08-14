@@ -80,6 +80,7 @@ export class PatientList {
     lastName: ['', [Validators.required]],
     phone: ['', [Validators.required]],
     birthDate: [''],
+    acceptReminders: [true],
   });
 
   private readonly search$ = toObservable(this.searchText).pipe(
@@ -353,6 +354,7 @@ export class PatientList {
       documentNumber: raw.documentNumber?.trim() || '',
       phone: raw.phone.trim(),
       birthDate: raw.birthDate || undefined,
+      acceptReminders: raw.acceptReminders === true,
     };
 
     this.createPatient

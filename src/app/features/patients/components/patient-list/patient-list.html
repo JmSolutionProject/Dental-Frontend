@@ -153,6 +153,11 @@
             <app-birth-date-field [control]="createForm.get('birthDate')!" />
           </app-form-field>
         </div>
+
+        <label class="reminders-check">
+          <input type="checkbox" formControlName="acceptReminders" />
+          <span>Acepta recordatorios por WhatsApp (recomendado)</span>
+        </label>
       </section>
 
       <div class="create-actions">
