@@ -20,7 +20,7 @@ import QRCode from 'qrcode';
 
 const CAMPAIGN_STORAGE_KEY = 'dental_clinic_active_campaign';
 
-export type MessageSection = 'direct' | 'scheduled' | 'templates';
+export type MessageSection = 'direct' | 'scheduled' | 'templates' | 'reminders';
 export type ScheduledStatus = 'pending' | 'sent' | 'failed';
 export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly';
 

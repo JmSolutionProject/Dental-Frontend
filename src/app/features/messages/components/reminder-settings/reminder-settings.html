@@ -1,16 +1,13 @@
-<section class="page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Configuración</p>
-      <h1>Recordatorios de Citas</h1>
-      <p class="muted">Envía avisos automáticos por WhatsApp a tus pacientes antes de su cita.</p>
-    </div>
-  </header>
-
+<section class="reminder-settings">
   @if (loading()) {
     <p class="muted" style="text-align: center; padding: 2rem;">Cargando configuración…</p>
   } @else {
     <article class="card" style="max-width: 640px;">
+      <header class="reminder-heading">
+        <h2>Recordatorios de Citas</h2>
+        <p class="muted">Envía avisos automáticos por WhatsApp a tus pacientes antes de su cita.</p>
+      </header>
+
       <label class="config-row">
         <span>
           <strong>Activar recordatorios automáticos</strong>

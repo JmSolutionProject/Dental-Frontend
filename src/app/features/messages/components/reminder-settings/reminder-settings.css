@@ -1,3 +1,12 @@
+.reminder-heading {
+  margin-bottom: 0.5rem;
+}
+
+.reminder-heading h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.25rem;
+}
+
 .config-row {
   display: flex;
   align-items: center;
