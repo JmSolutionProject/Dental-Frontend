@@ -38,6 +38,42 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
+    path: 'dashboard',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'patients',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'appointments',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'appointments/calendar',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'agenda',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'messages',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'catalog',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'roles',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'users',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: 'settings',
     renderMode: RenderMode.Client,
   },
