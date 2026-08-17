@@ -12,13 +12,13 @@ interface RecordatorioConfig {
 }
 
 @Component({
-  selector: 'app-config-page',
+  selector: 'app-reminder-settings',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './config-page.html',
-  styleUrl: './config-page.css',
+  templateUrl: './reminder-settings.html',
+  styleUrl: './reminder-settings.css',
 })
-export class ConfigPage {
+export class ReminderSettings {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly toast = inject(ToastService);
