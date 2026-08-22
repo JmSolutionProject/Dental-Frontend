@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, finalize, of, take } from 'rxjs';
+import { catchError, EMPTY, expand, finalize, of, reduce, take } from 'rxjs';
 import jsPDF from 'jspdf';
 
 import { AuthService } from '../../../../core/services/auth';
@@ -72,6 +72,7 @@ export class PaymentList implements OnInit {
   readonly columns: TableColumn[] = [
     { key: 'payment', label: 'Pago' },
     { key: 'patientName', label: 'Paciente' },
+    { key: 'patientPhone', label: 'WhatsApp' },
     { key: 'cashierName', label: 'Cobrador' },
     { key: 'methodName', label: 'Método' },
     { key: 'amount', label: 'Monto' },
@@ -196,10 +197,15 @@ export class PaymentList implements OnInit {
     this.getPatients
       .execute({ page: 1, limit: 100 })
       .pipe(
-        take(1),
-        catchError(() => of({ data: [], total: 0, page: 1, limit: 100 })),
+        expand((res) =>
+          res.page * res.limit < res.total
+            ? this.getPatients.execute({ page: res.page + 1, limit: 100 })
+            : EMPTY,
+        ),
+        reduce((patients, res) => [...patients, ...res.data], [] as Patient[]),
+        catchError(() => of([] as Patient[])),
       )
-      .subscribe((res) => this.patients.set(res.data));
+      .subscribe((patients) => this.patients.set(patients));
   }
 
   // Resolve Real Patient Name
@@ -218,6 +224,32 @@ export class PaymentList implements OnInit {
       if (apt && apt.patientName) return apt.patientName;
     }
     return 'Paciente Odontológico';
+  }
+
+  resolvePatientPhone(payment: Payment): string {
+    if (payment.patientPhone) return payment.patientPhone;
+    const patientId = this.resolvePatientId(payment);
+    const patient = this.patients().find((p) =>
+      p.id === patientId || String(p.id) === String(patientId),
+    );
+    if (patient?.phone) return patient.phone;
+    return '';
+  }
+
+  private resolvePatientId(payment: Payment): string | undefined {
+    if (payment.patientId) return String(payment.patientId);
+    const appointment = this.appointments().find((a) =>
+      a.id === payment.appointmentId || String(a.id) === String(payment.appointmentId),
+    );
+    return appointment?.patientId ? String(appointment.patientId) : undefined;
+  }
+
+  whatsappUrl(payment: Payment): string | null {
+    const phone = this.resolvePatientPhone(payment).replace(/\D/g, '');
+    if (!phone) return null;
+    const number = phone.startsWith('51') ? phone : phone.length === 9 ? `51${phone}` : phone;
+    const message = `Hola ${this.resolvePatientName(payment)}, te entregamos tu boleta digital de la Clínica Dental Omaya.`;
+    return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
   }
 
   // Resolve Treatment Details

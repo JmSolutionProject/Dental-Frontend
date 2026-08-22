@@ -27,6 +27,7 @@ export interface Payment {
   invoiceId?: string;
   patientId?: string;
   patientName?: string;
+  patientPhone?: string;
   cashierId: string;
   cashierName: string;
   cashRegisterId?: string;

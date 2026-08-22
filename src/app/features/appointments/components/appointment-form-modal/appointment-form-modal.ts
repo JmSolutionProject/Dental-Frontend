@@ -54,7 +54,15 @@ export class AppointmentFormModal implements OnChanges {
   private readonly userRepository = inject(UserRepository);
 
   @Input() visible = false;
-  @Input() prefill?: { patientId?: string; dentistId?: string; reason?: string; planServicioId?: string; serviceId?: string; };
+  @Input() prefill?: {
+    patientId?: string;
+    dentistId?: string;
+    reason?: string;
+    planServicioId?: string;
+    serviceId?: string;
+    date?: string;
+    time?: string;
+  };
 
   readonly closed = output<void>();
   readonly saved = output<void>();
@@ -64,6 +72,8 @@ export class AppointmentFormModal implements OnChanges {
   readonly catalogServices = signal<CatalogServiceItem[]>([]);
   readonly loadingPatients = signal(true);
   readonly saving = signal(false);
+  readonly patientSearchQuery = signal('');
+  readonly showPatientDropdown = signal(false);
   readonly selectedCategoryId = signal<string>('');
   readonly selectedShift = signal<'morning' | 'afternoon'>('morning');
   private pendingPrefillServiceId: string | null = null;
@@ -83,6 +93,14 @@ export class AppointmentFormModal implements OnChanges {
       .map((s) => ({ id: s.id, name: s.name, price: s.price }));
   });
 
+  readonly filteredPatients = computed(() => {
+    const search = this.patientSearchQuery().toLowerCase().trim();
+    if (!search) return this.patients().slice(0, 30);
+    return this.patients().filter((patient) =>
+      `${patient.firstName} ${patient.lastName} ${patient.documentNumber}`.toLowerCase().includes(search),
+    ).slice(0, 30);
+  });
+
   readonly form: FormGroup = this.fb.group({
     patientId: ['', [Validators.required]],
     date: [this.todayString(), [Validators.required]],
@@ -97,9 +115,13 @@ export class AppointmentFormModal implements OnChanges {
     if (changes['visible']?.currentValue === true) {
       this.selectedCategoryId.set('');
       this.selectedShift.set(this.currentShift());
+      this.patientSearchQuery.set('');
+      this.showPatientDropdown.set(false);
       if (this.prefill) {
         this.form.patchValue({
           patientId: this.prefill.patientId ?? '',
+          date: this.prefill.date ?? this.todayString(),
+          time: this.prefill.time ?? '10:00',
           dentistId: this.prefill.dentistId ?? '',
           reason: this.prefill.reason ?? '',
           serviceId: this.prefill.serviceId ?? '',
@@ -130,6 +152,21 @@ export class AppointmentFormModal implements OnChanges {
     const catId = (event.target as HTMLSelectElement).value;
     this.selectedCategoryId.set(catId);
     this.form.patchValue({ serviceId: '', reason: '' }, { emitEvent: false });
+  }
+
+  onPatientSearch(event: Event): void {
+    this.patientSearchQuery.set((event.target as HTMLInputElement).value);
+    this.showPatientDropdown.set(true);
+  }
+
+  selectPatient(patient: Patient): void {
+    this.form.patchValue({ patientId: patient.id }, { emitEvent: false });
+    this.patientSearchQuery.set(`${patient.firstName} ${patient.lastName}`);
+    this.showPatientDropdown.set(false);
+  }
+
+  hidePatientDropdown(): void {
+    setTimeout(() => this.showPatientDropdown.set(false), 150);
   }
 
   onServiceChange(event: Event): void {

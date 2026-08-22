@@ -73,19 +73,30 @@
           <article
             class="finding-card finding-card--clickable"
             [attr.data-condition]="card.condition"
+            role="button"
+            tabindex="0"
             (click)="viewToothDetails(card)"
+            (keydown.enter)="viewToothDetails(card)"
           >
+            <div class="finding-card__topline">
+              <span class="finding-card__marker"></span>
+              <span class="finding-card__eyebrow">Pieza dental</span>
+              <span class="finding-card__history">Ver detalle <span aria-hidden="true">›</span></span>
+            </div>
             <div class="finding-card__header">
-              <span class="finding-card__tooth">#{{ card.fdiNumber }}</span>
+              <strong class="finding-card__tooth">{{ card.fdiNumber }}</strong>
               <span class="finding-card__condition">{{ card.conditionLabel }}</span>
               @if (card.stateName === 'Curado') {
                 <span class="badge badge--healed">Curado</span>
               }
             </div>
             @if (card.notes) {
-              <p class="finding-card__notes">
-                {{ card.notes }}
-              </p>
+              <div class="finding-card__note">
+                <span class="finding-card__note-icon" aria-hidden="true"></span>
+                <p>{{ card.notes }}</p>
+              </div>
+            } @else {
+              <p class="finding-card__empty">Sin observaciones adicionales</p>
             }
           </article>
         }
@@ -93,73 +104,107 @@
     }
 
     <!-- Tooth Progress Modal: solo doctores -->
-    @if (isDoctor() && showToothProgressModal() && selectedTooth(); as selTooth) {
+    @if (canEditOdontogram() && showToothProgressModal() && selectedTooth(); as selTooth) {
       <app-modal [title]="'Historial Clínico - Pieza ' + selTooth.fdiNumber" [visible]="true" (close)="closeToothProgressModal()">
-        <div class="tooth-progress-modal-body">
+        <div class="tooth-editor">
+          <header class="tooth-editor__header">
+            <div>
+              <span class="tooth-editor__eyebrow">Registro clínico</span>
+              <h3>Pieza dental {{ selTooth.fdiNumber }}</h3>
+              <p>Actualiza el estado clínico y deja una observación para el expediente del paciente.</p>
+            </div>
+            <div class="tooth-editor__current">
+              <span>Estado actual</span>
+              <strong>{{ conditionLabel(currentSelectedCondition()) }}</strong>
+            </div>
+          </header>
 
+          @if (selectedSurface(); as surface) {
+            <div class="tooth-editor__surface">
+              <span class="tooth-editor__surface-dot"></span>
+              Superficie seleccionada: <strong>{{ surfaceLabel(surface) }}</strong>
+            </div>
+          }
 
-
-          <div class="tooth-history-list mb-4">
-            <h4>Historial de Tratamientos y Diagnósticos</h4>
+          <section class="tooth-editor__history">
+            <div class="section-heading">
+              <div>
+                <span class="section-heading__eyebrow">Seguimiento</span>
+                <h4>Historial clínico</h4>
+              </div>
+              <span class="section-heading__count">{{ selTooth.history?.length || 0 }} registros</span>
+            </div>
             @if (!selTooth.history || selTooth.history.length === 0) {
-              <p class="muted">No hay registros históricos</p>
+              <div class="history-empty">
+                <span class="history-empty__icon">+</span>
+                <p>Aún no hay registros para esta pieza.</p>
+              </div>
             } @else {
               <ul class="history-timeline">
                 @for (record of selTooth.history; track record.id) {
                   <li class="history-item">
-                    <span class="history-date">{{ record.date }}</span>
-                    <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
-                    @if (record.surface) {
-                      <span class="history-surface">{{ surfaceLabel(record.surface) }}</span>
-                    }
-                    @if (record.notes) {
-                      <p class="history-notes">{{ record.notes }}</p>
-                    }
+                    <span class="history-item__dot"></span>
+                    <div class="history-item__content">
+                      <div class="history-item__meta">
+                        <span class="history-date">{{ record.date }}</span>
+                        <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
+                        @if (record.surface) {
+                          <span class="history-surface">{{ surfaceLabel(record.surface) }}</span>
+                        }
+                      </div>
+                      @if (record.notes) {
+                        <p class="history-notes">{{ record.notes }}</p>
+                      }
+                    </div>
                   </li>
                 }
               </ul>
             }
-          </div>
+          </section>
 
-          <div class="tooth-add-treatment-form">
-            <h4>Registrar Nuevo Diagnóstico / Tratamiento</h4>
+          <section class="tooth-editor__form">
+            <div class="section-heading">
+              <div>
+                <span class="section-heading__eyebrow">Nueva actualización</span>
+                <h4>Estado y observaciones</h4>
+              </div>
+            </div>
 
-            <div class="treatment-grid">
+            <div class="condition-grid" role="group" aria-label="Estado clínico">
               @for (cond of conditionOptions; track cond) {
                 <button
-                  class="btn btn--outline treatment-option"
-                  [class.btn--primary]="selectedCondition() === cond"
-                  [class.treatment-option--active]="selectedCondition() === cond"
+                  class="condition-option"
+                  [class.condition-option--active]="selectedCondition() === cond"
+                  [attr.data-condition]="cond"
                   [attr.aria-pressed]="selectedCondition() === cond"
                   [disabled]="savingTooth()"
                   (click)="selectCondition(cond)"
                 >
-                  {{ conditionLabel(cond) }}
+                  <span class="condition-option__indicator"></span>
+                  <span>{{ conditionLabel(cond) }}</span>
                 </button>
               }
             </div>
 
-            <div class="mt-3">
-              <label>Observaciones Adicionales (Opcional):</label>
+            <label class="notes-field">
+              <span>Observación clínica <em>Opcional</em></span>
               <textarea
-                class="form-input"
-                rows="2"
-                placeholder="Ej. Curación con resina compuesta en cara oclusal..."
+                rows="3"
+                placeholder="Describe el procedimiento, diagnóstico o indicación..."
                 (input)="progressNotes.set($any($event.target).value)"
                 [value]="progressNotes()">
               </textarea>
-            </div>
+            </label>
 
-            <div class="modal-actions">
-              <button class="btn btn--outline" type="button" [disabled]="savingTooth()" (click)="closeToothProgressModal()">
+            <footer class="tooth-editor__actions">
+              <button class="editor-action editor-action--secondary" type="button" [disabled]="savingTooth()" (click)="closeToothProgressModal()">
                 Cancelar
               </button>
-              <button class="btn btn--primary" type="button" [disabled]="savingTooth()" (click)="saveToothProgress()">
-                {{ savingTooth() ? 'Guardando...' : 'Guardar' }}
+              <button class="editor-action editor-action--primary" type="button" [disabled]="savingTooth()" (click)="saveToothProgress()">
+                <span>{{ savingTooth() ? 'Guardando...' : 'Guardar actualización' }}</span>
               </button>
-            </div>
-          </div>
-
+            </footer>
+          </section>
         </div>
       </app-modal>
     }
@@ -167,33 +212,59 @@
     <!-- Detalle del hallazgo (solo lectura) -->
     @if (showToothDetailsModal() && viewingTooth(); as vt) {
       <app-modal [title]="'Detalle - Pieza ' + vt.fdiNumber" [visible]="true" (close)="closeToothDetailsModal()">
-        <div class="tooth-detail-body">
-          <p class="tooth-detail-condition">
-            <strong>Condición:</strong> {{ conditionLabel(vt.condition) }}
-          </p>
-          @if (vt.notes) {
-            <p class="tooth-detail-notes">
-              <strong>Observaciones:</strong> {{ vt.notes }}
-            </p>
-          } @else {
-            <p class="muted">Sin observaciones registradas.</p>
-          }
-          @if (vt.history && vt.history.length > 0) {
-            <div class="tooth-history-list mb-4">
-              <h4>Historial de Tratamientos y Diagnósticos</h4>
+        <div class="tooth-detail">
+          <div class="tooth-detail__hero">
+            <div>
+              <span class="tooth-detail__eyebrow">Resumen clínico</span>
+              <h3>Pieza dental {{ vt.fdiNumber }}</h3>
+            </div>
+            <span class="tooth-detail__status">{{ conditionLabel(vt.condition) }}</span>
+          </div>
+
+          <section class="tooth-detail__observation">
+            <span class="tooth-detail__section-label">Observación actual</span>
+            @if (vt.notes) {
+              <p>{{ vt.notes }}</p>
+            } @else {
+              <p class="muted">Sin observaciones registradas.</p>
+            }
+          </section>
+
+          <section class="tooth-detail__history">
+            <div class="section-heading">
+              <div>
+                <span class="section-heading__eyebrow">Seguimiento</span>
+                <h4>Historial clínico</h4>
+              </div>
+              <span class="section-heading__count">{{ vt.history?.length || 0 }} registros</span>
+            </div>
+            @if (vt.history && vt.history.length > 0) {
               <ul class="history-timeline">
                 @for (record of vt.history; track record.id) {
                   <li class="history-item">
-                    <span class="history-date">{{ record.date }}</span>
-                    <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
-                    @if (record.notes) {
-                      <p class="history-notes">{{ record.notes }}</p>
-                    }
+                    <span class="history-item__dot"></span>
+                    <div class="history-item__content">
+                      <div class="history-item__meta">
+                        <span class="history-date">{{ record.date }}</span>
+                        <strong class="history-cond">{{ conditionLabel(record.condition) }}</strong>
+                        @if (record.surface) {
+                          <span class="history-surface">{{ surfaceLabel(record.surface) }}</span>
+                        }
+                      </div>
+                      @if (record.notes) {
+                        <p class="history-notes">{{ record.notes }}</p>
+                      }
+                    </div>
                   </li>
                 }
               </ul>
-            </div>
-          }
+            } @else {
+              <div class="history-empty">
+                <span class="history-empty__icon">+</span>
+                <p>Este diente todavía no tiene actualizaciones guardadas.</p>
+              </div>
+            }
+          </section>
         </div>
       </app-modal>
     }

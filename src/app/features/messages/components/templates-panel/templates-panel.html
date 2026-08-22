@@ -23,8 +23,7 @@
             }
           </div>
           <div class="template-card__actions">
-            <button class="button button--ghost button--sm" type="button" (click)="useTemplate(template, 'scheduled')">Usar programado</button>
-            <button class="button button--primary button--sm" type="button" (click)="useTemplate(template, 'direct')">Usar plantilla</button>
+            <button class="button button--primary button--sm" type="button" (click)="useTemplate(template)">Usar plantilla</button>
           </div>
         </article>
       }
@@ -96,7 +95,7 @@
       <div class="variables-panel__header">
         <div>
           <strong>Imagen de la plantilla</strong>
-          <p class="muted">Se reutiliza al aplicar la plantilla en envío directo o programado.</p>
+          <p class="muted">Se reutiliza al aplicar la plantilla en un envío directo.</p>
         </div>
         <label class="variable-chip variable-chip--file">
           <strong>{{ uploadingAttachment() ? 'Subiendo...' : 'Adjuntar imagen' }}</strong>

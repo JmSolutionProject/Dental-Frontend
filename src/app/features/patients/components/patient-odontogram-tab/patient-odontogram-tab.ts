@@ -50,9 +50,9 @@ export class PatientOdontogramTab {
   readonly showToothDetailsModal = signal(false);
   readonly viewingTooth = signal<FdiTooth | null>(null);
 
-  readonly isDoctor = computed(() => {
+  readonly canEditOdontogram = computed(() => {
     const roles = this.auth.roles();
-    return roles.includes('dentist');
+    return roles.includes('dentist') || roles.includes('admin');
   });
 
   readonly toothCards = computed(() => {
@@ -151,7 +151,7 @@ export class PatientOdontogramTab {
   }
 
   selectTooth(tooth: FdiTooth) {
-    if (!this.isDoctor() || this.savingTooth()) return;
+    if (!this.canEditOdontogram() || this.savingTooth()) return;
     this.selectedTooth.set(tooth);
     this.selectedSurface.set(null);
     this.selectedCondition.set(tooth.condition);
@@ -160,7 +160,7 @@ export class PatientOdontogramTab {
   }
 
   selectSurface(selection: ToothSurfaceSelection) {
-    if (!this.isDoctor()) return;
+    if (!this.canEditOdontogram()) return;
 
     const tooth = this.positionedTeeth().find((item) => item.tooth.fdiNumber === selection.fdiNumber)?.tooth;
     if (!tooth) return;

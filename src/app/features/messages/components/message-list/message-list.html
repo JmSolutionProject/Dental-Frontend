@@ -13,20 +13,16 @@
     <button type="button" [class.active]="activeSection() === 'direct'" (click)="setSection('direct')">
       <span>01</span> Envío Directo
     </button>
-    <button type="button" [class.active]="activeSection() === 'scheduled'" (click)="setSection('scheduled')">
-      <span>02</span> Mensajes Programados
-    </button>
     <button type="button" [class.active]="activeSection() === 'templates'" (click)="setSection('templates')">
-      <span>03</span> Plantillas
+      <span>02</span> Plantillas
     </button>
     <button type="button" [class.active]="activeSection() === 'reminders'" (click)="setSection('reminders')">
-      <span>04</span> Recordatorios
+      <span>03</span> Recordatorios
     </button>
   </nav>
 
   @switch (activeSection()) {
     @case ('direct') { <app-direct-message-form /> }
-    @case ('scheduled') { <app-scheduled-messages-panel /> }
     @case ('templates') { <app-templates-panel /> }
     @case ('reminders') { <app-reminder-settings /> }
   }

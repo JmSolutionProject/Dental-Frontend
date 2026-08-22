@@ -1,12 +1,27 @@
 <app-modal title="Nueva Cita" [visible]="visible" (close)="close()">
   <form [formGroup]="form" class="appt-form" (ngSubmit)="submit()">
     <app-form-field label="Paciente" [control]="form.get('patientId')!" [required]="true">
-      <select formControlName="patientId" class="appt-form-select">
-        <option value="" disabled>Seleccionar paciente…</option>
-        @for (p of patients(); track p.id) {
-          <option [value]="p.id">{{ p.firstName }} {{ p.lastName }}</option>
+      <div class="appt-patient-search-wrap">
+        <input
+          type="text"
+          [placeholder]="form.get('patientId')?.value ? getPatientName(form.get('patientId')?.value) : 'Escribe nombre o DNI para buscar…'"
+          class="appt-form-input"
+          autocomplete="off"
+          [value]="patientSearchQuery()"
+          (input)="onPatientSearch($event)"
+          (focus)="showPatientDropdown.set(true)"
+          (blur)="hidePatientDropdown()"
+        />
+        @if (showPatientDropdown() && filteredPatients().length > 0) {
+          <div class="custom-dropdown">
+            @for (p of filteredPatients(); track p.id) {
+              <div class="custom-dropdown-item" (mousedown)="selectPatient(p)">
+                {{ p.firstName }} {{ p.lastName }} — {{ p.documentNumber }}
+              </div>
+            }
+          </div>
         }
-      </select>
+      </div>
     </app-form-field>
 
     <div class="appt-form-row">
