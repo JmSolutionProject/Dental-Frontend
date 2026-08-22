@@ -6,7 +6,7 @@ import {
   PLATFORM_ID,
   signal,
 } from '@angular/core';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { Modal } from '../../../../shared/components/modal/modal';
@@ -19,18 +19,16 @@ import {
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroTrash, heroHeart, heroCalendarDays, heroUser, heroExclamationTriangle, heroSparkles } from '@ng-icons/heroicons/outline';
 import { GetAppointmentsUseCase } from '../../application/get-appointments.usecase';
-import { CreateAppointmentUseCase } from '../../application/create-appointment.usecase';
 import { UpdateAppointmentUseCase } from '../../application/update-appointment.usecase';
-import { CheckAvailabilityUseCase } from '../../application/check-availability.usecase';
 import {
   Appointment,
   AppointmentStatus,
-  CalendarSlot,
   Dentist,
 } from '../../domain/appointment';
 import { User } from '../../../users/domain/user';
 import { UserRepository } from '../../../users/infrastructure/user-api.repository';
 import { AuthService } from '../../../../core/services/auth';
+import { AppointmentFormModal } from '../appointment-form-modal/appointment-form-modal';
 
 type CalendarView = 'day' | 'week' | 'month';
 
@@ -49,6 +47,7 @@ interface CalendarDay {
     NgIcon,
     ReactiveFormsModule,
     DatePipe,
+    AppointmentFormModal,
   ],
   providers: [
     provideIcons({ heroTrash, heroHeart, heroCalendarDays, heroUser, heroExclamationTriangle, heroSparkles })
@@ -59,9 +58,7 @@ interface CalendarDay {
 export class Calendar {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly getAppointments = inject(GetAppointmentsUseCase);
-  private readonly createAppointment = inject(CreateAppointmentUseCase);
   private readonly updateAppointment = inject(UpdateAppointmentUseCase);
-  private readonly checkAvailability = inject(CheckAvailabilityUseCase);
   private readonly toast = inject(ToastService);
   private readonly userRepository = inject(UserRepository);
   private readonly auth = inject(AuthService);
@@ -86,6 +83,12 @@ export class Calendar {
   readonly loading = signal(false);
 
   readonly modalVisible = signal(false);
+  readonly createFormVisible = signal(false);
+  readonly createPrefill = signal<{
+    dentistId?: string;
+    date?: string;
+    time?: string;
+  }>({});
   readonly modalTitle = signal('Nueva cita');
   readonly editingAppointment = signal<Appointment | null>(null);
 
@@ -335,29 +338,22 @@ export class Calendar {
     if (!this.canManageAppointments()) return;
 
     this.editingAppointment.set(null);
-    this.modalTitle.set('Nueva cita');
-    this.form.reset();
-
-    if (slotDate) {
-      this.form.patchValue({
-        scheduledDate: slotDate.toISOString().slice(0, 10),
-        uiStatus: 'scheduled',
-      });
-    }
-    if (slotTime) {
-      this.form.patchValue({ scheduledTime: slotTime });
-    }
-
     const selectedDentist = this.selectedDentistId();
-    const dentist = this.dentists().find((d) => d.id === selectedDentist);
-    if (dentist) {
-      this.form.patchValue({
-        dentistId: dentist.id,
-        dentistName: dentist.name,
-      });
-    }
+    this.createPrefill.set({
+      dentistId: selectedDentist ?? undefined,
+      date: slotDate ? this.dateKey(slotDate) : undefined,
+      time: slotTime,
+    });
+    this.createFormVisible.set(true);
+  }
 
-    this.modalVisible.set(true);
+  closeCreateForm(): void {
+    this.createFormVisible.set(false);
+  }
+
+  onAppointmentCreated(): void {
+    this.createFormVisible.set(false);
+    this.loadAppointments();
   }
 
   openEditModal(appointment: Appointment) {
@@ -455,45 +451,6 @@ export class Calendar {
       return;
     }
 
-    const slot: CalendarSlot = {
-      dentistId: formVal.dentistId,
-      start: scheduledAt,
-      end: this.addMinutes(scheduledAt, this.appointmentDuration()),
-    };
-
-    this.checkAvailability
-      .execute(slot.dentistId, slot)
-      .pipe(
-        switchMap((result) => {
-          if (!result.available) {
-            this.toast.error(
-              'El horario no está disponible. Este odontólogo ya tiene una cita en ese horario.',
-            );
-            throw new Error('Slot unavailable');
-          }
-          return this.createAppointment.execute({
-            patientId: formVal.patientId,
-            patientName: formVal.patientName,
-            dentistId: formVal.dentistId || undefined,
-            dentistName: formVal.dentistName || undefined,
-            scheduledAt,
-            reason: formVal.reason,
-          });
-        }),
-        catchError((err) => {
-          if (err.message !== 'Slot unavailable') {
-            this.toast.error('No se pudo registrar la cita.');
-          }
-          return of(null);
-        }),
-      )
-      .subscribe((appointment) => {
-        if (appointment) {
-          this.toast.success('Cita registrada.');
-          this.closeModal();
-          this.loadAppointments();
-        }
-      });
   }
 
   getStatusClass(status: AppointmentStatus): string {
@@ -550,12 +507,6 @@ export class Calendar {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  }
-
-  private addMinutes(isoString: string, minutes: number): string {
-    const d = new Date(isoString);
-    d.setMinutes(d.getMinutes() + minutes);
-    return d.toISOString();
   }
 
   private isDoctor(user: User): boolean {

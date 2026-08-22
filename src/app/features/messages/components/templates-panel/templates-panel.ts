@@ -53,8 +53,8 @@ export class TemplatesPanel {
     this.closeTemplateModal();
   }
 
-  useTemplate(template: MessageTemplateItem, target: 'direct' | 'scheduled' = 'direct') {
-    this.store.useTemplate(template, target);
+  useTemplate(template: MessageTemplateItem) {
+    this.store.useTemplate(template);
   }
 
   insertVariable(control: FormControl<string>, variable: string) {

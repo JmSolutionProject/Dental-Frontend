@@ -17,6 +17,13 @@ interface OdontogramDetailResponse {
   stateName?: string;
   diagnosis?: string;
   notes?: string;
+  history?: Array<{
+    id?: string | number;
+    date?: string;
+    condition: string;
+    surface?: string | null;
+    notes?: string | null;
+  }>;
 }
 
 interface DetailsByPatientResponse {
@@ -85,6 +92,9 @@ export class OdontogramApiRepository implements OdontogramRepository {
     if (notes) {
       payload['observacion'] = notes;
     }
+    if (tooth.history) {
+      payload['history'] = tooth.history;
+    }
 
     return this.http
       .post<OdontogramDetailResponse>(`${this.apiUrl}/odontogram/details`, payload)
@@ -132,6 +142,17 @@ export class OdontogramApiRepository implements OdontogramRepository {
         current.diagnosis = detail.diagnosis ?? null;
         current.notes = detail.notes ?? current.notes;
       }
+
+      current.history = [
+        ...(current.history ?? []),
+        ...(detail.history ?? []).map((record) => ({
+          id: String(record.id ?? `${fdiNumber}-${record.date}-${record.condition}`),
+          date: record.date ?? '',
+          condition: this.toToothCondition(record.condition),
+          surface: this.toToothSurface(record.surface ?? undefined, undefined, surfaces) ?? undefined,
+          notes: record.notes ?? undefined,
+        })),
+      ];
 
       teethByFdi.set(fdiNumber, current);
     }

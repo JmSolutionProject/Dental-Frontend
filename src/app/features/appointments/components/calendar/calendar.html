@@ -198,33 +198,26 @@
   }
 </section>
 
-<!-- Create / Edit Modal -->
+<app-appointment-form-modal
+  [visible]="createFormVisible()"
+  [prefill]="createPrefill()"
+  (closed)="closeCreateForm()"
+  (saved)="onAppointmentCreated()"
+></app-appointment-form-modal>
+
+<!-- Edit Modal -->
 <app-modal
   [title]="modalTitle()"
   [visible]="modalVisible()"
   (close)="closeModal()">
   <form class="appt-form" (submit)="$event.preventDefault(); submitForm()">
-    @if (editingAppointment()) {
-      <div class="appt-form-field">
-        <label class="appt-form-label">Paciente</label>
-        <div class="appt-readonly-box">
-          <ng-icon name="heroHeart" size="16" class="appt-readonly-icon" />
-          {{ form.get('patientName')?.value }}
-        </div>
+    <div class="appt-form-field">
+      <label class="appt-form-label">Paciente</label>
+      <div class="appt-readonly-box">
+        <ng-icon name="heroHeart" size="16" class="appt-readonly-icon" />
+        {{ form.get('patientName')?.value }}
       </div>
-    } @else {
-      <div class="appt-form-row">
-        <div class="appt-form-field">
-          <label class="appt-form-label">Paciente</label>
-          <input type="text" class="appt-form-input" [formControl]="form.controls.patientName" placeholder="Nombre completo" />
-        </div>
-
-        <div class="appt-form-field">
-          <label class="appt-form-label">ID del paciente</label>
-          <input type="text" class="appt-form-input" [formControl]="form.controls.patientId" placeholder="DNI / ID" />
-        </div>
-      </div>
-    }
+    </div>
 
     <div class="appt-form-row">
       <div class="appt-form-field">
@@ -252,7 +245,7 @@
       }
     </div>
 
-    @if (!editingAppointment() || form.get('uiStatus')?.value === 'rescheduled') {
+    @if (form.get('uiStatus')?.value === 'rescheduled') {
       <div class="appt-form-row" [class.appt-reschedule-box]="editingAppointment()">
         <div class="appt-form-field">
           <label class="appt-form-label" [class.appt-reschedule-label]="editingAppointment()">Fecha</label>

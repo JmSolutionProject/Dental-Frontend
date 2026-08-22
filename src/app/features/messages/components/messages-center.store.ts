@@ -20,23 +20,11 @@ import QRCode from 'qrcode';
 
 const CAMPAIGN_STORAGE_KEY = 'dental_clinic_active_campaign';
 
-export type MessageSection = 'direct' | 'scheduled' | 'templates' | 'reminders';
-export type ScheduledStatus = 'pending' | 'sent' | 'failed';
-export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly';
+export type MessageSection = 'direct' | 'templates' | 'reminders';
 
 export interface ScheduledRecipient {
   patient: Patient;
   content: string;
-  attachment?: WhatsAppMediaAttachment | null;
-}
-
-export interface ScheduledMessageItem {
-  id: number;
-  recipient: string;
-  content: string;
-  scheduledAt: string;
-  frequency: Frequency;
-  status: ScheduledStatus;
   attachment?: WhatsAppMediaAttachment | null;
 }
 
@@ -82,17 +70,6 @@ export class MessageCenterStore {
   readonly scheduledFailedCount = signal(0);
   readonly nextScheduledPatient = signal<string | null>(null);
 
-  readonly scheduledMessages = signal<ScheduledMessageItem[]>([
-    {
-      id: 1,
-      recipient: 'Lista: pacientes por confirmar',
-      content: 'Hola {{nombre}}, te recordamos confirmar tu cita programada.',
-      scheduledAt: this.toDatetimeLocal(this.addHours(new Date(), 3)),
-      frequency: 'once',
-      status: 'pending',
-    },
-  ]);
-
   readonly templates = signal<MessageTemplateItem[]>([
     {
       id: 1,
@@ -117,9 +94,7 @@ export class MessageCenterStore {
   // ---- coordinación entre paneles (usar plantilla) ----
   readonly requestedSection = signal<MessageSection | null>(null);
   readonly pendingDirectContent = signal<string | null>(null);
-  readonly pendingScheduledContent = signal<string | null>(null);
   readonly pendingDirectAttachment = signal<WhatsAppMediaAttachment | null>(null);
-  readonly pendingScheduledAttachment = signal<WhatsAppMediaAttachment | null>(null);
 
   private scheduledTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -511,33 +486,6 @@ export class MessageCenterStore {
     this.toast.info('Envío programado detenido.');
   }
 
-  scheduleMessage(value: {
-    recipient: string;
-    content: string;
-    scheduledAt: string;
-    frequency: Frequency;
-    attachment?: WhatsAppMediaAttachment | null;
-  }) {
-    this.scheduledMessages.update((messages) => [
-      {
-        id: Date.now(),
-        recipient: this.resolveScheduledRecipient(value.recipient),
-        content: value.content.trim(),
-        scheduledAt: value.scheduledAt,
-        frequency: value.frequency,
-        status: 'pending',
-        attachment: value.attachment ?? null,
-      },
-      ...messages,
-    ]);
-    this.toast.success('Mensaje programado correctamente.');
-  }
-
-  cancelScheduled(id: number, notify = true) {
-    this.scheduledMessages.update((messages) => messages.filter((message) => message.id !== id));
-    if (notify) this.toast.info('Mensaje programado cancelado.');
-  }
-
   saveTemplate(value: {
     name: string;
     category: string;
@@ -557,16 +505,10 @@ export class MessageCenterStore {
     this.toast.success('Plantilla creada correctamente.');
   }
 
-  useTemplate(template: MessageTemplateItem, target: 'direct' | 'scheduled') {
-    if (target === 'scheduled') {
-      this.pendingScheduledContent.set(template.content);
-      this.pendingScheduledAttachment.set(template.attachment ?? null);
-      this.requestedSection.set('scheduled');
-    } else {
-      this.pendingDirectContent.set(template.content);
-      this.pendingDirectAttachment.set(template.attachment ?? null);
-      this.requestedSection.set('direct');
-    }
+  useTemplate(template: MessageTemplateItem) {
+    this.pendingDirectContent.set(template.content);
+    this.pendingDirectAttachment.set(template.attachment ?? null);
+    this.requestedSection.set('direct');
   }
 
   uploadMedia(file: File) {
@@ -586,13 +528,6 @@ export class MessageCenterStore {
     return template.replace(/{{\s*(nombre|apellido|telefono|documento|servicio|fecha)\s*}}/gi, (_, key: string) => {
       return values[key.toLowerCase()] ?? '';
     });
-  }
-
-  resolveScheduledRecipient(recipient: string): string {
-    if (recipient === 'all') return 'Todos los contactos';
-    if (recipient.startsWith('group:')) return recipient.replace('group:', 'Grupo: ');
-    const patient = this.patients().find((p) => p.id === recipient);
-    return patient ? this.patientName(patient) : recipient;
   }
 
   patientName(patient: Patient): string {
@@ -658,15 +593,6 @@ export class MessageCenterStore {
       this.qrImage.set(null);
       this.toast.error('No se pudo generar la imagen del QR.');
     }
-  }
-
-  private addHours(date: Date, hours: number): Date {
-    return new Date(date.getTime() + hours * 60 * 60 * 1000);
-  }
-
-  private toDatetimeLocal(date: Date): string {
-    const offsetMs = date.getTimezoneOffset() * 60_000;
-    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
   }
 
   private clearScheduledTimer() {

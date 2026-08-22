@@ -91,6 +91,16 @@
           <strong style="color: #0f172a;">{{ resolvePatientName(payment) }}</strong>
         </ng-template>
 
+        <ng-template appTableCell="patientPhone" let-payment>
+          @if (whatsappUrl(payment); as url) {
+            <a class="whatsapp-link" [href]="url" target="_blank" rel="noopener noreferrer">
+              {{ resolvePatientPhone(payment) }}
+            </a>
+          } @else {
+            <span class="muted">Sin número</span>
+          }
+        </ng-template>
+
         <ng-template appTableCell="cashierName" let-payment>
           {{ payment.cashierName || ('Usuario #' + payment.cashierId) }}
         </ng-template>

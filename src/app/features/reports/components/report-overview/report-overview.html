@@ -13,7 +13,7 @@
       <div class="print-report-meta">
         <div class="print-meta-box">
           <span class="meta-title">REPORTE DE CIERRE DE CAJA DIARIO</span>
-          <span class="meta-date">Fecha: {{ todayDate | date: "dd/MM/yyyy" }}</span>
+          <span class="meta-date">Fecha: {{ todayDate | date: "dd/MM/yyyy":"-05:00" }}</span>
           <span class="meta-period">Generado por: {{ cashierName() }}</span>
         </div>
       </div>
@@ -180,8 +180,8 @@
           <article class="chart-card chart-card--main">
             <div class="chart-card-header">
               <div>
-                <h3>Evolución de Ingresos e Histórico Mensual</h3>
-                <span class="muted-sm">Tendencia de facturación en Soles (S/) de los últimos 6 meses</span>
+                <h3>Evolución de Ingresos - {{ overview.periodLabel }}</h3>
+                <span class="muted-sm">Ingresos agrupados según el periodo seleccionado</span>
               </div>
             </div>
             <div class="chart-wrapper">
@@ -193,8 +193,8 @@
           <article class="chart-card">
             <div class="chart-card-header">
               <div>
-                <h3>Comparativa Mes Actual vs Anterior</h3>
-                <span class="muted-sm">Variación directa de recaudación</span>
+                <h3>Comparativa del Periodo</h3>
+                <span class="muted-sm">Periodo seleccionado frente al periodo anterior</span>
               </div>
             </div>
             <div class="chart-wrapper">
@@ -225,7 +225,7 @@
         <div class="report-meta-strip">
           <div class="meta-item">
             <ng-icon name="heroCalendarDays" />
-            <span><strong>Fecha del Cierre:</strong> {{ todayDate | date: "dd/MM/yyyy" }}</span>
+            <span><strong>Fecha del Cierre:</strong> {{ todayDate | date: "dd/MM/yyyy":"-05:00" }}</span>
           </div>
           <div class="meta-divider">|</div>
           <div class="meta-item">
@@ -277,7 +277,7 @@
                   @for (payment of overview.payments; track payment.id) {
                     <tr>
                       <td class="font-mono">
-                        <strong>{{ payment.paidAt | date: "HH:mm" }}</strong>
+                        <strong>{{ payment.paidAt | date: "HH:mm":"-05:00" }}</strong>
                       </td>
                       <td>
                         <strong class="patient-name">{{ payment.patientName || 'Paciente General' }}</strong>
@@ -309,7 +309,7 @@
           } @else {
             <div class="empty-state-box">
               <ng-icon name="heroDocumentText" class="empty-icon" />
-              <p class="muted">No hay movimientos registrados para el día de hoy.</p>
+              <p class="muted">No hay movimientos registrados para {{ overview.periodLabel.toLowerCase() }}.</p>
             </div>
           }
         </div>
@@ -406,7 +406,7 @@
                       </td>
                       <td><strong>{{ apt.patientName || 'Paciente' }}</strong></td>
                       <td>{{ getServicesName(apt) }}</td>
-                      <td class="font-mono">{{ apt.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                      <td class="font-mono">{{ apt.scheduledAt | date: 'dd/MM/yyyy HH:mm':'-05:00' }}</td>
                       <td>{{ apt.dentistName || 'Dr(a). Odontólogo(a)' }}</td>
                     </tr>
                   }
@@ -426,10 +426,9 @@
     <!-- TAB 4: SERVICIOS MÁS SOLICITADOS (PURA BD DINÁMICA) -->
     @if (activeTab() === 'services') {
       <div class="services-analytics-suite">
-        @if (kpis$ | async; as kpis) {
-          @if (kpis.topServices && kpis.topServices.length > 0) {
+        @if (overview.topServices.length > 0) {
             <div class="services-rank-grid">
-              @for (svc of kpis.topServices; track svc.name; let idx = $index) {
+              @for (svc of overview.topServices; track svc.name; let idx = $index) {
                 <article class="service-rank-card">
                   <div class="rank-header">
                     <span class="rank-badge" [class.rank-badge--gold]="idx === 0" [class.rank-badge--silver]="idx === 1" [class.rank-badge--bronze]="idx === 2">
@@ -446,7 +445,7 @@
                       <strong>{{ svc.count }} atenciones</strong>
                     </div>
                     <div class="progress-bar-track">
-                      <div class="progress-bar-fill fill-sky" [style.width.%]="svc.count > 0 ? (svc.count / (kpis.topServices[0]?.count || 1)) * 100 : 0"></div>
+                      <div class="progress-bar-fill fill-sky" [style.width.%]="svc.count > 0 ? (svc.count / (overview.topServices[0]?.count || 1)) * 100 : 0"></div>
                     </div>
                   </div>
 
@@ -457,12 +456,11 @@
                 </article>
               }
             </div>
-          } @else {
+        } @else {
             <div class="empty-state-box">
               <ng-icon name="heroHeart" class="empty-icon" />
               <p class="muted">No hay registros de tratamientos solicitados aún en la base de datos.</p>
             </div>
-          }
         }
       </div>
     }
